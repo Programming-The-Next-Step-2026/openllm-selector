@@ -153,6 +153,29 @@ o.rank_by_openness(o.filter_models(family="Mistral"), descending=False)
 
 ---
 
+### `fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]`
+
+Query the arXiv API for the most recent papers mentioning a model by name, sorted by submission date. Requires a network connection.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `model_name` | `str` | Model name to search for, e.g. `"OLMo"` or `"Llama 3.1"` |
+| `max_results` | `int` | Maximum number of papers to return. Default `3` |
+
+Each returned dict contains `title` (str), `authors` (list[str]), `summary` (str), `published` (str, ISO 8601), and `arxiv_url` (str).
+
+Raises `requests.exceptions.RequestException` on network errors or non-2xx responses.
+
+```python
+papers = o.fetch_recent_papers("OLMo", max_results=3)
+for p in papers:
+    print(p["published"][:10], p["title"])
+    print("  ", ", ".join(p["authors"][:2]))
+    print("  ", p["arxiv_url"])
+```
+
+---
+
 ### `get_families() -> list[str]`
 
 Returns a sorted list of all unique model family names in the database (e.g. `"Falcon"`, `"LLaMA"`, `"OLMo"`).

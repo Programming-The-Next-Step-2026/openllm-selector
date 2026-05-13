@@ -1,8 +1,12 @@
 """Tests for openllm_selector.database."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
+import requests as req
 
 from openllm_selector.database import (
+    fetch_recent_papers,
     filter_models,
     get_families,
     get_model,
@@ -517,3 +521,136 @@ class TestSearch:
         results = search("Allen")
         assert len(results) > 0
         assert all("allen" in m["organization"].lower() for m in results)
+
+
+# ---------------------------------------------------------------------------
+# fetch_recent_papers
+# ---------------------------------------------------------------------------
+
+_SAMPLE_ATOM = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <entry>
+    <title>Using OLMo for Natural Language Inference</title>
+    <id>http://arxiv.org/abs/2401.00001v1</id>
+    <published>2024-01-15T00:00:00Z</published>
+    <summary>We evaluate OLMo on NLI benchmarks.</summary>
+    <author><name>Alice Smith</name></author>
+    <author><name>Bob Jones</name></author>
+  </entry>
+  <entry>
+    <title>OLMo in Low-Resource Settings</title>
+    <id>http://arxiv.org/abs/2401.00002v2</id>
+    <published>2024-01-10T00:00:00Z</published>
+    <summary>Low-resource adaptation of OLMo.</summary>
+    <author><name>Charlie Brown</name></author>
+  </entry>
+</feed>
+"""
+
+_EMPTY_ATOM = '<feed xmlns="http://www.w3.org/2005/Atom"></feed>'
+
+
+def _mock_response(text, status_error=None):
+    mock = MagicMock()
+    mock.text = text
+    if status_error:
+        mock.raise_for_status.side_effect = status_error
+    else:
+        mock.raise_for_status.return_value = None
+    return mock
+
+
+class TestFetchRecentPapers:
+    def test_returns_list_of_dicts(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert isinstance(results, list)
+        assert all(isinstance(p, dict) for p in results)
+
+    def test_each_result_has_required_keys(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        required = {"title", "authors", "summary", "published", "arxiv_url"}
+        for paper in results:
+            assert required <= paper.keys()
+
+    def test_parses_title_correctly(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert results[0]["title"] == "Using OLMo for Natural Language Inference"
+
+    def test_parses_multiple_authors(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert results[0]["authors"] == ["Alice Smith", "Bob Jones"]
+
+    def test_parses_single_author(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert results[1]["authors"] == ["Charlie Brown"]
+
+    def test_parses_published_date(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert results[0]["published"] == "2024-01-15T00:00:00Z"
+
+    def test_arxiv_url_uses_https(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert all(p["arxiv_url"].startswith("https://") for p in results)
+
+    def test_arxiv_url_contains_arxiv_id(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        assert "2401.00001" in results[0]["arxiv_url"]
+
+    def test_correct_number_of_results(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            results = fetch_recent_papers("OLMo")
+        # _SAMPLE_ATOM contains exactly 2 entries
+        assert len(results) == 2
+
+    def test_max_results_forwarded_to_api(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            fetch_recent_papers("OLMo", max_results=7)
+        _, kwargs = mock_get.call_args
+        assert kwargs["params"]["max_results"] == 7
+
+    def test_model_name_used_in_query(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_SAMPLE_ATOM)
+            fetch_recent_papers("Pythia 6.9B")
+        _, kwargs = mock_get.call_args
+        assert "Pythia 6.9B" in kwargs["params"]["search_query"]
+
+    def test_empty_feed_returns_empty_list(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(_EMPTY_ATOM)
+            results = fetch_recent_papers("NonExistentModel99999")
+        assert results == []
+
+    def test_http_error_raises(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.return_value = _mock_response(
+                _SAMPLE_ATOM,
+                status_error=req.exceptions.HTTPError("503 Service Unavailable"),
+            )
+            with pytest.raises(req.exceptions.HTTPError):
+                fetch_recent_papers("OLMo")
+
+    def test_network_error_raises(self):
+        with patch("openllm_selector.database.requests.get") as mock_get:
+            mock_get.side_effect = req.exceptions.ConnectionError("unreachable")
+            with pytest.raises(req.exceptions.ConnectionError):
+                fetch_recent_papers("OLMo")

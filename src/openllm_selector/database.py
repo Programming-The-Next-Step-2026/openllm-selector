@@ -2,6 +2,9 @@
 
 import json
 import pathlib
+import xml.etree.ElementTree as ET
+
+import requests
 
 _DATA_FILE = pathlib.Path(__file__).parent / "data" / "models.json"
 
@@ -262,3 +265,72 @@ def search(query: str) -> list[dict]:
         or q in m["family"].lower()
         or q in m["organization"].lower()
     ]
+
+
+def fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]:
+    """Fetch recent arXiv papers that mention a model by name.
+
+    Queries the arXiv search API for papers containing ``model_name`` in any
+    field (title, abstract, comments), sorted by submission date descending.
+
+    Parameters
+    ----------
+    model_name : str
+        The model name to search for, e.g. ``"OLMo"`` or ``"Llama 3.1"``.
+    max_results : int
+        Maximum number of papers to return. Default ``3``. The arXiv API may
+        return fewer results if fewer papers match the query.
+
+    Returns
+    -------
+    list[dict]
+        Papers found, each containing:
+
+        * ``title`` (str) – paper title
+        * ``authors`` (list[str]) – author names
+        * ``summary`` (str) – abstract text
+        * ``published`` (str) – submission date in ISO 8601 format
+        * ``arxiv_url`` (str) – canonical arXiv URL (HTTPS)
+
+    Raises
+    ------
+    requests.exceptions.RequestException
+        If the HTTP request fails due to a network error, timeout, or a
+        non-2xx response status.
+
+    Examples
+    --------
+    >>> papers = fetch_recent_papers("OLMo", max_results=2)
+    >>> papers[0].keys()
+    dict_keys(['title', 'authors', 'summary', 'published', 'arxiv_url'])
+    """
+    response = requests.get(
+        "https://export.arxiv.org/api/query",
+        params={
+            "search_query": f'all:"{model_name}"',
+            "sortBy": "submittedDate",
+            "sortOrder": "descending",
+            "max_results": max_results,
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
+
+    ns = "{http://www.w3.org/2005/Atom}"
+    root = ET.fromstring(response.text)
+
+    papers = []
+    for entry in root.findall(f"{ns}entry"):
+        papers.append({
+            "title": (entry.findtext(f"{ns}title") or "").strip(),
+            "authors": [
+                a.findtext(f"{ns}name") or ""
+                for a in entry.findall(f"{ns}author")
+            ],
+            "summary": (entry.findtext(f"{ns}summary") or "").strip(),
+            "published": (entry.findtext(f"{ns}published") or "").strip(),
+            "arxiv_url": (entry.findtext(f"{ns}id") or "").strip().replace(
+                "http://", "https://"
+            ),
+        })
+    return papers
