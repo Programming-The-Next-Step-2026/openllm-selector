@@ -20,3 +20,6 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+
+[project.optional-dependencies]
+dev = ["pytest", "streamlit", "plotly", "requests"]

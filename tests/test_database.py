@@ -1,0 +1,439 @@
+"""Tests for openllm_selector.database."""
+
+import pytest
+
+from openllm_selector.database import (
+    filter_models,
+    get_families,
+    get_model,
+    get_organizations,
+    load_models,
+    rank_by_openness,
+    search,
+)
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def all_models():
+    return load_models()
+
+
+# ---------------------------------------------------------------------------
+# load_models
+# ---------------------------------------------------------------------------
+
+class TestLoadModels:
+    def test_returns_list(self, all_models):
+        assert isinstance(all_models, list)
+
+    def test_nonempty(self, all_models):
+        assert len(all_models) > 0
+
+    def test_each_record_has_required_keys(self, all_models):
+        required = {
+            "name", "family", "organization", "size_b", "modality",
+            "license", "open_weights", "open_training_data",
+            "intermediate_checkpoints", "open_code", "foundational_paper",
+            "huggingface_id", "openness_score",
+        }
+        for model in all_models:
+            assert required <= model.keys(), f"{model['name']} is missing fields"
+
+    def test_openness_scores_in_range(self, all_models):
+        for model in all_models:
+            assert 1 <= model["openness_score"] <= 5, (
+                f"{model['name']} has openness_score {model['openness_score']}"
+            )
+
+    def test_size_b_positive(self, all_models):
+        for model in all_models:
+            assert model["size_b"] > 0, f"{model['name']} has non-positive size_b"
+
+    def test_modality_is_list(self, all_models):
+        for model in all_models:
+            assert isinstance(model["modality"], list), (
+                f"{model['name']} modality should be a list"
+            )
+
+    def test_boolean_fields_are_bool(self, all_models):
+        bool_fields = ["open_weights", "open_training_data", "intermediate_checkpoints", "open_code"]
+        for model in all_models:
+            for field in bool_fields:
+                assert isinstance(model[field], bool), (
+                    f"{model['name']}.{field} should be bool"
+                )
+
+    def test_foundational_paper_is_arxiv_url(self, all_models):
+        for model in all_models:
+            assert model["foundational_paper"].startswith("https://arxiv.org/"), (
+                f"{model['name']} foundational_paper is not an arXiv URL"
+            )
+
+    def test_names_are_unique(self, all_models):
+        names = [m["name"] for m in all_models]
+        assert len(names) == len(set(names)), "Duplicate model names found"
+
+    def test_returns_independent_copy_each_call(self):
+        first = load_models()
+        first[0]["name"] = "MUTATED"
+        second = load_models()
+        assert second[0]["name"] != "MUTATED"
+
+
+# ---------------------------------------------------------------------------
+# get_model
+# ---------------------------------------------------------------------------
+
+class TestGetModel:
+    def test_exact_match(self):
+        model = get_model("OLMo 7B")
+        assert model is not None
+        assert model["name"] == "OLMo 7B"
+
+    def test_case_insensitive(self):
+        assert get_model("olmo 7b") is not None
+        assert get_model("OLMO 7B") is not None
+        assert get_model("OlMo 7b") is not None
+
+    def test_returns_none_for_unknown_name(self):
+        assert get_model("GPT-4") is None
+        assert get_model("") is None
+        assert get_model("nonexistent model xyz") is None
+
+    def test_partial_name_does_not_match(self):
+        # "OLMo" alone should not match "OLMo 7B" (exact match required)
+        assert get_model("OLMo") is None
+
+    def test_returned_record_has_correct_fields(self):
+        model = get_model("Pythia 6.9B")
+        assert model["openness_score"] == 5
+        assert model["organization"] == "EleutherAI"
+        assert model["open_training_data"] is True
+        assert model["intermediate_checkpoints"] is True
+
+
+# ---------------------------------------------------------------------------
+# filter_models
+# ---------------------------------------------------------------------------
+
+class TestFilterModels:
+    def test_no_filters_returns_all(self, all_models):
+        assert len(filter_models()) == len(all_models)
+
+    # --- modality ---
+
+    def test_filter_text_modality(self):
+        results = filter_models(modality="text")
+        assert len(results) > 0
+        assert all("text" in m["modality"] for m in results)
+
+    def test_filter_image_modality(self):
+        results = filter_models(modality="image")
+        assert len(results) > 0
+        assert all("image" in m["modality"] for m in results)
+
+    def test_filter_modality_case_insensitive(self):
+        lower = filter_models(modality="text")
+        upper = filter_models(modality="TEXT")
+        assert [m["name"] for m in lower] == [m["name"] for m in upper]
+
+    def test_filter_nonexistent_modality_returns_empty(self):
+        assert filter_models(modality="video") == []
+
+    # --- size ---
+
+    def test_filter_max_size(self):
+        results = filter_models(max_size_b=8.0)
+        assert all(m["size_b"] <= 8.0 for m in results)
+
+    def test_filter_min_size(self):
+        results = filter_models(min_size_b=20.0)
+        assert all(m["size_b"] >= 20.0 for m in results)
+
+    def test_filter_size_range(self):
+        results = filter_models(min_size_b=5.0, max_size_b=10.0)
+        assert all(5.0 <= m["size_b"] <= 10.0 for m in results)
+
+    def test_filter_size_range_no_matches(self):
+        # No model has exactly 1 B parameters in the DB
+        assert filter_models(min_size_b=1.0, max_size_b=1.5) == []
+
+    def test_size_boundary_inclusive(self):
+        # OLMo 7B has size_b = 7.0; both bounds should include it
+        assert any(m["name"] == "OLMo 7B" for m in filter_models(min_size_b=7.0))
+        assert any(m["name"] == "OLMo 7B" for m in filter_models(max_size_b=7.0))
+
+    def test_filter_impossible_size_range_returns_empty(self):
+        assert filter_models(min_size_b=100.0, max_size_b=50.0) == []
+
+    # --- openness ---
+
+    def test_filter_min_openness_5(self):
+        results = filter_models(min_openness=5)
+        assert all(m["openness_score"] == 5 for m in results)
+        assert len(results) > 0
+
+    def test_filter_max_openness_2(self):
+        results = filter_models(max_openness=2)
+        assert all(m["openness_score"] <= 2 for m in results)
+
+    def test_filter_openness_range(self):
+        results = filter_models(min_openness=3, max_openness=4)
+        assert all(3 <= m["openness_score"] <= 4 for m in results)
+
+    def test_filter_openness_score_1_returns_empty(self):
+        # No model in the DB has score 1
+        assert filter_models(min_openness=1, max_openness=1) == []
+
+    # --- boolean flags ---
+
+    def test_filter_open_training_data_true(self):
+        results = filter_models(open_training_data=True)
+        assert all(m["open_training_data"] is True for m in results)
+        assert len(results) > 0
+
+    def test_filter_open_training_data_false(self):
+        results = filter_models(open_training_data=False)
+        assert all(m["open_training_data"] is False for m in results)
+        assert len(results) > 0
+
+    def test_filter_intermediate_checkpoints_true(self):
+        results = filter_models(intermediate_checkpoints=True)
+        assert all(m["intermediate_checkpoints"] is True for m in results)
+        assert len(results) > 0
+
+    def test_filter_open_code_true(self):
+        results = filter_models(open_code=True)
+        assert all(m["open_code"] is True for m in results)
+
+    # --- organization ---
+
+    def test_filter_organization_exact(self):
+        results = filter_models(organization="Meta")
+        assert all("Meta" in m["organization"] for m in results)
+        assert len(results) > 0
+
+    def test_filter_organization_substring(self):
+        results = filter_models(organization="allen")
+        assert len(results) > 0
+        assert all("allen" in m["organization"].lower() for m in results)
+
+    def test_filter_organization_case_insensitive(self):
+        lower = filter_models(organization="meta")
+        upper = filter_models(organization="META")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_filter_organization_no_match_returns_empty(self):
+        assert filter_models(organization="OpenAI") == []
+
+    # --- family ---
+
+    def test_filter_family_exact(self):
+        results = filter_models(family="LLaMA")
+        assert all(m["family"] == "LLaMA" for m in results)
+        assert len(results) > 0
+
+    def test_filter_family_case_insensitive(self):
+        lower = filter_models(family="llama")
+        upper = filter_models(family="LLAMA")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_filter_family_no_match_returns_empty(self):
+        assert filter_models(family="Anthropic") == []
+
+    def test_filter_family_is_exact_not_substring(self):
+        # "OLMo" should not match "OLMo 7B" as a family name,
+        # but "OLMo" IS a family, so this should work; "OL" should not.
+        assert filter_models(family="OL") == []
+
+    # --- license ---
+
+    def test_filter_license_apache(self):
+        results = filter_models(license="Apache")
+        assert all("Apache" in m["license"] for m in results)
+        assert len(results) > 0
+
+    def test_filter_license_case_insensitive(self):
+        lower = filter_models(license="apache")
+        upper = filter_models(license="APACHE")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_filter_license_no_match_returns_empty(self):
+        assert filter_models(license="WTFPL") == []
+
+    # --- combined filters ---
+
+    def test_combined_size_and_openness(self):
+        results = filter_models(max_size_b=10.0, min_openness=5)
+        assert all(m["size_b"] <= 10.0 and m["openness_score"] == 5 for m in results)
+
+    def test_combined_family_and_open_weights(self):
+        results = filter_models(family="LLaMA", open_weights=True)
+        assert all(m["family"] == "LLaMA" and m["open_weights"] is True for m in results)
+
+    def test_combined_contradictory_filters_returns_empty(self):
+        # All models in DB have open_weights=True; asking for False gives nothing
+        assert filter_models(open_weights=False) == []
+
+    def test_combined_filters_narrow_to_one(self):
+        # LLaVA is the only multimodal model
+        results = filter_models(modality="image", max_size_b=10.0)
+        assert len(results) == 1
+        assert results[0]["name"] == "LLaVA 1.5 7B"
+
+
+# ---------------------------------------------------------------------------
+# get_families
+# ---------------------------------------------------------------------------
+
+class TestGetFamilies:
+    def test_returns_sorted_list(self):
+        families = get_families()
+        assert families == sorted(families)
+
+    def test_contains_expected_families(self):
+        families = get_families()
+        for expected in ("OLMo", "LLaMA", "Mistral", "Falcon", "Gemma"):
+            assert expected in families
+
+    def test_no_duplicates(self):
+        families = get_families()
+        assert len(families) == len(set(families))
+
+    def test_all_families_present_in_db(self, all_models):
+        db_families = {m["family"] for m in all_models}
+        assert set(get_families()) == db_families
+
+
+# ---------------------------------------------------------------------------
+# get_organizations
+# ---------------------------------------------------------------------------
+
+class TestGetOrganizations:
+    def test_returns_sorted_list(self):
+        orgs = get_organizations()
+        assert orgs == sorted(orgs)
+
+    def test_contains_expected_organizations(self):
+        orgs = get_organizations()
+        for expected in ("Meta", "EleutherAI", "Google DeepMind", "Mistral AI"):
+            assert expected in orgs
+
+    def test_no_duplicates(self):
+        orgs = get_organizations()
+        assert len(orgs) == len(set(orgs))
+
+    def test_all_organizations_present_in_db(self, all_models):
+        db_orgs = {m["organization"] for m in all_models}
+        assert set(get_organizations()) == db_orgs
+
+
+# ---------------------------------------------------------------------------
+# rank_by_openness
+# ---------------------------------------------------------------------------
+
+class TestRankByOpenness:
+    def test_default_descending(self, all_models):
+        ranked = rank_by_openness()
+        scores = [m["openness_score"] for m in ranked]
+        assert scores == sorted(scores, reverse=True)
+
+    def test_ascending(self, all_models):
+        ranked = rank_by_openness(descending=False)
+        scores = [m["openness_score"] for m in ranked]
+        assert scores == sorted(scores)
+
+    def test_ranks_full_db_when_none(self, all_models):
+        assert len(rank_by_openness()) == len(all_models)
+
+    def test_ranks_provided_subset(self):
+        subset = filter_models(family="LLaMA")
+        ranked = rank_by_openness(subset)
+        assert len(ranked) == len(subset)
+
+    def test_empty_list_returns_empty(self):
+        assert rank_by_openness([]) == []
+
+    def test_single_item_returns_same(self):
+        model = get_model("OLMo 7B")
+        result = rank_by_openness([model])
+        assert result == [model]
+
+    def test_does_not_mutate_input(self):
+        subset = filter_models(family="LLaMA")
+        original_order = [m["name"] for m in subset]
+        rank_by_openness(subset)
+        assert [m["name"] for m in subset] == original_order
+
+    def test_top_ranked_have_highest_scores(self):
+        ranked = rank_by_openness()
+        top_score = ranked[0]["openness_score"]
+        assert top_score == 5
+
+    def test_bottom_ranked_ascending_have_lowest_score(self):
+        ranked = rank_by_openness(descending=False)
+        bottom_score = ranked[0]["openness_score"]
+        assert bottom_score == min(m["openness_score"] for m in load_models())
+
+
+# ---------------------------------------------------------------------------
+# search
+# ---------------------------------------------------------------------------
+
+class TestSearch:
+    def test_search_by_name(self):
+        results = search("OLMo 7B")
+        names = [m["name"] for m in results]
+        assert "OLMo 7B" in names
+
+    def test_search_by_family(self):
+        results = search("Pythia")
+        assert all(
+            "pythia" in m["name"].lower()
+            or "pythia" in m["family"].lower()
+            or "pythia" in m["organization"].lower()
+            for m in results
+        )
+        assert len(results) > 0
+
+    def test_search_by_organization(self):
+        results = search("EleutherAI")
+        assert all(
+            "eleutherai" in m["organization"].lower()
+            or "eleutherai" in m["name"].lower()
+            or "eleutherai" in m["family"].lower()
+            for m in results
+        )
+        assert len(results) > 0
+
+    def test_case_insensitive_name(self):
+        lower = search("olmo")
+        upper = search("OLMO")
+        mixed = search("OlMo")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper} == {m["name"] for m in mixed}
+
+    def test_case_insensitive_organization(self):
+        lower = search("meta")
+        upper = search("META")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_partial_substring_matches(self):
+        # "euth" is a substring of "EleutherAI"
+        results = search("euth")
+        assert len(results) > 0
+
+    def test_no_match_returns_empty(self):
+        assert search("zzznonexistent") == []
+
+    def test_empty_string_matches_all(self, all_models):
+        # Every field contains the empty string
+        assert len(search("")) == len(all_models)
+
+    def test_search_matches_across_fields(self):
+        # "Allen" appears in organization, not name or family
+        results = search("Allen")
+        assert len(results) > 0
+        assert all("allen" in m["organization"].lower() for m in results)
