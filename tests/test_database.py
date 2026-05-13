@@ -34,10 +34,10 @@ class TestLoadModels:
 
     def test_each_record_has_required_keys(self, all_models):
         required = {
-            "name", "family", "organization", "size_b", "modality",
-            "license", "open_weights", "open_training_data",
-            "intermediate_checkpoints", "open_code", "foundational_paper",
-            "huggingface_id", "openness_score",
+            "name", "family", "organization", "size_b", "context_window",
+            "modality", "architecture", "license", "open_weights",
+            "open_training_data", "intermediate_checkpoints", "open_code",
+            "foundational_paper", "huggingface_id", "openness_score",
         }
         for model in all_models:
             assert required <= model.keys(), f"{model['name']} is missing fields"
@@ -71,6 +71,30 @@ class TestLoadModels:
             assert model["foundational_paper"].startswith("https://arxiv.org/"), (
                 f"{model['name']} foundational_paper is not an arXiv URL"
             )
+
+    def test_context_window_is_positive_int(self, all_models):
+        for model in all_models:
+            assert isinstance(model["context_window"], int), (
+                f"{model['name']} context_window should be int"
+            )
+            assert model["context_window"] > 0, (
+                f"{model['name']} context_window must be positive"
+            )
+
+    def test_architecture_values_are_valid(self, all_models):
+        valid = {"decoder-only", "encoder-only", "encoder-decoder", "mixture-of-experts"}
+        for model in all_models:
+            assert model["architecture"] in valid, (
+                f"{model['name']} has unknown architecture '{model['architecture']}'"
+            )
+
+    def test_mixtral_is_mixture_of_experts(self, all_models):
+        mixtral = next(m for m in all_models if m["name"] == "Mixtral 8x7B")
+        assert mixtral["architecture"] == "mixture-of-experts"
+
+    def test_llava_is_encoder_decoder(self, all_models):
+        llava = next(m for m in all_models if m["name"] == "LLaVA 1.5 7B")
+        assert llava["architecture"] == "encoder-decoder"
 
     def test_names_are_unique(self, all_models):
         names = [m["name"] for m in all_models]
@@ -283,6 +307,62 @@ class TestFilterModels:
         results = filter_models(modality="image", max_size_b=10.0)
         assert len(results) == 1
         assert results[0]["name"] == "LLaVA 1.5 7B"
+
+    # --- context window ---
+
+    def test_filter_min_context_window(self):
+        results = filter_models(min_context_window=8192)
+        assert all(m["context_window"] >= 8192 for m in results)
+        assert len(results) > 0
+
+    def test_filter_max_context_window(self):
+        results = filter_models(max_context_window=4096)
+        assert all(m["context_window"] <= 4096 for m in results)
+        assert len(results) > 0
+
+    def test_filter_context_window_range(self):
+        results = filter_models(min_context_window=4096, max_context_window=8192)
+        assert all(4096 <= m["context_window"] <= 8192 for m in results)
+        assert len(results) > 0
+
+    def test_filter_context_window_boundary_inclusive(self):
+        # Mistral 7B has context_window = 8192; both bounds should include it
+        assert any(m["name"] == "Mistral 7B" for m in filter_models(min_context_window=8192))
+        assert any(m["name"] == "Mistral 7B" for m in filter_models(max_context_window=8192))
+
+    def test_filter_context_window_no_matches(self):
+        # No model in the DB has a context window between 9000 and 10000
+        assert filter_models(min_context_window=9000, max_context_window=10000) == []
+
+    def test_filter_context_window_impossible_range_returns_empty(self):
+        assert filter_models(min_context_window=100000, max_context_window=1000) == []
+
+    def test_filter_long_context_models(self):
+        # Only Llama 3.1 8B and Qwen2 7B have context_window >= 131072
+        results = filter_models(min_context_window=131072)
+        names = {m["name"] for m in results}
+        assert "Llama 3.1 8B" in names
+        assert "Qwen2 7B" in names
+
+    def test_filter_short_context_models(self):
+        results = filter_models(max_context_window=2048)
+        assert all(m["context_window"] <= 2048 for m in results)
+        # OLMo 7B, Pythia 6.9B, BLOOM, GPT-NeoX, Falcon 7B, Falcon 40B
+        assert len(results) >= 6
+
+    def test_combined_context_window_and_openness(self):
+        results = filter_models(min_context_window=4096, min_openness=5)
+        assert all(
+            m["context_window"] >= 4096 and m["openness_score"] == 5
+            for m in results
+        )
+
+    def test_combined_context_window_and_size(self):
+        results = filter_models(min_context_window=8192, max_size_b=10.0)
+        assert all(
+            m["context_window"] >= 8192 and m["size_b"] <= 10.0
+            for m in results
+        )
 
 
 # ---------------------------------------------------------------------------

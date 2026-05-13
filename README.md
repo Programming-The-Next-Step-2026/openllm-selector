@@ -54,7 +54,9 @@ Returns all 18 model records from the database. Each record contains:
 | `family` | `str` | Model family, e.g. `"LLaMA"` |
 | `organization` | `str` | Releasing organization |
 | `size_b` | `float` | Parameter count in billions |
+| `context_window` | `int` | Maximum context length in tokens |
 | `modality` | `list[str]` | Supported modalities, e.g. `["text"]` or `["text", "image"]` |
+| `architecture` | `str` | Model architecture: `"decoder-only"`, `"encoder-only"`, `"encoder-decoder"`, or `"mixture-of-experts"` |
 | `license` | `str` | License name |
 | `open_weights` | `bool` | Weights publicly downloadable |
 | `open_training_data` | `bool` | Training dataset publicly released |
@@ -106,6 +108,9 @@ Filter the database by any combination of criteria. All parameters are keyword-o
 | `organization` | `str` | Substring match on organization (case-insensitive) |
 | `family` | `str` | Exact family name match (case-insensitive) |
 | `license` | `str` | Substring match on license (case-insensitive) |
+| `architecture` | `str` | Exact architecture match (case-insensitive): `"decoder-only"`, `"encoder-only"`, `"encoder-decoder"`, or `"mixture-of-experts"` |
+| `min_context_window` | `int` | Minimum context window in tokens (inclusive) |
+| `max_context_window` | `int` | Maximum context window in tokens (inclusive) |
 
 ```python
 # Apache-licensed multimodal models under 10 B parameters
@@ -113,6 +118,12 @@ o.filter_models(modality="image", license="Apache", max_size_b=10)
 
 # Models with intermediate checkpoints for studying training dynamics
 o.filter_models(intermediate_checkpoints=True)
+
+# Only mixture-of-experts models
+o.filter_models(architecture="mixture-of-experts")
+
+# Models that support long-context tasks (≥ 32 k tokens)
+o.filter_models(min_context_window=32768)
 ```
 
 ---

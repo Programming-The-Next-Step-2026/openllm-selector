@@ -13,9 +13,9 @@ def load_models() -> list[dict]:
     -------
     list[dict]
         All model records. Each record contains: name, family, organization,
-        size_b, modality, license, open_weights, open_training_data,
-        intermediate_checkpoints, open_code, foundational_paper,
-        huggingface_id, and openness_score.
+        size_b, context_window, modality, architecture, license, open_weights,
+        open_training_data, intermediate_checkpoints, open_code,
+        foundational_paper, huggingface_id, and openness_score.
     """
     with _DATA_FILE.open() as fh:
         return json.load(fh)
@@ -61,6 +61,9 @@ def filter_models(
     organization: str | None = None,
     family: str | None = None,
     license: str | None = None,
+    architecture: str | None = None,
+    min_context_window: int | None = None,
+    max_context_window: int | None = None,
 ) -> list[dict]:
     """Filter models by one or more criteria.
 
@@ -68,7 +71,7 @@ def filter_models(
     filtered on. String comparisons are case-insensitive. For ``modality``, a
     model matches if the supplied value appears anywhere in its modality list.
     For ``organization`` and ``license``, substring matching is used. For
-    ``family``, an exact match (case-insensitive) is required.
+    ``family`` and ``architecture``, an exact match (case-insensitive) is required.
 
     Parameters
     ----------
@@ -97,6 +100,14 @@ def filter_models(
     license : str, optional
         Substring to match against ``license`` (case-insensitive),
         e.g. ``"Apache"`` to match ``"Apache 2.0"``.
+    architecture : str, optional
+        Exact architecture to match (case-insensitive). One of
+        ``"decoder-only"``, ``"encoder-only"``, ``"encoder-decoder"``, or
+        ``"mixture-of-experts"``.
+    min_context_window : int, optional
+        Minimum context window in tokens (inclusive).
+    max_context_window : int, optional
+        Maximum context window in tokens (inclusive).
 
     Returns
     -------
@@ -108,6 +119,8 @@ def filter_models(
     >>> fully_open = filter_models(min_openness=5)
     >>> small_open = filter_models(max_size_b=8, open_training_data=True)
     >>> multimodal = filter_models(modality="image")
+    >>> moe = filter_models(architecture="mixture-of-experts")
+    >>> long_context = filter_models(min_context_window=32768)
     """
     results = []
     for m in load_models():
@@ -133,6 +146,12 @@ def filter_models(
         if family is not None and m["family"].lower() != family.lower():
             continue
         if license is not None and license.lower() not in m["license"].lower():
+            continue
+        if architecture is not None and m["architecture"].lower() != architecture.lower():
+            continue
+        if min_context_window is not None and m["context_window"] < min_context_window:
+            continue
+        if max_context_window is not None and m["context_window"] > max_context_window:
             continue
         results.append(m)
     return results
