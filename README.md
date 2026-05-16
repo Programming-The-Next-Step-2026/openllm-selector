@@ -53,6 +53,8 @@ Returns all 18 model records from the database. Each record contains:
 | `name` | `str` | Model name, e.g. `"Llama 3.1 8B"` |
 | `family` | `str` | Model family, e.g. `"LLaMA"` |
 | `organization` | `str` | Releasing organization |
+| `country_of_origin` | `str` | Country where the releasing organization is based |
+| `release_year` | `int` | Year the model was publicly released |
 | `size_b` | `float` | Parameter count in billions |
 | `context_window` | `int` | Maximum context length in tokens |
 | `modality` | `list[str]` | Supported modalities, e.g. `["text"]` or `["text", "image"]` |
@@ -111,6 +113,17 @@ Filter the database by any combination of criteria. All parameters are keyword-o
 | `architecture` | `str` | Exact architecture match (case-insensitive): `"decoder-only"`, `"encoder-only"`, `"encoder-decoder"`, or `"mixture-of-experts"` |
 | `min_context_window` | `int` | Minimum context window in tokens (inclusive) |
 | `max_context_window` | `int` | Maximum context window in tokens (inclusive) |
+| `country_of_origin` | `str` | Exact country name match (case-insensitive), e.g. `"France"` or `"China"` |
+| `min_release_year` | `int` | Earliest release year to include (inclusive) |
+| `max_release_year` | `int` | Latest release year to include (inclusive) |
+| `exclude_modality` | `str` | Remove models that support this modality (case-insensitive) |
+| `exclude_family` | `str` | Remove models whose family exactly matches (case-insensitive) |
+| `exclude_organization` | `str` | Remove models whose organization contains this substring (case-insensitive) |
+| `exclude_license` | `str` | Remove models whose license contains this substring (case-insensitive) |
+| `exclude_architecture` | `str` | Remove models whose architecture exactly matches (case-insensitive) |
+| `exclude_country_of_origin` | `str` | Remove models whose country exactly matches (case-insensitive) |
+
+`exclude_*` parameters follow the same matching rule as their include counterpart (exact vs. substring) but remove matching models instead of keeping them. Include and exclude filters compose freely.
 
 ```python
 # Apache-licensed multimodal models under 10 B parameters
@@ -124,6 +137,15 @@ o.filter_models(architecture="mixture-of-experts")
 
 # Models that support long-context tasks (≥ 32 k tokens)
 o.filter_models(min_context_window=32768)
+
+# Models from a specific country
+o.filter_models(country_of_origin="France")
+
+# Models released from 2024 onwards, excluding those with proprietary Llama licenses
+o.filter_models(min_release_year=2024, exclude_license="Llama")
+
+# All models except Chinese ones, decoder-only architecture only
+o.filter_models(architecture="decoder-only", exclude_country_of_origin="China")
 ```
 
 ---

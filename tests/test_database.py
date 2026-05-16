@@ -38,10 +38,11 @@ class TestLoadModels:
 
     def test_each_record_has_required_keys(self, all_models):
         required = {
-            "name", "family", "organization", "size_b", "context_window",
-            "modality", "architecture", "license", "open_weights",
-            "open_training_data", "intermediate_checkpoints", "open_code",
-            "foundational_paper", "huggingface_id", "openness_score",
+            "name", "family", "organization", "country_of_origin",
+            "release_year", "size_b", "context_window", "modality",
+            "architecture", "license", "open_weights", "open_training_data",
+            "intermediate_checkpoints", "open_code", "foundational_paper",
+            "huggingface_id", "openness_score",
         }
         for model in all_models:
             assert required <= model.keys(), f"{model['name']} is missing fields"
@@ -312,6 +313,60 @@ class TestFilterModels:
         assert len(results) == 1
         assert results[0]["name"] == "LLaVA 1.5 7B"
 
+    # --- country_of_origin ---
+
+    def test_filter_country_exact(self):
+        results = filter_models(country_of_origin="France")
+        assert all(m["country_of_origin"] == "France" for m in results)
+        assert len(results) > 0
+
+    def test_filter_country_returns_correct_models(self):
+        results = filter_models(country_of_origin="France")
+        names = {m["name"] for m in results}
+        assert "BLOOM 176B" in names
+        assert "Mistral 7B" in names
+        assert "Mixtral 8x7B" in names
+
+    def test_filter_country_case_insensitive(self):
+        lower = filter_models(country_of_origin="france")
+        upper = filter_models(country_of_origin="FRANCE")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_filter_country_no_match_returns_empty(self):
+        assert filter_models(country_of_origin="Germany") == []
+
+    def test_filter_country_is_exact_not_substring(self):
+        # "United" alone should not match "United States" or "United Arab Emirates"
+        assert filter_models(country_of_origin="United") == []
+
+    def test_filter_country_china(self):
+        results = filter_models(country_of_origin="China")
+        names = {m["name"] for m in results}
+        assert "Qwen2 7B" in names
+        assert "Yi 1.5 9B" in names
+        assert "DeepSeek-LLM 7B" in names
+        assert all(m["country_of_origin"] == "China" for m in results)
+
+    def test_filter_country_uae(self):
+        results = filter_models(country_of_origin="United Arab Emirates")
+        names = {m["name"] for m in results}
+        assert "Falcon 7B" in names
+        assert "Falcon 40B" in names
+        assert all(m["country_of_origin"] == "United Arab Emirates" for m in results)
+
+    def test_combined_country_and_openness(self):
+        results = filter_models(country_of_origin="United States", min_openness=5)
+        assert all(
+            m["country_of_origin"] == "United States" and m["openness_score"] == 5
+            for m in results
+        )
+        assert len(results) > 0
+
+    def test_combined_country_and_architecture(self):
+        results = filter_models(country_of_origin="France", architecture="mixture-of-experts")
+        assert len(results) == 1
+        assert results[0]["name"] == "Mixtral 8x7B"
+
     # --- context window ---
 
     def test_filter_min_context_window(self):
@@ -367,6 +422,135 @@ class TestFilterModels:
             m["context_window"] >= 8192 and m["size_b"] <= 10.0
             for m in results
         )
+
+    # --- release_year ---
+
+    def test_release_year_is_valid_int(self, all_models):
+        for m in all_models:
+            assert isinstance(m["release_year"], int), (
+                f"{m['name']} release_year should be int"
+            )
+            assert 2020 <= m["release_year"] <= 2030, (
+                f"{m['name']} release_year {m['release_year']} seems wrong"
+            )
+
+    def test_filter_min_release_year(self):
+        results = filter_models(min_release_year=2024)
+        assert all(m["release_year"] >= 2024 for m in results)
+        assert len(results) > 0
+
+    def test_filter_max_release_year(self):
+        results = filter_models(max_release_year=2022)
+        assert all(m["release_year"] <= 2022 for m in results)
+        assert len(results) > 0
+
+    def test_filter_release_year_range(self):
+        results = filter_models(min_release_year=2023, max_release_year=2023)
+        assert all(m["release_year"] == 2023 for m in results)
+        assert len(results) > 0
+
+    def test_filter_release_year_boundary_inclusive(self):
+        year_2022_models = filter_models(min_release_year=2022, max_release_year=2022)
+        names = {m["name"] for m in year_2022_models}
+        assert "BLOOM 176B" in names
+        assert "GPT-NeoX 20B" in names
+
+    def test_filter_release_year_no_match(self):
+        assert filter_models(min_release_year=2020, max_release_year=2021) == []
+
+    def test_filter_release_year_impossible_range_returns_empty(self):
+        assert filter_models(min_release_year=2025, max_release_year=2022) == []
+
+    def test_combined_release_year_and_family(self):
+        results = filter_models(min_release_year=2024, family="LLaMA")
+        assert all(
+            m["release_year"] >= 2024 and m["family"] == "LLaMA"
+            for m in results
+        )
+        assert len(results) > 0
+
+    # --- exclude_* ---
+
+    def test_exclude_family(self, all_models):
+        results = filter_models(exclude_family="LLaMA")
+        assert all(m["family"] != "LLaMA" for m in results)
+        assert len(results) == len(all_models) - len(filter_models(family="LLaMA"))
+
+    def test_exclude_family_case_insensitive(self):
+        lower = filter_models(exclude_family="llama")
+        upper = filter_models(exclude_family="LLAMA")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_exclude_family_nonexistent_leaves_all(self, all_models):
+        results = filter_models(exclude_family="Anthropic")
+        assert len(results) == len(all_models)
+
+    def test_exclude_organization(self, all_models):
+        results = filter_models(exclude_organization="Meta")
+        assert all("meta" not in m["organization"].lower() for m in results)
+        assert len(results) < len(all_models)
+
+    def test_exclude_organization_case_insensitive(self):
+        lower = filter_models(exclude_organization="meta")
+        upper = filter_models(exclude_organization="META")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_exclude_license(self, all_models):
+        results = filter_models(exclude_license="Apache")
+        assert all("apache" not in m["license"].lower() for m in results)
+        assert len(results) < len(all_models)
+
+    def test_exclude_license_case_insensitive(self):
+        lower = filter_models(exclude_license="apache")
+        upper = filter_models(exclude_license="APACHE")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_exclude_architecture(self, all_models):
+        results = filter_models(exclude_architecture="decoder-only")
+        assert all(m["architecture"] != "decoder-only" for m in results)
+        assert len(results) < len(all_models)
+
+    def test_exclude_architecture_case_insensitive(self):
+        lower = filter_models(exclude_architecture="decoder-only")
+        upper = filter_models(exclude_architecture="DECODER-ONLY")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_exclude_country_of_origin(self, all_models):
+        results = filter_models(exclude_country_of_origin="China")
+        assert all(m["country_of_origin"] != "China" for m in results)
+        assert len(results) == len(all_models) - len(filter_models(country_of_origin="China"))
+
+    def test_exclude_country_of_origin_case_insensitive(self):
+        lower = filter_models(exclude_country_of_origin="china")
+        upper = filter_models(exclude_country_of_origin="CHINA")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_exclude_modality(self, all_models):
+        results = filter_models(exclude_modality="image")
+        assert all("image" not in m["modality"] for m in results)
+        assert len(results) == len(all_models) - 1  # only LLaVA has image
+
+    def test_exclude_modality_case_insensitive(self):
+        lower = filter_models(exclude_modality="image")
+        upper = filter_models(exclude_modality="IMAGE")
+        assert {m["name"] for m in lower} == {m["name"] for m in upper}
+
+    def test_include_and_exclude_combine(self):
+        results = filter_models(
+            architecture="decoder-only",
+            exclude_country_of_origin="China",
+        )
+        assert all(m["architecture"] == "decoder-only" for m in results)
+        assert all(m["country_of_origin"] != "China" for m in results)
+
+    def test_include_and_exclude_same_field_can_empty(self):
+        # Including and excluding the same family must return nothing
+        results = filter_models(family="LLaMA", exclude_family="LLaMA")
+        assert results == []
+
+    def test_exclude_nonexistent_license_leaves_all(self, all_models):
+        results = filter_models(exclude_license="WTFPL")
+        assert len(results) == len(all_models)
 
 
 # ---------------------------------------------------------------------------

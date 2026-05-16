@@ -16,9 +16,10 @@ def load_models() -> list[dict]:
     -------
     list[dict]
         All model records. Each record contains: name, family, organization,
-        size_b, context_window, modality, architecture, license, open_weights,
-        open_training_data, intermediate_checkpoints, open_code,
-        foundational_paper, huggingface_id, and openness_score.
+        country_of_origin, release_year, size_b, context_window, modality,
+        architecture, license, open_weights, open_training_data,
+        intermediate_checkpoints, open_code, foundational_paper,
+        huggingface_id, and openness_score.
     """
     with _DATA_FILE.open() as fh:
         return json.load(fh)
@@ -67,6 +68,15 @@ def filter_models(
     architecture: str | None = None,
     min_context_window: int | None = None,
     max_context_window: int | None = None,
+    country_of_origin: str | None = None,
+    min_release_year: int | None = None,
+    max_release_year: int | None = None,
+    exclude_modality: str | None = None,
+    exclude_family: str | None = None,
+    exclude_organization: str | None = None,
+    exclude_license: str | None = None,
+    exclude_architecture: str | None = None,
+    exclude_country_of_origin: str | None = None,
 ) -> list[dict]:
     """Filter models by one or more criteria.
 
@@ -74,7 +84,10 @@ def filter_models(
     filtered on. String comparisons are case-insensitive. For ``modality``, a
     model matches if the supplied value appears anywhere in its modality list.
     For ``organization`` and ``license``, substring matching is used. For
-    ``family`` and ``architecture``, an exact match (case-insensitive) is required.
+    ``family``, ``architecture``, and ``country_of_origin``, an exact match
+    (case-insensitive) is required. ``exclude_*`` parameters follow the same
+    matching rule as their include counterpart but remove matching models
+    instead of keeping them.
 
     Parameters
     ----------
@@ -111,6 +124,25 @@ def filter_models(
         Minimum context window in tokens (inclusive).
     max_context_window : int, optional
         Maximum context window in tokens (inclusive).
+    country_of_origin : str, optional
+        Exact country name to match (case-insensitive), e.g. ``"France"`` or
+        ``"United States"``.
+    min_release_year : int, optional
+        Earliest release year to include (inclusive).
+    max_release_year : int, optional
+        Latest release year to include (inclusive).
+    exclude_modality : str, optional
+        Remove models that support this modality (case-insensitive).
+    exclude_family : str, optional
+        Remove models whose family exactly matches this value (case-insensitive).
+    exclude_organization : str, optional
+        Remove models whose organization contains this substring (case-insensitive).
+    exclude_license : str, optional
+        Remove models whose license contains this substring (case-insensitive).
+    exclude_architecture : str, optional
+        Remove models whose architecture exactly matches this value (case-insensitive).
+    exclude_country_of_origin : str, optional
+        Remove models whose country exactly matches this value (case-insensitive).
 
     Returns
     -------
@@ -124,6 +156,10 @@ def filter_models(
     >>> multimodal = filter_models(modality="image")
     >>> moe = filter_models(architecture="mixture-of-experts")
     >>> long_context = filter_models(min_context_window=32768)
+    >>> french = filter_models(country_of_origin="France")
+    >>> recent = filter_models(min_release_year=2024)
+    >>> no_llama = filter_models(exclude_family="LLaMA")
+    >>> no_china = filter_models(exclude_country_of_origin="China")
     """
     results = []
     for m in load_models():
@@ -155,6 +191,24 @@ def filter_models(
         if min_context_window is not None and m["context_window"] < min_context_window:
             continue
         if max_context_window is not None and m["context_window"] > max_context_window:
+            continue
+        if country_of_origin is not None and m["country_of_origin"].lower() != country_of_origin.lower():
+            continue
+        if min_release_year is not None and m["release_year"] < min_release_year:
+            continue
+        if max_release_year is not None and m["release_year"] > max_release_year:
+            continue
+        if exclude_modality is not None and exclude_modality.lower() in [mod.lower() for mod in m["modality"]]:
+            continue
+        if exclude_family is not None and m["family"].lower() == exclude_family.lower():
+            continue
+        if exclude_organization is not None and exclude_organization.lower() in m["organization"].lower():
+            continue
+        if exclude_license is not None and exclude_license.lower() in m["license"].lower():
+            continue
+        if exclude_architecture is not None and m["architecture"].lower() == exclude_architecture.lower():
+            continue
+        if exclude_country_of_origin is not None and m["country_of_origin"].lower() == exclude_country_of_origin.lower():
             continue
         results.append(m)
     return results
