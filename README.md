@@ -64,6 +64,7 @@ Returns all 18 model records from the database. Each record contains:
 | `open_training_data` | `bool` | Training dataset publicly released |
 | `intermediate_checkpoints` | `bool` | Mid-training checkpoints available |
 | `open_code` | `bool` | Training code publicly available |
+| `multilingual` | `bool` | Explicitly designed for multiple languages (vs. English-primary) |
 | `foundational_paper` | `str` | arXiv URL of the model's paper |
 | `huggingface_id` | `str` | HuggingFace model identifier |
 | `openness_score` | `int` | 1–5 composite openness rating (see below) |
@@ -107,6 +108,7 @@ Filter the database by any combination of criteria. All parameters are keyword-o
 | `open_training_data` | `bool` | Match on `open_training_data` field |
 | `intermediate_checkpoints` | `bool` | Match on `intermediate_checkpoints` field |
 | `open_code` | `bool` | Match on `open_code` field |
+| `multilingual` | `bool` | Match on `multilingual` field |
 | `organization` | `str` | Substring match on organization (case-insensitive) |
 | `family` | `str` | Exact family name match (case-insensitive) |
 | `license` | `str` | Substring match on license (case-insensitive) |

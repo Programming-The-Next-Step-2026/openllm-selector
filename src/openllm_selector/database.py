@@ -62,6 +62,7 @@ def filter_models(
     open_training_data: bool | None = None,
     intermediate_checkpoints: bool | None = None,
     open_code: bool | None = None,
+    multilingual: bool | None = None,
     organization: str | None = None,
     family: str | None = None,
     license: str | None = None,
@@ -109,6 +110,8 @@ def filter_models(
         If provided, keep only models whose ``intermediate_checkpoints`` matches.
     open_code : bool, optional
         If provided, keep only models whose ``open_code`` field matches.
+    multilingual : bool, optional
+        If provided, keep only models whose ``multilingual`` field matches.
     organization : str, optional
         Substring to match against ``organization`` (case-insensitive).
     family : str, optional
@@ -153,6 +156,7 @@ def filter_models(
     --------
     >>> fully_open = filter_models(min_openness=5)
     >>> small_open = filter_models(max_size_b=8, open_training_data=True)
+    >>> multilingual_models = filter_models(multilingual=True)
     >>> multimodal = filter_models(modality="image")
     >>> moe = filter_models(architecture="mixture-of-experts")
     >>> long_context = filter_models(min_context_window=32768)
@@ -179,6 +183,8 @@ def filter_models(
         if intermediate_checkpoints is not None and m["intermediate_checkpoints"] != intermediate_checkpoints:
             continue
         if open_code is not None and m["open_code"] != open_code:
+            continue
+        if multilingual is not None and m["multilingual"] != multilingual:
             continue
         if organization is not None and organization.lower() not in m["organization"].lower():
             continue

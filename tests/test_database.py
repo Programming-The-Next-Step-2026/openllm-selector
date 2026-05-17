@@ -41,8 +41,8 @@ class TestLoadModels:
             "name", "family", "organization", "country_of_origin",
             "release_year", "size_b", "context_window", "modality",
             "architecture", "license", "open_weights", "open_training_data",
-            "intermediate_checkpoints", "open_code", "foundational_paper",
-            "huggingface_id", "openness_score",
+            "intermediate_checkpoints", "open_code", "multilingual",
+            "foundational_paper", "huggingface_id", "openness_score",
         }
         for model in all_models:
             assert required <= model.keys(), f"{model['name']} is missing fields"
@@ -237,6 +237,51 @@ class TestFilterModels:
     def test_filter_open_code_true(self):
         results = filter_models(open_code=True)
         assert all(m["open_code"] is True for m in results)
+
+    # --- multilingual ---
+
+    def test_multilingual_field_is_bool(self, all_models):
+        for m in all_models:
+            assert isinstance(m["multilingual"], bool), (
+                f"{m['name']} multilingual should be bool"
+            )
+
+    def test_filter_multilingual_true(self):
+        results = filter_models(multilingual=True)
+        assert len(results) > 0
+        assert all(m["multilingual"] is True for m in results)
+
+    def test_filter_multilingual_false(self):
+        results = filter_models(multilingual=False)
+        assert len(results) > 0
+        assert all(m["multilingual"] is False for m in results)
+
+    def test_multilingual_true_and_false_partition_all(self, all_models):
+        true_set = {m["name"] for m in filter_models(multilingual=True)}
+        false_set = {m["name"] for m in filter_models(multilingual=False)}
+        all_names = {m["name"] for m in all_models}
+        assert true_set | false_set == all_names
+        assert true_set & false_set == set()
+
+    def test_multilingual_true_includes_bloom(self):
+        results = filter_models(multilingual=True)
+        assert any(m["name"] == "BLOOM 176B" for m in results)
+
+    def test_multilingual_true_includes_mixtral(self):
+        results = filter_models(multilingual=True)
+        assert any(m["name"] == "Mixtral 8x7B" for m in results)
+
+    def test_multilingual_false_excludes_bloom(self):
+        results = filter_models(multilingual=False)
+        assert all(m["name"] != "BLOOM 176B" for m in results)
+
+    def test_combined_multilingual_and_openness(self):
+        results = filter_models(multilingual=True, min_openness=3)
+        assert all(m["multilingual"] is True and m["openness_score"] >= 3 for m in results)
+
+    def test_combined_multilingual_and_size(self):
+        results = filter_models(multilingual=True, max_size_b=10.0)
+        assert all(m["multilingual"] is True and m["size_b"] <= 10.0 for m in results)
 
     # --- organization ---
 
