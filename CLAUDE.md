@@ -46,3 +46,9 @@ python -m hatchling build
 ```
 
 Uses `hatchling` as the build backend. The wheel target is configured to package `openllm_selector` from the `src/` directory.
+
+## AI Usage
+Claude Code was used to assist with code generation, documentation, and unit tests.
+Prompts followed a consistent pattern: specify the function name, its parameters,
+expected behaviour, and edge cases to test. All generated code was reviewed and
+tested before committing.
