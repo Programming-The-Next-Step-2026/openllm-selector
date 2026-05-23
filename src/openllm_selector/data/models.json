@@ -19,6 +19,7 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2402.00838",
     "huggingface_id": "allenai/OLMo-7B"
@@ -43,6 +44,7 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2501.00656",
     "huggingface_id": "allenai/OLMo-2-1124-7B"
@@ -67,6 +69,7 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": false,
     "foundational_paper": "https://arxiv.org/abs/2304.01373",
     "huggingface_id": "EleutherAI/pythia-6.9b"
@@ -91,6 +94,54 @@
     "open_code": true,
     "multilingual": true,
     "num_languages": 46,
+    "languages": [
+      "Akkadian",
+      "Arabic",
+      "Assamese",
+      "Bambara",
+      "Basque",
+      "Bengali",
+      "Catalan",
+      "Chinese (Simplified)",
+      "Chinese (Traditional)",
+      "English",
+      "French",
+      "Fula",
+      "Gujarati",
+      "Hindi",
+      "Indonesian",
+      "Kinyarwanda",
+      "Korean",
+      "Lingala",
+      "Luganda",
+      "Malagasy",
+      "Malayalam",
+      "Marathi",
+      "Nepali",
+      "Nigerian Pidgin",
+      "Odia",
+      "Portuguese",
+      "Punjabi",
+      "Sanskrit",
+      "Shona",
+      "Sindhi",
+      "Somali",
+      "Spanish",
+      "Swahili",
+      "Tamil",
+      "Telugu",
+      "Thai",
+      "Tigrinya",
+      "Tsonga",
+      "Tswana",
+      "Turkish",
+      "Urdu",
+      "Vietnamese",
+      "Welsh",
+      "Wolof",
+      "Xhosa",
+      "Yoruba"
+    ],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2211.05100",
     "huggingface_id": "bigscience/bloom"
@@ -115,6 +166,7 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": false,
     "foundational_paper": "https://arxiv.org/abs/2204.06745",
     "huggingface_id": "EleutherAI/gpt-neox-20b"
@@ -139,6 +191,7 @@
     "open_code": true,
     "multilingual": true,
     "num_languages": 4,
+    "languages": ["English", "German", "Spanish", "French"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2311.16867",
     "huggingface_id": "tiiuae/falcon-7b"
@@ -163,6 +216,7 @@
     "open_code": true,
     "multilingual": true,
     "num_languages": 4,
+    "languages": ["English", "German", "Spanish", "French"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2311.16867",
     "huggingface_id": "tiiuae/falcon-40b"
@@ -187,6 +241,7 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": false,
     "foundational_paper": "https://arxiv.org/abs/2310.06825",
     "huggingface_id": "mistralai/Mistral-7B-v0.1"
@@ -211,6 +266,7 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 5,
+    "languages": ["English", "French", "Italian", "German", "Spanish"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2401.04088",
     "huggingface_id": "mistralai/Mixtral-8x7B-v0.1"
@@ -235,6 +291,7 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2307.09288",
     "huggingface_id": "meta-llama/Llama-2-7b"
@@ -259,6 +316,7 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 8,
+    "languages": ["English", "German", "French", "Italian", "Portuguese", "Hindi", "Spanish", "Thai"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2407.21783",
     "huggingface_id": "meta-llama/Meta-Llama-3.1-8B"
@@ -283,6 +341,7 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2403.08295",
     "huggingface_id": "google/gemma-2b"
@@ -307,6 +366,7 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2408.00118",
     "huggingface_id": "google/gemma-2-9b"
@@ -331,6 +391,7 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2404.14219",
     "huggingface_id": "microsoft/Phi-3-mini-4k-instruct"
@@ -355,6 +416,7 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 27,
+    "languages": ["English", "Chinese"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2407.10671",
     "huggingface_id": "Qwen/Qwen2-7B"
@@ -379,6 +441,7 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 2,
+    "languages": ["English", "Chinese"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2403.04652",
     "huggingface_id": "01-ai/Yi-1.5-9B"
@@ -403,6 +466,7 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 2,
+    "languages": ["English", "Chinese"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2401.02954",
     "huggingface_id": "deepseek-ai/deepseek-llm-7b-base"
@@ -428,6 +492,7 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
+    "languages": ["English"],
     "has_instruct_version": true,
     "foundational_paper": "https://arxiv.org/abs/2310.03744",
     "huggingface_id": "llava-hf/llava-1.5-7b-hf"

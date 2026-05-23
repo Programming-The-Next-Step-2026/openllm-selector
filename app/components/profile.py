@@ -83,8 +83,15 @@ def render_profile(model_name: str) -> None:
         with col_right:
             st.metric("Size", f"{model['size_b']} B")
             st.metric("Context window", f"{model['context_window']:,} tokens")
+            tokens = model["training_tokens_b"]
+            st.metric(
+                "Training tokens",
+                f"{tokens:,.0f} B" if tokens is not None else "Undisclosed",
+            )
+            langs = model.get("languages", [])
+            st.caption(f"Languages: {', '.join(langs)}")
             st.markdown(
-                f"{'✅' if model['multilingual'] else '❌'} Multilingual"
+                f"{'✅' if model['has_instruct_version'] else '❌'} Instruct version"
             )
 
         # ------------------------------------------------------------------ #

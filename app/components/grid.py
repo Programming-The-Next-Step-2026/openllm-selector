@@ -10,8 +10,8 @@ _GRID_COLUMNS = [
     "openness_score",
     "size_b",
     "context_window",
+    "training_tokens_b",
     "release_year",
-    "multilingual",
     "architecture",
     "license",
 ]
@@ -21,8 +21,8 @@ _COLUMN_CONFIG = {
     "openness_score": st.column_config.NumberColumn("Openness", format="%d ⭐"),
     "size_b": st.column_config.NumberColumn("Size (B)", format="%.1f"),
     "context_window": st.column_config.NumberColumn("Context (tokens)", format="%d"),
+    "training_tokens_b": st.column_config.NumberColumn("Training tokens (B)", format="%.0f"),
     "release_year": st.column_config.NumberColumn("Year"),
-    "multilingual": st.column_config.CheckboxColumn("Multilingual"),
     "architecture": st.column_config.TextColumn("Architecture"),
     "license": st.column_config.TextColumn("License"),
 }

@@ -128,6 +128,7 @@ def filter_models(
     min_num_languages: int | None = None,
     max_num_languages: int | None = None,
     has_instruct_version: bool | None = None,
+    language: str | None = None,
 ) -> list[dict]:
     """Filter models by one or more criteria.
 
@@ -210,6 +211,9 @@ def filter_models(
         Maximum number of officially supported languages (inclusive).
     has_instruct_version : bool, optional
         If provided, keep only models where ``has_instruct_version`` matches.
+    language : str, optional
+        Keep only models whose ``languages`` list contains this language
+        (case-insensitive exact match against each list entry).
 
     Returns
     -------
@@ -231,6 +235,7 @@ def filter_models(
     >>> large_training = filter_models(min_training_tokens_b=5000)
     >>> many_langs = filter_models(min_num_languages=5)
     >>> no_instruct = filter_models(has_instruct_version=False)
+    >>> hindi_models = filter_models(language="Hindi")
     """
     results = []
     for m in load_models():
@@ -295,6 +300,9 @@ def filter_models(
             continue
         if has_instruct_version is not None and m["has_instruct_version"] != has_instruct_version:
             continue
+        if language is not None:
+            if not any(lang.lower() == language.lower() for lang in m["languages"]):
+                continue
         results.append(m)
     return results
 
@@ -331,6 +339,28 @@ def get_organizations() -> list[str]:
     True
     """
     return sorted({m["organization"] for m in load_models()})
+
+
+def get_languages() -> list[str]:
+    """Return all unique language names across all models, sorted alphabetically.
+
+    Returns
+    -------
+    list[str]
+        Sorted list of language names, e.g. ``["Akkadian", "Arabic", ...]``.
+
+    Examples
+    --------
+    >>> langs = get_languages()
+    >>> "English" in langs
+    True
+    >>> "Hindi" in langs
+    True
+    """
+    langs: set[str] = set()
+    for m in load_models():
+        langs.update(m["languages"])
+    return sorted(langs)
 
 
 def rank_by_openness(

@@ -10,6 +10,7 @@ from openllm_selector import (
     fetch_recent_papers,
     filter_models,
     get_families,
+    get_languages,
     get_organizations,
     load_models,
     rank_by_openness,
@@ -29,6 +30,11 @@ def cached_get_families() -> list[str]:
 @st.cache_data
 def cached_get_organizations() -> list[str]:
     return get_organizations()
+
+
+@st.cache_data
+def cached_get_languages() -> list[str]:
+    return get_languages()
 
 
 @st.cache_data(ttl=3600)

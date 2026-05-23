@@ -10,6 +10,7 @@ from openllm_selector.database import (
     fetch_recent_papers,
     filter_models,
     get_families,
+    get_languages,
     get_model,
     get_organizations,
     load_models,
@@ -213,6 +214,126 @@ class TestNewFields:
         names = {m["name"] for m in results}
         assert "Pythia 6.9B" in names
         assert "GPT-NeoX 20B" in names
+
+    # --- languages field ---
+
+    def test_languages_field_present(self, all_models):
+        for m in all_models:
+            assert "languages" in m, f"{m['name']} missing languages field"
+
+    def test_languages_is_list_of_strings(self, all_models):
+        for m in all_models:
+            assert isinstance(m["languages"], list), (
+                f"{m['name']} languages should be a list"
+            )
+            assert all(isinstance(lang, str) for lang in m["languages"]), (
+                f"{m['name']} languages list should contain only strings"
+            )
+
+    def test_languages_non_empty(self, all_models):
+        for m in all_models:
+            assert len(m["languages"]) >= 1, f"{m['name']} languages must not be empty"
+
+    def test_non_multilingual_models_have_only_english(self, all_models):
+        for m in all_models:
+            if not m["multilingual"]:
+                assert m["languages"] == ["English"], (
+                    f"{m['name']} is not multilingual but languages={m['languages']}"
+                )
+
+    def test_multilingual_models_have_multiple_languages(self, all_models):
+        for m in all_models:
+            if m["multilingual"]:
+                assert len(m["languages"]) > 1, (
+                    f"{m['name']} is multilingual but has only {len(m['languages'])} language(s)"
+                )
+
+    def test_known_languages_bloom(self):
+        bloom = get_model("BLOOM 176B")
+        assert len(bloom["languages"]) == 46
+        assert "English" in bloom["languages"]
+        assert "French" in bloom["languages"]
+        assert "Yoruba" in bloom["languages"]
+        assert "Akkadian" in bloom["languages"]
+
+    def test_known_languages_falcon(self):
+        falcon = get_model("Falcon 7B")
+        assert set(falcon["languages"]) == {"English", "German", "Spanish", "French"}
+        assert get_model("Falcon 40B")["languages"] == get_model("Falcon 7B")["languages"]
+
+    def test_known_languages_mixtral(self):
+        mixtral = get_model("Mixtral 8x7B")
+        assert set(mixtral["languages"]) == {"English", "French", "Italian", "German", "Spanish"}
+
+    def test_known_languages_llama31(self):
+        llama = get_model("Llama 3.1 8B")
+        assert len(llama["languages"]) == 8
+        assert "Hindi" in llama["languages"]
+        assert "Thai" in llama["languages"]
+        assert "Portuguese" in llama["languages"]
+
+    def test_known_languages_english_only(self):
+        for name in ["OLMo 7B", "Pythia 6.9B", "Mistral 7B", "Gemma 2B", "LLaVA 1.5 7B"]:
+            assert get_model(name)["languages"] == ["English"], (
+                f"{name} should have languages=['English']"
+            )
+
+    def test_known_languages_chinese_models(self):
+        for name in ["Qwen2 7B", "Yi 1.5 9B", "DeepSeek-LLM 7B"]:
+            langs = get_model(name)["languages"]
+            assert "English" in langs
+            assert "Chinese" in langs
+
+    # --- get_languages ---
+
+    def test_get_languages_returns_sorted_list(self):
+        langs = get_languages()
+        assert langs == sorted(langs)
+
+    def test_get_languages_contains_english(self):
+        assert "English" in get_languages()
+
+    def test_get_languages_contains_bloom_languages(self):
+        langs = get_languages()
+        for lang in ["Akkadian", "Yoruba", "Welsh", "Swahili"]:
+            assert lang in langs, f"{lang} missing from get_languages()"
+
+    def test_get_languages_no_duplicates(self):
+        langs = get_languages()
+        assert len(langs) == len(set(langs))
+
+    # --- filter_models: language ---
+
+    def test_filter_language_english(self):
+        results = filter_models(language="English")
+        assert len(results) == 18  # all models support English
+
+    def test_filter_language_hindi(self):
+        results = filter_models(language="Hindi")
+        names = {m["name"] for m in results}
+        assert names == {"BLOOM 176B", "Llama 3.1 8B"}
+
+    def test_filter_language_thai(self):
+        results = filter_models(language="Thai")
+        names = {m["name"] for m in results}
+        assert names == {"BLOOM 176B", "Llama 3.1 8B"}
+
+    def test_filter_language_italian(self):
+        results = filter_models(language="Italian")
+        names = {m["name"] for m in results}
+        assert names == {"Mixtral 8x7B", "Llama 3.1 8B"}
+
+    def test_filter_language_case_insensitive(self):
+        assert filter_models(language="english") == filter_models(language="English")
+        assert filter_models(language="FRENCH") == filter_models(language="French")
+
+    def test_filter_language_no_match_returns_empty(self):
+        assert filter_models(language="Klingon") == []
+
+    def test_filter_language_combined_with_other_filters(self):
+        results = filter_models(language="French", min_openness=4)
+        assert all("French" in m["languages"] for m in results)
+        assert all(m["openness_score"] >= 4 for m in results)
 
 
 # ---------------------------------------------------------------------------

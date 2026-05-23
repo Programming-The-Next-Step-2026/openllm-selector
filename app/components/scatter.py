@@ -70,7 +70,12 @@ def _build_figure(
 
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
-        coloraxis_colorbar=dict(title="Openness", thickness=12),
+        coloraxis_colorbar=dict(
+            title="Openness",
+            thickness=12,
+            tickvals=[1, 2, 3, 4, 5],
+            ticktext=["1", "2", "3", "4", "5"],
+        ),
         uirevision="scatter",       # preserve zoom/pan when data updates
     )
 
@@ -87,6 +92,26 @@ def _build_figure(
         fig.update_xaxes(tickformat="d")
     if y_axis == "num_languages":
         fig.update_yaxes(tickformat="d")
+
+    # training_tokens_b: dip below 0 so large bubbles at y=0 aren't clipped,
+    # but suppress the negative region with explicit non-negative tick labels.
+    if y_axis == "training_tokens_b":
+        y_max = df["training_tokens_b"].dropna().max()
+        fig.update_yaxes(
+            range=[-500, y_max * 1.1],
+            tickvals=[0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000],
+        )
+    elif y_axis == "num_languages":
+        fig.update_yaxes(range=[0, df["num_languages"].max() * 1.15])
+
+    if x_axis == "training_tokens_b":
+        x_max = df["training_tokens_b"].dropna().max()
+        fig.update_xaxes(
+            range=[-500, x_max * 1.1],
+            tickvals=[0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000],
+        )
+    elif x_axis == "num_languages":
+        fig.update_xaxes(range=[0, df["num_languages"].max() * 1.15])
 
     # Draw a highlight ring at the selected model's position.
     # Using a separate go.Scatter trace instead of Plotly's built-in selection

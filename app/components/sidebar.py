@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from utils import cached_get_families, cached_get_organizations
+from utils import cached_get_families, cached_get_languages, cached_get_organizations
 
 # Hard-coded controlled vocabularies (derived from models.json; update if DB grows).
 _ARCHITECTURES = ["decoder-only", "encoder-decoder", "mixture-of-experts"]
@@ -52,6 +52,7 @@ _SIDEBAR_KEYS = [
     "sb_training_tokens_range",
     "sb_num_languages_range",
     "sb_has_instruct_version",
+    "sb_language",
     "sb_excl_families",
     "sb_excl_orgs",
     "sb_excl_architectures",
@@ -120,6 +121,13 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             key="sb_licenses",
         )
         multilingual = st.checkbox("Multilingual", key="sb_multilingual")
+        has_instruct_version = st.checkbox("Has instruct version", key="sb_has_instruct_version")
+        language = st.selectbox(
+            "Language",
+            options=[""] + cached_get_languages(),
+            format_func=lambda x: "All languages" if x == "" else x,
+            key="sb_language",
+        )
 
         # ------------------------------------------------------------------ #
         # Boolean checkboxes                                                  #
@@ -132,7 +140,6 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             )
             open_code = st.checkbox("Open code", key="sb_open_code")
             permissive_license = st.checkbox("Permissive license (Apache 2.0 / MIT)", key="sb_permissive_license")
-            has_instruct_version = st.checkbox("Has instruct version", key="sb_has_instruct_version")
 
         # ------------------------------------------------------------------ #
         # Exclusion filters                                                    #
@@ -256,6 +263,8 @@ def render_sidebar() -> tuple[dict, dict, dict]:
         filter_args["has_instruct_version"] = True
     if multilingual:
         filter_args["multilingual"] = True
+    if language:
+        filter_args["language"] = language
 
     # Range sliders: only add when the user narrowed from the full range.
     if size_range != _SIZE_RANGE_DEFAULT:
