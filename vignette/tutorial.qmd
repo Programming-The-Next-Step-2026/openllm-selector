@@ -8,7 +8,9 @@ format:
     code-copy: true
 ---
 
-Choosing an open LLM for a study used to mean trawling through leaderboards, blog posts, and model cards — and still not knowing whether the training data is public or whether the license allows research use. `openllm-selector` collects the information that actually matters for researchers into one queryable database of 18 curated models, so you can filter and compare them in a few lines of Python.
+Most LLM comparison tools ask "which model scores highest on MMLU?" That is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
+
+`openllm-selector` is a curated database of 18 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions.
 
 ## Installation
 
@@ -16,184 +18,254 @@ Choosing an open LLM for a study used to mean trawling through leaderboards, blo
 pip install git+https://github.com/Programming-The-Next-Step-2026/openllm-selector.git@week-3
 ```
 
-## Researcher workflow
+To run the interactive app locally:
 
-```{mermaid}
-flowchart TD
-    A([Research question]) --> B{What constraints matter?}
-    B --> C[Compute budget\nmax_size_b]
-    B --> D[License\nlicense / exclude_license]
-    B --> E[Training transparency\nopen_training_data\nintermediate_checkpoints]
-    B --> F[Language support\nmin_num_languages]
-    B --> G[Training scale\nmin_training_tokens_b]
-    B --> H[Instruct variant\nhas_instruct_version]
-    C & D & E & F & G & H --> I["filter_models()"]
-    I --> J["rank_by_openness()"]
-    J --> K{One clear winner?}
-    K -- yes --> L["get_model() +\nfetch_recent_papers()"]
-    K -- no --> M[Add more filters\nor relax constraints]
-    M --> I
-    L --> N([Choose model])
+```bash
+streamlit run app/app.py
 ```
 
-## Loading the database
+---
+
+## Using the app
+
+The app has three panels: a **filter sidebar** on the left, a **scatter plot** (top) and **results grid** (bottom) in the main area, and a **model profile card** that slides in below when you click any row or bubble.
+
+The sidebar is organised into sections: categorical multiselects (family, organisation, architecture, country, license), a Multilingual checkbox, an *Openness filters* expander (open weights, training data, checkpoints, code, permissive license, instruct version), an *Exclusion filters* expander, and numeric range sliders (size, openness score, context window, release year, training tokens, languages supported).
+
+The scatter plot encodes openness score as bubble colour and model size as bubble area. You choose what goes on each axis from: context window, release year, training tokens, and number of languages.
+
+The five scenarios below walk through how a researcher would use the app for each question.
+
+---
+
+### Scenario a — Training dynamics researcher
+
+*You are studying how in-context learning ability develops over the course of training. You need a model that released intermediate checkpoints, is small enough to run on a single GPU, and is as openly licensed as possible.*
+
+In the sidebar:
+
+1. Open **Openness filters** → check **Intermediate checkpoints**
+2. Under **Ranges**, drag the **Size (B parameters)** slider to a maximum of 10 B
+
+The grid immediately narrows to three models: OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model.
+
+> *[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing three results; OLMo 2 7B profile card open with arXiv papers]*
+
+---
+
+### Scenario b — European privacy-conscious researcher
+
+*Your institution requires that training data not originate from US or Chinese organisations, to avoid jurisdictional complications with GDPR and data residency rules.*
+
+In the sidebar:
+
+1. Open **Exclusion filters** → **Exclude country of origin** → select **United States** and **China**
+
+Five models remain: BLOOM 176B and the two Mistral models (France) and the two Falcon models (United Arab Emirates). The scatter plot makes the geographic spread immediately visible when release year is on the x-axis and training tokens on the y-axis.
+
+> *[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 5 bubbles; grid listing BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B]*
+
+---
+
+### Scenario c — Multilingual NLP researcher
+
+*You are building a cross-lingual transfer benchmark and need a base model trained on multiple languages, with a license that allows redistributing fine-tuned derivatives.*
+
+In the sidebar:
+
+1. Check the **Multilingual** checkbox (just below the license multiselect)
+2. Set the **Openness score** slider minimum to 3
+
+Three models match: BLOOM 176B (46 languages, BigScience RAIL license), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0). The license column in the grid makes the trade-off immediately visible: BLOOM covers far more languages but carries a more restrictive license.
+
+> *[Screenshot: Multilingual checked, openness slider at 3–5; grid showing BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
+
+---
+
+### Scenario d — Compute-limited researcher
+
+*You have access to a single A100 (80 GB) but need a long context window for document-level tasks. You want the largest model that still fits comfortably, with at least 8 K tokens of context.*
+
+In the sidebar:
+
+1. Drag the **Size (B parameters)** slider to a maximum of 8 B
+2. Move the **Context window (tokens)** slider minimum to **8,192**
+
+Four models appear. On the scatter plot with context window on the x-axis, Qwen2 7B and Llama 3.1 8B stand out immediately — both have a 131 K token context window, an order of magnitude larger than the other two. Click each model to compare licenses in the profile card before deciding.
+
+> *[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot log-scaled on x-axis; Qwen2 7B and Llama 3.1 8B clearly separated from Mistral 7B and Gemma 2B]*
+
+---
+
+### Scenario e — Fully open science researcher
+
+*You are writing a methods paper and want every step of your pipeline to be replicable: the model weights, the training data, the intermediate checkpoints, and the code all need to be publicly available under a permissive license.*
+
+In the sidebar:
+
+1. Set the **Openness score** slider to a minimum of **5**
+
+Three models score 5: OLMo 7B, OLMo 2 7B, and Pythia 6.9B. Click any model to open the profile card, then expand **Recent arXiv papers** to see the latest citations — useful for a quick literature check before committing to a model.
+
+> *[Screenshot: openness slider set to 5–5; three results in the grid; OLMo 7B profile card open showing Recent arXiv papers expander]*
+
+---
+
+## Using the Python API
+
+The same five questions answered in code. All functions are importable directly from `openllm_selector`.
 
 ```python
 import openllm_selector as o
-
-models = o.load_models()
-print(f"{len(models)} models available")
-#> 18 models available
 ```
 
-Each record is a plain dict with 21 fields covering size, training token count, number of supported languages, architecture, license, openness indicators, whether an instruct variant exists, and links to the foundational paper and HuggingFace.
+---
 
-## Filtering
+### Scenario a — Training dynamics researcher
 
-`filter_models()` accepts any combination of keyword arguments. All parameters are optional and compose with AND logic.
+```python
+candidates = o.filter_models(intermediate_checkpoints=True, max_size_b=10)
+ranked = o.rank_by_openness(candidates)
 
-**Find fully open models (openness score 5):**
+for m in ranked:
+    print(m["name"], f"({m['size_b']} B,  score {m['openness_score']},  {m['training_tokens_b']:.0f} B tokens)")
+#> OLMo 7B (7.0 B,  score 5,  2500 B tokens)
+#> OLMo 2 7B (7.0 B,  score 5,  4000 B tokens)
+#> Pythia 6.9B (6.9 B,  score 5,  300 B tokens)
+```
+
+All three score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: OLMo 2 7B was trained on 13× more tokens than Pythia and has a 4 K context window versus Pythia's 2 K. Pythia is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals.
+
+```python
+# Look up the foundational paper and confirm checkpoint availability
+model = o.get_model("OLMo 2 7B")
+print(model["foundational_paper"])
+#> https://arxiv.org/abs/2501.00656
+print(model["intermediate_checkpoints"])
+#> True
+```
+
+---
+
+### Scenario b — European privacy-conscious researcher
+
+`filter_models()` accepts one exclusion value per field. Chain two passes to exclude both jurisdictions:
+
+```python
+excluded_countries = {"United States", "China"}
+results = [m for m in o.filter_models() if m["country_of_origin"] not in excluded_countries]
+ranked = o.rank_by_openness(results)
+
+for m in ranked:
+    print(m["name"], f"— {m['country_of_origin']}  (score {m['openness_score']})")
+#> BLOOM 176B — France  (score 4)
+#> Falcon 7B — United Arab Emirates  (score 4)
+#> Falcon 40B — United Arab Emirates  (score 4)
+#> Mistral 7B — France  (score 2)
+#> Mixtral 8x7B — France  (score 2)
+```
+
+Five models remain. The two Mistral models score 2 — their training data composition and token count are not publicly disclosed, which lowers the openness score. BLOOM and the two Falcons score 4 and have Apache 2.0 or similar-permissive licenses. For most European research use cases, Falcon 7B is the pragmatic choice: small, Apache-licensed, and trained on a documented multilingual corpus.
+
+---
+
+### Scenario c — Multilingual NLP researcher
+
+```python
+results = o.filter_models(multilingual=True, min_openness=3)
+ranked = o.rank_by_openness(results)
+
+for m in ranked:
+    print(
+        m["name"],
+        f"  {m['num_languages']} languages"
+        f"  license: {m['license']}"
+        f"  score: {m['openness_score']}"
+    )
+#> BLOOM 176B   46 languages  license: BigScience RAIL  score: 4
+#> Falcon 7B     4 languages  license: Apache 2.0        score: 4
+#> Falcon 40B    4 languages  license: Apache 2.0        score: 4
+```
+
+The trade-off is clear: BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic, BLOOM is the strongest multilingual option. If you need to redistribute fine-tuned derivatives without restriction, Falcon 7B with Apache 2.0 is the safer choice.
+
+```python
+# Confirm BLOOM supports the languages you need
+bloom = o.get_model("BLOOM 176B")
+print(bloom["num_languages"])    # 46
+print(bloom["huggingface_id"])   # bigscience/bloom
+```
+
+---
+
+### Scenario d — Compute-limited researcher
+
+```python
+results = o.filter_models(max_size_b=8, min_context_window=8192)
+ranked = o.rank_by_openness(results)
+
+for m in ranked:
+    print(
+        m["name"],
+        f"  {m['size_b']} B"
+        f"  context: {m['context_window']:,} tokens"
+        f"  license: {m['license']}"
+    )
+#> Mistral 7B   7.3 B  context:     8,192 tokens  license: Apache 2.0
+#> Qwen2 7B     7.6 B  context: 131,072 tokens  license: Apache 2.0
+#> Llama 3.1 8B 8.0 B  context: 131,072 tokens  license: Llama 3 Community License
+#> Gemma 2B     2.0 B  context:   8,192 tokens  license: Gemma Terms of Use
+```
+
+Qwen2 7B and Llama 3.1 8B both offer 131 K context windows — suitable for full-document processing. Qwen2 has an Apache 2.0 license; Llama 3.1 carries Meta's community license, which restricts use if your application exceeds 700 M monthly users. For typical research use, either works. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner option with a smaller memory footprint despite nominally the same size class.
+
+```python
+# Compare training scale between the two long-context options
+for name in ["Qwen2 7B", "Llama 3.1 8B"]:
+    m = o.get_model(name)
+    print(f"{name}: {m['training_tokens_b']:.0f} B tokens, {m['num_languages']} languages")
+#> Qwen2 7B: 7000 B tokens, 27 languages
+#> Llama 3.1 8B: 15000 B tokens, 8 languages
+```
+
+Llama 3.1 8B was trained on more than twice as many tokens and supports 8 languages natively — a meaningful advantage for multilingual document tasks even at the same model size.
+
+---
+
+### Scenario e — Fully open science researcher
 
 ```python
 fully_open = o.filter_models(min_openness=5)
-for m in fully_open:
-    print(m["name"], "—", m["license"])
-#> OLMo 7B — Apache 2.0
-#> OLMo 2 7B — Apache 2.0
-#> Pythia 6.9B — Apache 2.0
+ranked = o.rank_by_openness(fully_open)
+
+for m in ranked:
+    print(
+        m["name"],
+        f"  weights={m['open_weights']}"
+        f"  data={m['open_training_data']}"
+        f"  checkpoints={m['intermediate_checkpoints']}"
+        f"  code={m['open_code']}"
+        f"  license={m['license']}"
+    )
+#> OLMo 7B    weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
+#> OLMo 2 7B  weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
+#> Pythia 6.9B weights=True data=True  checkpoints=True  code=True  license=Apache 2.0
 ```
 
-**Find multilingual models under 10 B parameters with an Apache license:**
+All three score 5: weights, training data, intermediate checkpoints, training code, and a permissive license. For a methods paper, any of the three allows a reader to fully reproduce your pipeline from scratch.
 
-```python
-results = o.filter_models(multilingual=True, license="Apache", max_size_b=10)
-for m in results:
-    print(m["name"], f"({m['size_b']} B)")
-#> Falcon 7B (7.0 B)
-#> Qwen2 7B (7.6 B)
-#> Yi 1.5 9B (9.0 B)
-```
-
-**Exclude model families or countries:**
-
-```python
-# Decoder-only models, no Llama license, not from China
-o.filter_models(
-    architecture="decoder-only",
-    exclude_license="Llama",
-    exclude_country_of_origin="China",
-)
-```
-
-**Filter by training scale, language count, or instruct availability:**
-
-```python
-# Models trained on at least 5 T tokens with a known token count
-o.filter_models(min_training_tokens_b=5000)
-
-# Models supporting 5 or more languages
-o.filter_models(min_num_languages=5)
-
-# Models with no official instruct variant (useful for fine-tuning baselines)
-o.filter_models(has_instruct_version=False)
-```
-
-## Ranking by openness
-
-`rank_by_openness()` sorts any list — or the full database — by how openly a model was released (weights, training data, checkpoints, code, and license).
-
-```python
-ranked = o.rank_by_openness()
-for m in ranked[:5]:
-    print(f"{m['openness_score']}  {m['name']}")
-#> 5  OLMo 7B
-#> 5  OLMo 2 7B
-#> 5  Pythia 6.9B
-#> 4  BLOOM 176B
-#> 4  GPT-NeoX 20B
-```
-
-Pass a pre-filtered list to rank a subset:
-
-```python
-subset = o.filter_models(family="Mistral")
-o.rank_by_openness(subset, descending=False)  # least open first
-```
-
-## Searching and looking up models
-
-`search()` does a case-insensitive substring search across name, family, and organization:
-
-```python
-o.search("eleuther")
-#> [{'name': 'Pythia 6.9B', ...}, {'name': 'GPT-NeoX 20B', ...}]
-```
-
-`get_model()` retrieves a single record by exact name (case-insensitive):
-
-```python
-model = o.get_model("Pythia 6.9B")
-print(model["foundational_paper"])
-#> https://arxiv.org/abs/2304.01373
-print(model["huggingface_id"])
-#> EleutherAI/pythia-6.9b
-```
-
-## Fetching recent papers
-
-`fetch_recent_papers()` queries the arXiv API for the most recent papers mentioning a model by name:
+Check recent literature before committing:
 
 ```python
 papers = o.fetch_recent_papers("OLMo", max_results=3)
 for p in papers:
-    print(p["published"][:10], p["title"])
-    print(" ", p["arxiv_url"])
+    print(p["published"][:10], "—", p["title"])
+    print("  ", p["arxiv_url"])
+# Output varies; typical result:
+#> 2025-01-14 — OLMo 2: Smarter Training for Open Language Models
+#>   https://arxiv.org/abs/2501.00656
+#> 2024-09-18 — Scaling LLM Test-Time Compute with OLMo ...
+#>   https://arxiv.org/abs/...
 ```
 
-This is useful for a quick literature check before committing to a model.
-
----
-
-## Example: picking a model for a training-dynamics study
-
-Suppose you are studying how in-context learning ability develops over training. You need a model with **intermediate checkpoints** (so you can probe the model at different training stages), small enough to run on a single GPU (**≤ 10 B parameters**), and with the most permissive possible openness profile.
-
-**Step 1 — filter:**
-
-```python
-candidates = o.filter_models(
-    intermediate_checkpoints=True,
-    max_size_b=10,
-)
-for m in candidates:
-    print(m["name"], f"({m['size_b']} B,  score {m['openness_score']})")
-#> OLMo 7B (7.0 B,  score 5)
-#> OLMo 2 7B (7.0 B,  score 5)
-#> Pythia 6.9B (6.9 B,  score 5)
-```
-
-All three score 5 — the highest possible — so ranking by openness doesn't break the tie. The deciding factors are architecture and context window:
-
-```python
-for m in candidates:
-    print(m["name"], "| context:", m["context_window"], "| checkpoints:", m["intermediate_checkpoints"])
-#> OLMo 7B   | context: 2048 | checkpoints: True
-#> OLMo 2 7B | context: 4096 | checkpoints: True
-#> Pythia 6.9B | context: 2048 | checkpoints: True
-```
-
-OLMo 2 7B has the larger context window and is the newer model, making it the strongest candidate. Pythia 6.9B is the go-to choice if you specifically need the training-dynamics community's established benchmark suite.
-
-**Step 2 — look up the paper and recent citations:**
-
-```python
-model = o.get_model("OLMo 2 7B")
-print(model["foundational_paper"])
-#> https://arxiv.org/abs/2501.00656
-
-papers = o.fetch_recent_papers("OLMo 2", max_results=3)
-for p in papers:
-    print(p["published"][:10], p["title"])
-```
-
-Within a few seconds you have the foundational reference and the most recent papers building on the model — enough to decide whether it fits your study and to start your literature review.
+Within a few lines you have the full openness profile, the foundational reference, and the most recent papers building on the model — enough to make a defensible choice and start your literature review.

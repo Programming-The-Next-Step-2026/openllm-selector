@@ -28,6 +28,8 @@ _CTX_MAX = _CTX_OPTIONS[-1]
 _SIZE_RANGE_DEFAULT = (2.0, 176.0)
 _OPENNESS_RANGE_DEFAULT = (1, 5)
 _YEAR_RANGE_DEFAULT = (2022, 2024)
+_TRAINING_TOKENS_RANGE_DEFAULT = (300, 15000)
+_NUM_LANGUAGES_RANGE_DEFAULT = (1, 46)
 
 # All widget keys — enumerated here so the reset button can clear them
 # without knowing implementation details of each widget.
@@ -41,11 +43,15 @@ _SIDEBAR_KEYS = [
     "sb_open_training_data",
     "sb_intermediate_checkpoints",
     "sb_open_code",
+    "sb_permissive_license",
     "sb_multilingual",
     "sb_size_range",
     "sb_openness_range",
     "sb_ctx_range",
     "sb_year_range",
+    "sb_training_tokens_range",
+    "sb_num_languages_range",
+    "sb_has_instruct_version",
     "sb_excl_families",
     "sb_excl_orgs",
     "sb_excl_architectures",
@@ -125,6 +131,8 @@ def render_sidebar() -> tuple[dict, dict, dict]:
                 "Intermediate checkpoints", key="sb_intermediate_checkpoints"
             )
             open_code = st.checkbox("Open code", key="sb_open_code")
+            permissive_license = st.checkbox("Permissive license (Apache 2.0 / MIT)", key="sb_permissive_license")
+            has_instruct_version = st.checkbox("Has instruct version", key="sb_has_instruct_version")
 
         # ------------------------------------------------------------------ #
         # Exclusion filters                                                    #
@@ -197,6 +205,22 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             step=1,
             key="sb_year_range",
         )
+        training_tokens_range = st.slider(
+            "Training tokens (B)",
+            min_value=_TRAINING_TOKENS_RANGE_DEFAULT[0],
+            max_value=_TRAINING_TOKENS_RANGE_DEFAULT[1],
+            value=_TRAINING_TOKENS_RANGE_DEFAULT,
+            step=100,
+            key="sb_training_tokens_range",
+        )
+        num_languages_range = st.slider(
+            "Languages supported",
+            min_value=_NUM_LANGUAGES_RANGE_DEFAULT[0],
+            max_value=_NUM_LANGUAGES_RANGE_DEFAULT[1],
+            value=_NUM_LANGUAGES_RANGE_DEFAULT,
+            step=1,
+            key="sb_num_languages_range",
+        )
 
         # ------------------------------------------------------------------ #
         # Reset                                                                #
@@ -226,6 +250,10 @@ def render_sidebar() -> tuple[dict, dict, dict]:
         filter_args["intermediate_checkpoints"] = True
     if open_code:
         filter_args["open_code"] = True
+    if permissive_license:
+        filter_args["permissive_license"] = True
+    if has_instruct_version:
+        filter_args["has_instruct_version"] = True
     if multilingual:
         filter_args["multilingual"] = True
 
@@ -242,6 +270,12 @@ def render_sidebar() -> tuple[dict, dict, dict]:
     if year_range != _YEAR_RANGE_DEFAULT:
         filter_args["min_release_year"] = year_range[0]
         filter_args["max_release_year"] = year_range[1]
+    if training_tokens_range != _TRAINING_TOKENS_RANGE_DEFAULT:
+        filter_args["min_training_tokens_b"] = float(training_tokens_range[0])
+        filter_args["max_training_tokens_b"] = float(training_tokens_range[1])
+    if num_languages_range != _NUM_LANGUAGES_RANGE_DEFAULT:
+        filter_args["min_num_languages"] = num_languages_range[0]
+        filter_args["max_num_languages"] = num_languages_range[1]
 
     multiselect_filters = {
         "family": families,

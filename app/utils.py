@@ -70,7 +70,13 @@ def get_filtered_models(
     list[dict]
         Filtered models sorted by openness_score descending.
     """
+    permissive_license = filter_args.pop("permissive_license", False)
     results = filter_models(**filter_args)
+    if permissive_license:
+        results = [
+            m for m in results
+            if "Apache" in m["license"] or "MIT" in m["license"]
+        ]
 
     for field, values in multiselect_filters.items():
         if values:

@@ -5,17 +5,18 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-_AXIS_OPTIONS = ["openness_score", "context_window", "release_year"]
+_AXIS_OPTIONS = ["context_window", "release_year", "training_tokens_b", "num_languages"]
 
 _AXIS_LABELS = {
-    "openness_score": "Openness score (1–5)",
     "context_window": "Context window (tokens)",
     "release_year": "Release year",
+    "training_tokens_b": "Training tokens (B)",
+    "num_languages": "Languages supported",
 }
 
-# Default axes: openness (x) vs context window (y).
-_X_DEFAULT_IDX = 0   # openness_score
-_Y_DEFAULT_IDX = 1   # context_window
+# Default axes: context window (x) vs training tokens (y).
+_X_DEFAULT_IDX = 0   # context_window
+_Y_DEFAULT_IDX = 2   # training_tokens_b
 
 
 def _build_figure(
@@ -73,20 +74,19 @@ def _build_figure(
         uirevision="scatter",       # preserve zoom/pan when data updates
     )
 
-    # Openness score is discrete 1–5; force integer-only ticks on whichever
-    # axis it's assigned to so halves (1.5, 2.5 …) never appear.
-    openness_axis = dict(tickmode="array", tickvals=[1, 2, 3, 4, 5])
-    if x_axis == "openness_score":
-        fig.update_xaxes(**openness_axis)
-    if y_axis == "openness_score":
-        fig.update_yaxes(**openness_axis)
-
     # Release year is an integer field; dtick=1 prevents Plotly from inserting
     # fractional ticks (2022.5 etc.) when the range is narrow.
     if x_axis == "release_year":
         fig.update_xaxes(dtick=1)
     if y_axis == "release_year":
         fig.update_yaxes(dtick=1)
+
+    # num_languages is an integer; tickformat="d" prevents decimal ticks
+    # while letting Plotly pick sensible spacing across the 1–46 range.
+    if x_axis == "num_languages":
+        fig.update_xaxes(tickformat="d")
+    if y_axis == "num_languages":
+        fig.update_yaxes(tickformat="d")
 
     # Draw a highlight ring at the selected model's position.
     # Using a separate go.Scatter trace instead of Plotly's built-in selection
@@ -164,7 +164,7 @@ def render_scatter(filtered: list[dict]) -> None:
         if name:
             st.session_state.selected_model = name
 
-    st.caption(
-        "Bubble area encodes model size (B parameters). "
-        "BLOOM 176B is capped at the maximum bubble size."
-    )
+    note = "Bubble area encodes model size (B parameters). BLOOM 176B is capped at the maximum bubble size."
+    if x_axis == "training_tokens_b" or y_axis == "training_tokens_b":
+        note += " Models with undisclosed training token counts are hidden."
+    st.caption(note)
