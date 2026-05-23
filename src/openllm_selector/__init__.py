@@ -8,6 +8,7 @@ from .database import (
     rank_by_openness,
     search,
     fetch_recent_papers,
+    compute_openness_score,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "rank_by_openness",
     "search",
     "fetch_recent_papers",
+    "compute_openness_score",
 ]

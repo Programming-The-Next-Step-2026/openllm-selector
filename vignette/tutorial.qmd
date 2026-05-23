@@ -24,14 +24,16 @@ flowchart TD
     B --> C[Compute budget\nmax_size_b]
     B --> D[License\nlicense / exclude_license]
     B --> E[Training transparency\nopen_training_data\nintermediate_checkpoints]
-    B --> F[Language support\nmultilingual]
-    C & D & E & F --> G["filter_models()"]
-    G --> H["rank_by_openness()"]
-    H --> I{One clear winner?}
-    I -- yes --> J["get_model() +\nfetch_recent_papers()"]
-    I -- no --> K[Add more filters\nor relax constraints]
-    K --> G
-    J --> L([Choose model])
+    B --> F[Language support\nmin_num_languages]
+    B --> G[Training scale\nmin_training_tokens_b]
+    B --> H[Instruct variant\nhas_instruct_version]
+    C & D & E & F & G & H --> I["filter_models()"]
+    I --> J["rank_by_openness()"]
+    J --> K{One clear winner?}
+    K -- yes --> L["get_model() +\nfetch_recent_papers()"]
+    K -- no --> M[Add more filters\nor relax constraints]
+    M --> I
+    L --> N([Choose model])
 ```
 
 ## Loading the database
@@ -44,7 +46,7 @@ print(f"{len(models)} models available")
 #> 18 models available
 ```
 
-Each record is a plain dict with 18 fields covering size, architecture, license, openness indicators, and links to the foundational paper and HuggingFace.
+Each record is a plain dict with 21 fields covering size, training token count, number of supported languages, architecture, license, openness indicators, whether an instruct variant exists, and links to the foundational paper and HuggingFace.
 
 ## Filtering
 
@@ -81,6 +83,19 @@ o.filter_models(
     exclude_license="Llama",
     exclude_country_of_origin="China",
 )
+```
+
+**Filter by training scale, language count, or instruct availability:**
+
+```python
+# Models trained on at least 5 T tokens with a known token count
+o.filter_models(min_training_tokens_b=5000)
+
+# Models supporting 5 or more languages
+o.filter_models(min_num_languages=5)
+
+# Models with no official instruct variant (useful for fine-tuning baselines)
+o.filter_models(has_instruct_version=False)
 ```
 
 ## Ranking by openness

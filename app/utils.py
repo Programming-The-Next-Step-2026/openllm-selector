@@ -40,6 +40,7 @@ def get_filtered_models(
     filter_args: dict,
     multiselect_filters: dict,
     query: str,
+    exclude_filters: dict | None = None,
 ) -> list[dict]:
     """Apply all active filters in order, then rank by openness.
 
@@ -58,6 +59,11 @@ def get_filtered_models(
     query:
         Free-text search string matched against name, family, and
         organization (case-insensitive substring). Empty string = no filter.
+    exclude_filters:
+        Mapping of field name → list of values to exclude. A model is
+        removed if its field value matches any entry in the list.
+        ``modality`` is treated as a list field; all others are strings.
+        An empty list means no exclusion for that field.
 
     Returns
     -------
@@ -69,6 +75,17 @@ def get_filtered_models(
     for field, values in multiselect_filters.items():
         if values:
             results = [m for m in results if m[field] in values]
+
+    if exclude_filters:
+        for field, values in exclude_filters.items():
+            if values:
+                if field == "modality":
+                    results = [
+                        m for m in results
+                        if not any(mod in values for mod in m[field])
+                    ]
+                else:
+                    results = [m for m in results if m[field] not in values]
 
     if query.strip():
         q = query.lower()

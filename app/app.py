@@ -9,6 +9,10 @@ from components.sidebar import render_sidebar
 from utils import get_filtered_models
 
 st.set_page_config(page_title="openllm-selector", layout="wide")
+st.markdown(
+    '<style>section[data-testid="stSidebar"] { width: 280px !important; }</style>',
+    unsafe_allow_html=True,
+)
 st.title("openllm-selector")
 st.caption("Find the right open LLM for your research.")
 
@@ -23,10 +27,10 @@ query = st.text_input(
     placeholder="e.g. OLMo, EleutherAI, Mistral …",
 )
 
-filter_args, multiselect_filters = render_sidebar()
-filtered = get_filtered_models(filter_args, multiselect_filters, query)
+filter_args, multiselect_filters, exclude_filters = render_sidebar()
+filtered = get_filtered_models(filter_args, multiselect_filters, query, exclude_filters)
 
-col_plot, col_grid = st.columns([1, 1])
+col_plot, col_grid = st.columns([2, 3])
 with col_plot:
     render_scatter(filtered)
 with col_grid:

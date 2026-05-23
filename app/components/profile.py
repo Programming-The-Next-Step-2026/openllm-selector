@@ -9,8 +9,9 @@ _BOOL_FIELDS = [
     ("open_training_data", "Open training data"),
     ("intermediate_checkpoints", "Intermediate checkpoints"),
     ("open_code", "Open code"),
-    ("multilingual", "Multilingual"),
 ]
+
+_PERMISSIVE_LICENSES = {"Apache 2.0", "MIT"}
 
 
 def _lookup(name: str) -> dict | None:
@@ -80,17 +81,25 @@ def render_profile(model_name: str) -> None:
             )
 
         with col_right:
-            st.metric("Openness score", f"{model['openness_score']} / 5")
             st.metric("Size", f"{model['size_b']} B")
             st.metric("Context window", f"{model['context_window']:,} tokens")
+            st.markdown(
+                f"{'✅' if model['multilingual'] else '❌'} Multilingual"
+            )
 
         # ------------------------------------------------------------------ #
         # Boolean feature badges                                              #
         # ------------------------------------------------------------------ #
         st.divider()
-        badge_cols = st.columns(len(_BOOL_FIELDS))
-        for col, (field, label) in zip(badge_cols, _BOOL_FIELDS):
-            icon = "✅" if model[field] else "❌"
+        st.caption(f"Openness score: {model['openness_score']} / 5")
+        permissive = model["license"] in _PERMISSIVE_LICENSES
+        badges = _BOOL_FIELDS + [("_permissive_license", "Permissive license")]
+        badge_cols = st.columns(len(badges))
+        for col, (field, label) in zip(badge_cols, badges):
+            if field == "_permissive_license":
+                icon = "✅" if permissive else "❌"
+            else:
+                icon = "✅" if model[field] else "❌"
             col.markdown(f"{icon} {label}")
 
         # ------------------------------------------------------------------ #

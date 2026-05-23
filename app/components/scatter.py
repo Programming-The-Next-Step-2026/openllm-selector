@@ -5,18 +5,17 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-_AXIS_OPTIONS = ["size_b", "context_window", "release_year", "openness_score"]
+_AXIS_OPTIONS = ["openness_score", "context_window", "release_year"]
 
 _AXIS_LABELS = {
-    "size_b": "Size (B parameters)",
+    "openness_score": "Openness score (1–5)",
     "context_window": "Context window (tokens)",
     "release_year": "Release year",
-    "openness_score": "Openness score (1–5)",
 }
 
-# Default axes: openness vs size gives the most immediately useful view.
-_X_DEFAULT_IDX = 3   # openness_score
-_Y_DEFAULT_IDX = 0   # size_b
+# Default axes: openness (x) vs context window (y).
+_X_DEFAULT_IDX = 0   # openness_score
+_Y_DEFAULT_IDX = 1   # context_window
 
 
 def _build_figure(
@@ -53,20 +52,20 @@ def _build_figure(
         hover_name="name",
         custom_data=["name"],       # reliable access in click-event point dicts
         hover_data={
-            "organization": True,
-            "license": True,
-            "architecture": True,
-            "multilingual": True,
-            "size_b": False,        # already encoded as bubble size
+            "openness_score": False,
+            "size_b": False,
         },
         size="size_b",
         size_max=40,
+        opacity=0.7,
         labels=_AXIS_LABELS,
         # Log scale for context_window: linear scale would compress 2 K–32 K
         # into a tiny band while 131 K dominates.
         log_x=(x_axis == "context_window"),
         log_y=(y_axis == "context_window"),
     )
+
+    fig.update_traces(hovertemplate="%{hovertext}<extra></extra>")
 
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
@@ -81,6 +80,13 @@ def _build_figure(
         fig.update_xaxes(**openness_axis)
     if y_axis == "openness_score":
         fig.update_yaxes(**openness_axis)
+
+    # Release year is an integer field; dtick=1 prevents Plotly from inserting
+    # fractional ticks (2022.5 etc.) when the range is narrow.
+    if x_axis == "release_year":
+        fig.update_xaxes(dtick=1)
+    if y_axis == "release_year":
+        fig.update_yaxes(dtick=1)
 
     # Draw a highlight ring at the selected model's position.
     # Using a separate go.Scatter trace instead of Plotly's built-in selection

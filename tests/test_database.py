@@ -6,6 +6,7 @@ import pytest
 import requests as req
 
 from openllm_selector.database import (
+    compute_openness_score,
     fetch_recent_papers,
     filter_models,
     get_families,
@@ -26,6 +27,264 @@ def all_models():
 
 
 # ---------------------------------------------------------------------------
+# New fields: training_tokens_b, num_languages, has_instruct_version
+# ---------------------------------------------------------------------------
+
+class TestNewFields:
+
+    # --- field presence and types ---
+
+    def test_training_tokens_b_present(self, all_models):
+        for m in all_models:
+            assert "training_tokens_b" in m
+
+    def test_training_tokens_b_is_float_or_none(self, all_models):
+        for m in all_models:
+            assert m["training_tokens_b"] is None or isinstance(m["training_tokens_b"], float), (
+                f"{m['name']} training_tokens_b should be float or None"
+            )
+
+    def test_training_tokens_b_null_models(self, all_models):
+        null_names = {m["name"] for m in all_models if m["training_tokens_b"] is None}
+        assert null_names == {"Mistral 7B", "Mixtral 8x7B", "LLaVA 1.5 7B"}
+
+    def test_training_tokens_b_positive_when_present(self, all_models):
+        for m in all_models:
+            if m["training_tokens_b"] is not None:
+                assert m["training_tokens_b"] > 0, f"{m['name']} training_tokens_b must be positive"
+
+    def test_known_training_tokens_values(self):
+        assert get_model("OLMo 7B")["training_tokens_b"] == 2500.0
+        assert get_model("Pythia 6.9B")["training_tokens_b"] == 300.0
+        assert get_model("Llama 3.1 8B")["training_tokens_b"] == 15000.0
+        assert get_model("DeepSeek-LLM 7B")["training_tokens_b"] == 2000.0
+        assert get_model("Mistral 7B")["training_tokens_b"] is None
+
+    def test_num_languages_present(self, all_models):
+        for m in all_models:
+            assert "num_languages" in m
+
+    def test_num_languages_is_positive_int(self, all_models):
+        for m in all_models:
+            assert isinstance(m["num_languages"], int), (
+                f"{m['name']} num_languages should be int"
+            )
+            assert m["num_languages"] >= 1, f"{m['name']} num_languages must be >= 1"
+
+    def test_known_num_languages_values(self):
+        assert get_model("BLOOM 176B")["num_languages"] == 46
+        assert get_model("Qwen2 7B")["num_languages"] == 27
+        assert get_model("Llama 3.1 8B")["num_languages"] == 8
+        assert get_model("Mixtral 8x7B")["num_languages"] == 5
+        assert get_model("Falcon 7B")["num_languages"] == 4
+        assert get_model("Yi 1.5 9B")["num_languages"] == 2
+        assert get_model("OLMo 7B")["num_languages"] == 1
+
+    def test_multilingual_models_have_more_than_one_language(self, all_models):
+        for m in all_models:
+            if m["multilingual"]:
+                assert m["num_languages"] > 1, (
+                    f"{m['name']} is multilingual but num_languages={m['num_languages']}"
+                )
+
+    def test_non_multilingual_models_have_one_language(self, all_models):
+        for m in all_models:
+            if not m["multilingual"]:
+                assert m["num_languages"] == 1, (
+                    f"{m['name']} is not multilingual but num_languages={m['num_languages']}"
+                )
+
+    def test_has_instruct_version_present(self, all_models):
+        for m in all_models:
+            assert "has_instruct_version" in m
+
+    def test_has_instruct_version_is_bool(self, all_models):
+        for m in all_models:
+            assert isinstance(m["has_instruct_version"], bool), (
+                f"{m['name']} has_instruct_version should be bool"
+            )
+
+    def test_known_has_instruct_version_values(self):
+        assert get_model("Pythia 6.9B")["has_instruct_version"] is False
+        assert get_model("GPT-NeoX 20B")["has_instruct_version"] is False
+        assert get_model("OLMo 7B")["has_instruct_version"] is True
+        assert get_model("Llama 2 7B")["has_instruct_version"] is True
+        assert get_model("Mistral 7B")["has_instruct_version"] is False
+
+    # --- filter_models: training_tokens_b ---
+
+    def test_filter_min_training_tokens(self):
+        results = filter_models(min_training_tokens_b=10000)
+        names = {m["name"] for m in results}
+        assert "Llama 3.1 8B" in names
+        assert all(m["training_tokens_b"] >= 10000 for m in results)
+
+    def test_filter_max_training_tokens(self):
+        results = filter_models(max_training_tokens_b=500)
+        assert all(m["training_tokens_b"] <= 500 for m in results)
+        names = {m["name"] for m in results}
+        assert "Pythia 6.9B" in names   # 300
+        assert "BLOOM 176B" in names    # 366
+        assert "GPT-NeoX 20B" in names  # 472
+
+    def test_filter_training_tokens_range(self):
+        results = filter_models(min_training_tokens_b=2000, max_training_tokens_b=2000)
+        names = {m["name"] for m in results}
+        assert "Llama 2 7B" in names
+        assert "DeepSeek-LLM 7B" in names
+        assert all(m["training_tokens_b"] == 2000 for m in results)
+
+    def test_filter_training_tokens_excludes_nulls(self):
+        results = filter_models(min_training_tokens_b=1)
+        names = {m["name"] for m in results}
+        assert "Mistral 7B" not in names
+        assert "Mixtral 8x7B" not in names
+        assert "LLaVA 1.5 7B" not in names
+
+    def test_filter_max_training_tokens_excludes_nulls(self):
+        results = filter_models(max_training_tokens_b=99999)
+        names = {m["name"] for m in results}
+        assert "Mistral 7B" not in names
+        assert "Mixtral 8x7B" not in names
+        assert "LLaVA 1.5 7B" not in names
+
+    def test_filter_training_tokens_boundary_inclusive(self):
+        assert any(m["name"] == "Pythia 6.9B" for m in filter_models(min_training_tokens_b=300))
+        assert any(m["name"] == "Pythia 6.9B" for m in filter_models(max_training_tokens_b=300))
+
+    def test_filter_training_tokens_impossible_range_empty(self):
+        assert filter_models(min_training_tokens_b=5000, max_training_tokens_b=1000) == []
+
+    # --- filter_models: num_languages ---
+
+    def test_filter_min_num_languages(self):
+        results = filter_models(min_num_languages=5)
+        assert all(m["num_languages"] >= 5 for m in results)
+        names = {m["name"] for m in results}
+        assert "BLOOM 176B" in names
+        assert "Qwen2 7B" in names
+        assert "Llama 3.1 8B" in names
+        assert "Mixtral 8x7B" in names
+
+    def test_filter_max_num_languages(self):
+        results = filter_models(max_num_languages=1)
+        assert all(m["num_languages"] == 1 for m in results)
+        assert len(results) == 10  # all English-only models
+
+    def test_filter_num_languages_range(self):
+        results = filter_models(min_num_languages=2, max_num_languages=5)
+        assert all(2 <= m["num_languages"] <= 5 for m in results)
+        names = {m["name"] for m in results}
+        assert "Falcon 7B" in names     # 4
+        assert "Mixtral 8x7B" in names  # 5
+        assert "Yi 1.5 9B" in names     # 2
+        assert "BLOOM 176B" not in names  # 46
+
+    def test_filter_num_languages_bloom(self):
+        results = filter_models(min_num_languages=40)
+        assert len(results) == 1
+        assert results[0]["name"] == "BLOOM 176B"
+
+    def test_filter_num_languages_boundary_inclusive(self):
+        assert any(m["name"] == "Mixtral 8x7B" for m in filter_models(min_num_languages=5))
+        assert any(m["name"] == "Mixtral 8x7B" for m in filter_models(max_num_languages=5))
+
+    # --- filter_models: has_instruct_version ---
+
+    def test_filter_has_instruct_version_false(self):
+        results = filter_models(has_instruct_version=False)
+        names = {m["name"] for m in results}
+        assert names == {"Pythia 6.9B", "GPT-NeoX 20B", "Mistral 7B"}
+
+    def test_filter_has_instruct_version_true(self):
+        results = filter_models(has_instruct_version=True)
+        assert len(results) == 15
+        assert all(m["has_instruct_version"] is True for m in results)
+
+    def test_filter_has_instruct_and_openness(self):
+        results = filter_models(has_instruct_version=True, min_openness=5)
+        names = {m["name"] for m in results}
+        assert "OLMo 7B" in names
+        assert "OLMo 2 7B" in names
+        assert "Pythia 6.9B" not in names  # instruct=False
+
+    def test_filter_has_instruct_and_training_tokens(self):
+        results = filter_models(has_instruct_version=False, max_training_tokens_b=500)
+        names = {m["name"] for m in results}
+        assert "Pythia 6.9B" in names
+        assert "GPT-NeoX 20B" in names
+
+
+# ---------------------------------------------------------------------------
+# compute_openness_score
+# ---------------------------------------------------------------------------
+
+class TestComputeOpennessScore:
+    def test_fully_open_model_scores_5(self):
+        # All booleans True + Apache license
+        model = {
+            "open_weights": True, "open_training_data": True,
+            "intermediate_checkpoints": True, "open_code": True,
+            "license": "Apache 2.0",
+        }
+        assert compute_openness_score(model) == 5
+
+    def test_mit_license_counts_as_permissive(self):
+        model = {
+            "open_weights": True, "open_training_data": True,
+            "intermediate_checkpoints": True, "open_code": True,
+            "license": "MIT",
+        }
+        assert compute_openness_score(model) == 5
+
+    def test_non_permissive_license_does_not_contribute(self):
+        model = {
+            "open_weights": True, "open_training_data": True,
+            "intermediate_checkpoints": True, "open_code": True,
+            "license": "Llama 2 Community License",
+        }
+        assert compute_openness_score(model) == 4
+
+    def test_only_open_weights_non_permissive_scores_1(self):
+        model = {
+            "open_weights": True, "open_training_data": False,
+            "intermediate_checkpoints": False, "open_code": False,
+            "license": "Gemma Terms of Use",
+        }
+        assert compute_openness_score(model) == 1
+
+    def test_only_open_weights_permissive_scores_2(self):
+        model = {
+            "open_weights": True, "open_training_data": False,
+            "intermediate_checkpoints": False, "open_code": False,
+            "license": "Apache 2.0",
+        }
+        assert compute_openness_score(model) == 2
+
+    def test_all_false_scores_0(self):
+        model = {
+            "open_weights": False, "open_training_data": False,
+            "intermediate_checkpoints": False, "open_code": False,
+            "license": "Proprietary",
+        }
+        assert compute_openness_score(model) == 0
+
+    def test_olmo_7b_scores_5(self):
+        assert compute_openness_score(get_model("OLMo 7B")) == 5
+
+    def test_llama2_7b_scores_1(self):
+        assert compute_openness_score(get_model("Llama 2 7B")) == 1
+
+    def test_score_is_injected_by_load_models(self):
+        models = load_models()
+        assert all("openness_score" in m for m in models)
+
+    def test_score_matches_direct_computation(self):
+        for m in load_models():
+            assert m["openness_score"] == compute_openness_score(m)
+
+
+# ---------------------------------------------------------------------------
 # load_models
 # ---------------------------------------------------------------------------
 
@@ -39,9 +298,10 @@ class TestLoadModels:
     def test_each_record_has_required_keys(self, all_models):
         required = {
             "name", "family", "organization", "country_of_origin",
-            "release_year", "size_b", "context_window", "modality",
-            "architecture", "license", "open_weights", "open_training_data",
-            "intermediate_checkpoints", "open_code", "multilingual",
+            "release_year", "size_b", "training_tokens_b", "context_window",
+            "modality", "architecture", "license", "open_weights",
+            "open_training_data", "intermediate_checkpoints", "open_code",
+            "multilingual", "num_languages", "has_instruct_version",
             "foundational_paper", "huggingface_id", "openness_score",
         }
         for model in all_models:
@@ -213,9 +473,11 @@ class TestFilterModels:
         results = filter_models(min_openness=3, max_openness=4)
         assert all(3 <= m["openness_score"] <= 4 for m in results)
 
-    def test_filter_openness_score_1_returns_empty(self):
-        # No model in the DB has score 1
-        assert filter_models(min_openness=1, max_openness=1) == []
+    def test_filter_openness_score_1_returns_models(self):
+        # Llama 2 7B: only open_weights=True, non-permissive license → score 1
+        results = filter_models(min_openness=1, max_openness=1)
+        assert len(results) > 0
+        assert all(m["openness_score"] == 1 for m in results)
 
     # --- boolean flags ---
 

@@ -16,6 +16,7 @@ _LICENSES = [
     "Llama 3 Community License",
     "MIT",
 ]
+_MODALITIES = ["image", "text"]
 
 # Context window filter uses discrete buckets rather than a linear slider
 # because the range spans two orders of magnitude (2 K – 131 K).
@@ -45,6 +46,12 @@ _SIDEBAR_KEYS = [
     "sb_openness_range",
     "sb_ctx_range",
     "sb_year_range",
+    "sb_excl_families",
+    "sb_excl_orgs",
+    "sb_excl_architectures",
+    "sb_excl_countries",
+    "sb_excl_licenses",
+    "sb_excl_modalities",
 ]
 
 
@@ -54,7 +61,7 @@ def _multiselect_label(label: str, selected: list) -> str:
     return label
 
 
-def render_sidebar() -> tuple[dict, dict]:
+def render_sidebar() -> tuple[dict, dict, dict]:
     """Render all filter widgets and return the active filter state.
 
     Returns
@@ -67,6 +74,11 @@ def render_sidebar() -> tuple[dict, dict]:
         Handled with OR logic in ``get_filtered_models()``.
         Keys: family, organization, architecture, country_of_origin, license.
         An empty list means no restriction for that field.
+    exclude_filters : dict
+        Maps each categorical field to the list of values to exclude.
+        Applied as a post-filter in ``get_filtered_models()``.
+        Keys: family, organization, architecture, country_of_origin, license,
+        modality. An empty list means no exclusion for that field.
     """
     with st.sidebar:
         st.header("Filters")
@@ -101,6 +113,7 @@ def render_sidebar() -> tuple[dict, dict]:
             options=_LICENSES,
             key="sb_licenses",
         )
+        multilingual = st.checkbox("Multilingual", key="sb_multilingual")
 
         # ------------------------------------------------------------------ #
         # Boolean checkboxes                                                  #
@@ -112,7 +125,41 @@ def render_sidebar() -> tuple[dict, dict]:
                 "Intermediate checkpoints", key="sb_intermediate_checkpoints"
             )
             open_code = st.checkbox("Open code", key="sb_open_code")
-            multilingual = st.checkbox("Multilingual", key="sb_multilingual")
+
+        # ------------------------------------------------------------------ #
+        # Exclusion filters                                                    #
+        # ------------------------------------------------------------------ #
+        with st.expander("Exclusion filters", expanded=False):
+            excl_families = st.multiselect(
+                _multiselect_label("Exclude family", st.session_state.get("sb_excl_families", [])),
+                options=cached_get_families(),
+                key="sb_excl_families",
+            )
+            excl_orgs = st.multiselect(
+                _multiselect_label("Exclude organization", st.session_state.get("sb_excl_orgs", [])),
+                options=cached_get_organizations(),
+                key="sb_excl_orgs",
+            )
+            excl_architectures = st.multiselect(
+                _multiselect_label("Exclude architecture", st.session_state.get("sb_excl_architectures", [])),
+                options=_ARCHITECTURES,
+                key="sb_excl_architectures",
+            )
+            excl_countries = st.multiselect(
+                _multiselect_label("Exclude country of origin", st.session_state.get("sb_excl_countries", [])),
+                options=_COUNTRIES,
+                key="sb_excl_countries",
+            )
+            excl_licenses = st.multiselect(
+                _multiselect_label("Exclude license", st.session_state.get("sb_excl_licenses", [])),
+                options=_LICENSES,
+                key="sb_excl_licenses",
+            )
+            excl_modalities = st.multiselect(
+                _multiselect_label("Exclude modality", st.session_state.get("sb_excl_modalities", [])),
+                options=_MODALITIES,
+                key="sb_excl_modalities",
+            )
 
         # ------------------------------------------------------------------ #
         # Range sliders                                                        #
@@ -204,4 +251,13 @@ def render_sidebar() -> tuple[dict, dict]:
         "license": licenses,
     }
 
-    return filter_args, multiselect_filters
+    exclude_filters = {
+        "family": excl_families,
+        "organization": excl_orgs,
+        "architecture": excl_architectures,
+        "country_of_origin": excl_countries,
+        "license": excl_licenses,
+        "modality": excl_modalities,
+    }
+
+    return filter_args, multiselect_filters, exclude_filters
