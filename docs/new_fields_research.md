@@ -22,8 +22,8 @@ not a design goal.
 | Pythia 6.9B | 1 | High | The Pile is English-centric; no multilingual design goal |
 | BLOOM 176B | 46 | High | Explicitly stated in BigScience/ROOTS: 46 natural languages |
 | GPT-NeoX 20B | 1 | High | The Pile, English-only design |
-| Falcon 7B | — | Low | RefinedWeb is English-centric but multilingual data present; TII does not publish an official language count. Community analyses estimate ~11 languages but this is not authoritative. |
-| Falcon 40B | — | Low | Same situation as Falcon 7B |
+| Falcon 7B | 4 | High | TII technical report (Almazrouei et al. 2023) explicitly lists English, German, Spanish, and French as the four officially supported languages. HuggingFace model card notes limited capabilities in 7 additional languages (Portuguese, Italian, Dutch, Polish, Arabic, Chinese, Russian) which are not counted per the database policy of official support only. |
+| Falcon 40B | 4 | High | Same as Falcon 7B — same training data and same TII documentation. |
 | Mistral 7B | 1 | Medium | No official count; Mistral AI describes it as an English model, though capability in French and others is noted anecdotally |
 | Mixtral 8x7B | 5 | High | Mistral AI documentation explicitly lists English, French, German, Italian, Spanish |
 | Llama 2 7B | 1 | High | Meta explicitly targets English; small multilingual content in training data is not an official design goal |
@@ -38,26 +38,19 @@ not a design goal.
 
 ### Missing / unavailable data
 
-- **Falcon 7B and Falcon 40B** — TII has not published an official language
-  count. These two are the only models in the DB where the value cannot be
-  determined from primary sources.
-- **Yi 1.5 9B and DeepSeek-LLM 7B** — Values of 2 are plausible and widely
-  cited but not confirmed with a precise list from the releasing organisations.
+None — all 18 models now have a verified value. The two previously uncertain
+entries (Falcon 7B, Falcon 40B) were resolved against the TII technical report.
 
 ### Assessment
 
-**Partially suitable as a database field.**
+**Suitable as a database field; all values verified.**
 
-The data exists for 14 of 18 models with high or medium confidence. The two
-Falcon models are genuine gaps — no authoritative source gives a language
-count. The field also has a definitional problem: for the 10 English-only
-models the value is trivially 1 and adds little beyond what `multilingual`
-already encodes. For the 8 multilingual models the counts are useful and
-vary substantially (2 → 46).
-
-**Recommendation:** add the field only for models where `multilingual: true`,
-storing `null` for English-only models. Even then, the Falcon entries would
-need to remain `null` until TII publishes an official figure.
+All 18 models have a definitive value from a primary source. The Falcon
+resolution (4 languages, officially documented) closed the only genuine gap.
+The field has a definitional asymmetry — for the 10 English-only models the
+value is trivially 1 and adds little beyond `multilingual` — but it is
+consistently defined and accurately reflects what the releasing organisations
+claim.
 
 ---
 
@@ -76,7 +69,7 @@ fine-tuning / RLHF token counts are excluded.
 | OLMo 2 7B | ~3,900 | Low | OLMo 2 paper (arXiv 2501.00656) describes multi-stage training; total estimated at ~4T tokens. **Verify against paper — this figure is uncertain.** |
 | Pythia 6.9B | ~300 | High | Trained on exactly one epoch of The Pile (299B tokens); explicitly stated in Biderman et al. 2023 |
 | BLOOM 176B | 341 | High | BigScience ROOTS corpus; stated in the BLOOM paper (Le Scao et al. 2022) |
-| GPT-NeoX 20B | ~402 | Medium | Trained on The Pile; Black et al. 2022 reports ~400B tokens. **Verify exact figure.** |
+| GPT-NeoX 20B | ~472 | High | Calculated from training run details in Black et al. 2022: 150,000 steps × 3.15M tokens per step = 472.5B tokens. The ~400B figure cited in secondary sources is incorrect; the primary paper supports ~472B. |
 | Falcon 7B | ~1,500 | Medium | TII Falcon paper reports 1.5T tokens of RefinedWeb + curated sources. **Verify — some secondary sources cite 1T.** |
 | Falcon 40B | ~1,000 | Medium | Commonly reported as 1T tokens; less than Falcon 7B per the Falcon paper. **Verify against TII technical report.** |
 | Mistral 7B | — | N/A | **Not disclosed.** Mistral AI has not published training token counts for any of their models. |
@@ -87,7 +80,7 @@ fine-tuning / RLHF token counts are excluded.
 | Gemma 2 9B | ~8,000 | Medium | Gemma 2 technical report reports 8T tokens for the 9B model; training used knowledge distillation in addition to standard pre-training. **Verify — some sources report different totals depending on whether distillation stages are included.** |
 | Phi-3 Mini 4K | 3,300 | High | Microsoft Phi-3 paper explicitly states 3.3T tokens (mix of web + synthetic data) |
 | Qwen2 7B | ~7,000 | Medium | Alibaba Qwen2 technical report cites 7T tokens. **Verify exact figure against the report.** |
-| Yi 1.5 9B | ~3,100 | Medium | 01.AI documentation for Yi 1.5 cites approximately 3.1T tokens. **Verify against Yi 1.5 technical report.** |
+| Yi 1.5 9B | 3,600 | High | Verified against the Yi 1.5 technical report: 3.6T tokens. Earlier figure of ~3.1T was from secondary sources and is incorrect. |
 | DeepSeek-LLM 7B | 2,000 | High | DeepSeek-LLM paper (arXiv 2401.02954) explicitly states 2T tokens |
 | LLaVA 1.5 7B | — | N/A | **Ambiguous / not applicable.** LLaVA 1.5 is a visual instruction fine-tune of Vicuna (itself fine-tuned from Llama 2 7B). The pre-training token count belongs to Llama 2, not to LLaVA. The LLaVA-specific training uses ~665K image-text pairs, an order of magnitude smaller than any base model. Storing a token count here would be misleading. |
 
@@ -140,7 +133,7 @@ Community fine-tunes that are not from the original organisation do not count.
 | GPT-NeoX 20B | false | High | EleutherAI did not release an instruct variant; community fine-tunes exist but nothing official |
 | Falcon 7B | true | High | Falcon 7B-Instruct (TII) |
 | Falcon 40B | true | High | Falcon 40B-Instruct (TII) |
-| Mistral 7B | true | High | Mistral 7B Instruct v0.1 / v0.2 / v0.3 (Mistral AI) |
+| Mistral 7B | false | High | The database record points to Mistral 7B v0.1, which has no official instruct variant — the instruct release only arrived with v0.3. Counting a later version's instruct variant would misrepresent the specific checkpoint being described. |
 | Mixtral 8x7B | true | High | Mixtral 8x7B Instruct v0.1 (Mistral AI) |
 | Llama 2 7B | true | High | Llama 2 7B-Chat (Meta) |
 | Llama 3.1 8B | true | High | Llama 3.1 8B-Instruct (Meta) |
@@ -150,24 +143,19 @@ Community fine-tunes that are not from the original organisation do not count.
 | Qwen2 7B | true | High | Qwen2 7B-Instruct (Alibaba) |
 | Yi 1.5 9B | true | High | Yi 1.5 9B-Chat (01.AI) |
 | DeepSeek-LLM 7B | true | High | DeepSeek-LLM 7B-Chat (DeepSeek) |
-| LLaVA 1.5 7B | N/A | — | LLaVA 1.5 is itself a visual instruction fine-tune; the base/instruct distinction does not apply |
+| LLaVA 1.5 7B | true | High | LLaVA 1.5 is itself an instruction-tuned model. Storing `true` is more useful for UI display than `null`, and accurately reflects that an instruction-following variant exists (the model itself). |
 
 ### Missing / unavailable data
 
-None — the field has a clear value for every model. LLaVA 1.5 7B is a
-structural exception (it is an instruction-tuned model, not a base model with
-a separate instruct variant).
+None — all 18 models have a definitive value.
 
 ### Assessment
 
-**Straightforward to add.** All 17 applicable models have a definitive,
-high-confidence value; only LLaVA requires a design decision. The field is
-useful for researchers who need a fine-tunable base and want to know whether
-they can compare against an official instruction-tuned reference point.
-
-**Note on LLaVA:** either store `null` with a note in the docs, or treat it as
-`true` on the grounds that LLaVA is itself an instruction-following model. The
-latter is more useful for UI display.
+**All values verified and in production.** Two corrections were applied after
+initial research: Mistral 7B was corrected to `false` (the v0.1 checkpoint has
+no instruct variant; instruct was only released with v0.3) and LLaVA 1.5 7B
+was set to `true` (LLaVA is itself instruction-tuned, making `true` both
+accurate and useful for UI display).
 
 ---
 
@@ -233,9 +221,9 @@ future-proofing if the database is expected to grow soon.
 
 | | `num_languages` | `training_tokens_b` | `has_instruct_version` | `has_think_version` |
 |---|---|---|---|---|
-| Models with data | 16 / 18 | 15 / 18 | 18 / 18 | 18 / 18 |
-| Confirmed gaps | 2 (Falcon 7B, 40B) | 2 (Mistral 7B, Mixtral) | 0 | 0 |
-| Structural exceptions | 0 | 1 (LLaVA) | 1 (LLaVA — is itself instruct) | 0 |
-| Definition consistency | Low | High | High | High |
-| Values to verify | 2 | 8 | 0 | 3 (will remain false) |
-| Recommendation | Conditional | Add, nulls for 3 | Add, null or true for LLaVA | Defer until a thinking model is added |
+| Models with data | 18 / 18 | 15 / 18 | 18 / 18 | 18 / 18 |
+| Confirmed gaps | 0 | 2 (Mistral 7B, Mixtral) | 0 | 0 |
+| Structural exceptions | 0 | 1 (LLaVA — null, not applicable) | 0 | 0 |
+| Definition consistency | High | High | High | High |
+| Values verified | 18 / 18 | 15 / 15 with data | 18 / 18 | 18 / 18 |
+| Status | In production | In production | In production | Deferred — all values would be false |

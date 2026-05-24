@@ -28,13 +28,37 @@ streamlit run app/app.py
 
 ## Using the app
 
-The app has three panels: a **filter sidebar** on the left, a **scatter plot** (top) and **results grid** (bottom) in the main area, and a **model profile card** that slides in below when you click any row or bubble.
+The app has three panels: a **filter sidebar** on the left, a **scatter plot** and **results grid** in the main area, and a **model profile card** that opens below when you click any row or bubble.
 
-The sidebar is organised into sections: categorical multiselects (family, organisation, architecture, country, license), a Multilingual checkbox, an *Openness filters* expander (open weights, training data, checkpoints, code, permissive license, instruct version), an *Exclusion filters* expander, and numeric range sliders (size, openness score, context window, release year, training tokens, languages supported).
+### Sidebar
 
-The scatter plot encodes openness score as bubble colour and model size as bubble area. You choose what goes on each axis from: context window, release year, training tokens, and number of languages.
+The sidebar is organised into five sections:
 
-The five scenarios below walk through how a researcher would use the app for each question.
+1. **Model characteristics** — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: a **Multilingual** checkbox, an **Instruct version available** checkbox, and a **Language (official support only)** dropdown to filter by a single officially supported language.
+
+2. **Openness filters** expander — checkboxes for open weights, open training data, intermediate checkpoints, open code, and permissive license (Apache 2.0 or MIT).
+
+3. **Exclusion filters** expander — multiselects to remove models by family, organisation, architecture, country of origin, license, or modality.
+
+4. **Ranges** — sliders for size (B parameters), openness score (1–5), context window (tokens), release year, training tokens (B), and number of languages supported.
+
+5. **Reset all filters** button at the bottom.
+
+### Scatter plot
+
+The default view plots training tokens (B) on the x-axis against context window on the y-axis. You can switch either axis to: context window, release year, training tokens, or number of languages. Bubble colour encodes openness score (1–5, Viridis scale) and bubble area encodes model size. Clicking a bubble opens the profile card for that model.
+
+### Results grid
+
+The grid shows the filtered models ranked by openness score and displays: model name, openness score, size (B), context window, training tokens (B), release year, architecture, and license. Clicking a row also opens the profile card.
+
+### Profile card
+
+The profile card shows family, architecture, license, and links to the foundational paper and HuggingFace page on the left, and size, context window, training tokens, language list, and instruct version availability on the right. Below the main details: the five openness badges (open weights, open training data, intermediate checkpoints, open code, permissive license) with an overall openness score, followed by an expandable **Recent arXiv papers** section that fetches the three most recent papers mentioning the model from arXiv.
+
+---
+
+The five scenarios below walk through how a researcher would use the app.
 
 ---
 
@@ -61,7 +85,7 @@ In the sidebar:
 
 1. Open **Exclusion filters** → **Exclude country of origin** → select **United States** and **China**
 
-Five models remain: BLOOM 176B and the two Mistral models (France) and the two Falcon models (United Arab Emirates). The scatter plot makes the geographic spread immediately visible when release year is on the x-axis and training tokens on the y-axis.
+Five models remain: BLOOM 176B and the two Mistral models (France) and the two Falcon models (United Arab Emirates). The scatter plot makes the trade-offs immediately visible: BLOOM was trained on far fewer tokens (366 B) than Llama 3.1 8B (15 000 B) but covers 46 languages.
 
 > *[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 5 bubbles; grid listing BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B]*
 
@@ -73,10 +97,10 @@ Five models remain: BLOOM 176B and the two Mistral models (France) and the two F
 
 In the sidebar:
 
-1. Check the **Multilingual** checkbox (just below the license multiselect)
+1. Check the **Multilingual** checkbox
 2. Set the **Openness score** slider minimum to 3
 
-Three models match: BLOOM 176B (46 languages, BigScience RAIL license), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0). The license column in the grid makes the trade-off immediately visible: BLOOM covers far more languages but carries a more restrictive license.
+Three models match: BLOOM 176B (46 languages, BigScience RAIL license), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0). Use the **Language (official support only)** dropdown to check whether a specific language you need (e.g. Hindi) is present — it narrows the set to BLOOM 176B and Llama 3.1 8B. The license column in the grid makes the trade-off immediately visible.
 
 > *[Screenshot: Multilingual checked, openness slider at 3–5; grid showing BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
 
@@ -91,9 +115,9 @@ In the sidebar:
 1. Drag the **Size (B parameters)** slider to a maximum of 8 B
 2. Move the **Context window (tokens)** slider minimum to **8,192**
 
-Four models appear. On the scatter plot with context window on the x-axis, Qwen2 7B and Llama 3.1 8B stand out immediately — both have a 131 K token context window, an order of magnitude larger than the other two. Click each model to compare licenses in the profile card before deciding.
+Four models appear. On the scatter plot with context window on the y-axis, Qwen2 7B and Llama 3.1 8B stand out immediately — both have a 131 K token context window, an order of magnitude larger than the other two. Click each model to compare licenses in the profile card before deciding.
 
-> *[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot log-scaled on x-axis; Qwen2 7B and Llama 3.1 8B clearly separated from Mistral 7B and Gemma 2B]*
+> *[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B and Llama 3.1 8B clearly separated from Mistral 7B and Gemma 2B]*
 
 ---
 
@@ -149,7 +173,7 @@ print(model["intermediate_checkpoints"])
 
 ### Scenario b — European privacy-conscious researcher
 
-`filter_models()` accepts one exclusion value per field. Chain two passes to exclude both jurisdictions:
+To exclude multiple countries, filter the result list directly — `filter_models()` takes one `exclude_country_of_origin` value at a time:
 
 ```python
 excluded_countries = {"United States", "China"}
@@ -165,7 +189,7 @@ for m in ranked:
 #> Mixtral 8x7B — France  (score 2)
 ```
 
-Five models remain. The two Mistral models score 2 — their training data composition and token count are not publicly disclosed, which lowers the openness score. BLOOM and the two Falcons score 4 and have Apache 2.0 or similar-permissive licenses. For most European research use cases, Falcon 7B is the pragmatic choice: small, Apache-licensed, and trained on a documented multilingual corpus.
+Five models remain. The two Mistral models score 2 — their training data composition and token count are not publicly disclosed. BLOOM and the two Falcons score 4 and have Apache 2.0 or equivalent-permissive licenses. For most European research use cases, Falcon 7B is the pragmatic choice: small, Apache-licensed, and trained on a documented multilingual corpus.
 
 ---
 
@@ -183,17 +207,34 @@ for m in ranked:
         f"  score: {m['openness_score']}"
     )
 #> BLOOM 176B   46 languages  license: BigScience RAIL  score: 4
-#> Falcon 7B     4 languages  license: Apache 2.0        score: 4
-#> Falcon 40B    4 languages  license: Apache 2.0        score: 4
+#> Falcon 7B   4 languages  license: Apache 2.0  score: 4
+#> Falcon 40B   4 languages  license: Apache 2.0  score: 4
 ```
 
 The trade-off is clear: BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic, BLOOM is the strongest multilingual option. If you need to redistribute fine-tuned derivatives without restriction, Falcon 7B with Apache 2.0 is the safer choice.
 
+Use `filter_models(language=...)` to check whether a specific language you need is officially supported:
+
 ```python
-# Confirm BLOOM supports the languages you need
+hindi_models = o.filter_models(language="Hindi")
+for m in hindi_models:
+    print(m["name"], "—", m["languages"])
+#> BLOOM 176B — ['Akkadian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']
+#> Llama 3.1 8B — ['English', 'German', 'French', 'Italian', 'Portuguese', 'Hindi', 'Spanish', 'Thai']
+```
+
+```python
+# Inspect the full language list for BLOOM
 bloom = o.get_model("BLOOM 176B")
 print(bloom["num_languages"])    # 46
 print(bloom["huggingface_id"])   # bigscience/bloom
+print(bloom["languages"][:5])   # first five of 46
+#> ['Akkadian', 'Arabic', 'Assamese', 'Bambara', 'Basque']
+
+# Browse all languages present in the database
+all_langs = o.get_languages()
+print(len(all_langs), "unique languages")
+#> 46 unique languages
 ```
 
 ---
@@ -211,16 +252,16 @@ for m in ranked:
         f"  context: {m['context_window']:,} tokens"
         f"  license: {m['license']}"
     )
-#> Mistral 7B   7.3 B  context:     8,192 tokens  license: Apache 2.0
-#> Qwen2 7B     7.6 B  context: 131,072 tokens  license: Apache 2.0
-#> Llama 3.1 8B 8.0 B  context: 131,072 tokens  license: Llama 3 Community License
-#> Gemma 2B     2.0 B  context:   8,192 tokens  license: Gemma Terms of Use
+#> Mistral 7B   7.3 B  context: 8,192 tokens  license: Apache 2.0
+#> Qwen2 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0
+#> Llama 3.1 8B   8.0 B  context: 131,072 tokens  license: Llama 3 Community License
+#> Gemma 2B   2.0 B  context: 8,192 tokens  license: Gemma Terms of Use
 ```
 
-Qwen2 7B and Llama 3.1 8B both offer 131 K context windows — suitable for full-document processing. Qwen2 has an Apache 2.0 license; Llama 3.1 carries Meta's community license, which restricts use if your application exceeds 700 M monthly users. For typical research use, either works. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner option with a smaller memory footprint despite nominally the same size class.
+Qwen2 7B and Llama 3.1 8B both offer 131 K context windows — suitable for full-document processing. Qwen2 has an Apache 2.0 license; Llama 3.1 carries Meta's community license, which restricts use if your application exceeds 700 M monthly users. For typical research use, either works. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner option.
 
 ```python
-# Compare training scale between the two long-context options
+# Compare training scale and language coverage between the two long-context options
 for name in ["Qwen2 7B", "Llama 3.1 8B"]:
     m = o.get_model(name)
     print(f"{name}: {m['training_tokens_b']:.0f} B tokens, {m['num_languages']} languages")
@@ -228,7 +269,7 @@ for name in ["Qwen2 7B", "Llama 3.1 8B"]:
 #> Llama 3.1 8B: 15000 B tokens, 8 languages
 ```
 
-Llama 3.1 8B was trained on more than twice as many tokens and supports 8 languages natively — a meaningful advantage for multilingual document tasks even at the same model size.
+Llama 3.1 8B was trained on more than twice as many tokens. Qwen2 7B has a higher `num_languages` count (27) but its `languages` list in the database only enumerates Chinese and English as the two primary documented languages — the broader figure reflects its multilingual training mix rather than explicit official support commitments.
 
 ---
 
@@ -247,12 +288,20 @@ for m in ranked:
         f"  code={m['open_code']}"
         f"  license={m['license']}"
     )
-#> OLMo 7B    weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
-#> OLMo 2 7B  weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
-#> Pythia 6.9B weights=True data=True  checkpoints=True  code=True  license=Apache 2.0
+#> OLMo 7B   weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
+#> OLMo 2 7B   weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
+#> Pythia 6.9B   weights=True  data=True  checkpoints=True  code=True  license=Apache 2.0
 ```
 
-All three score 5: weights, training data, intermediate checkpoints, training code, and a permissive license. For a methods paper, any of the three allows a reader to fully reproduce your pipeline from scratch.
+All three score 5: weights, training data, intermediate checkpoints, training code, and a permissive license. For a methods paper, any of the three allows a reader to fully reproduce your pipeline from scratch. None has an instruct-tuned variant in the strict sense — Pythia was never fine-tuned for instruction following at all:
+
+```python
+for m in ranked:
+    print(m["name"], "— instruct version:", m["has_instruct_version"])
+#> OLMo 7B — instruct version: True
+#> OLMo 2 7B — instruct version: True
+#> Pythia 6.9B — instruct version: False
+```
 
 Check recent literature before committing:
 
