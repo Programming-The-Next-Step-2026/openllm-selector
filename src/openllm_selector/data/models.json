@@ -8,9 +8,7 @@
     "size_b": 7.0,
     "training_tokens_b": 2500.0,
     "context_window": 2048,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -33,9 +31,7 @@
     "size_b": 7.0,
     "training_tokens_b": 4000.0,
     "context_window": 4096,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -58,9 +54,7 @@
     "size_b": 6.9,
     "training_tokens_b": 300.0,
     "context_window": 2048,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -83,9 +77,7 @@
     "size_b": 176.0,
     "training_tokens_b": 366.0,
     "context_window": 2048,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "BigScience RAIL",
     "open_weights": true,
@@ -155,9 +147,7 @@
     "size_b": 20.0,
     "training_tokens_b": 472.0,
     "context_window": 2048,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -180,9 +170,7 @@
     "size_b": 7.0,
     "training_tokens_b": 1500.0,
     "context_window": 2048,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -205,9 +193,7 @@
     "size_b": 40.0,
     "training_tokens_b": 1000.0,
     "context_window": 2048,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -230,9 +216,7 @@
     "size_b": 7.3,
     "training_tokens_b": null,
     "context_window": 8192,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -255,9 +239,7 @@
     "size_b": 46.7,
     "training_tokens_b": null,
     "context_window": 32768,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "mixture-of-experts",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -280,9 +262,7 @@
     "size_b": 7.0,
     "training_tokens_b": 2000.0,
     "context_window": 4096,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Llama 2 Community License",
     "open_weights": true,
@@ -305,9 +285,7 @@
     "size_b": 8.0,
     "training_tokens_b": 15000.0,
     "context_window": 131072,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Llama 3 Community License",
     "open_weights": true,
@@ -330,9 +308,7 @@
     "size_b": 2.0,
     "training_tokens_b": 6000.0,
     "context_window": 8192,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Gemma Terms of Use",
     "open_weights": true,
@@ -355,9 +331,7 @@
     "size_b": 9.0,
     "training_tokens_b": 8000.0,
     "context_window": 8192,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Gemma Terms of Use",
     "open_weights": true,
@@ -380,9 +354,7 @@
     "size_b": 3.8,
     "training_tokens_b": 3300.0,
     "context_window": 4096,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "MIT",
     "open_weights": true,
@@ -405,9 +377,7 @@
     "size_b": 7.6,
     "training_tokens_b": 7000.0,
     "context_window": 131072,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -430,9 +400,7 @@
     "size_b": 9.0,
     "training_tokens_b": 3600.0,
     "context_window": 4096,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "Apache 2.0",
     "open_weights": true,
@@ -455,9 +423,7 @@
     "size_b": 7.0,
     "training_tokens_b": 2000.0,
     "context_window": 4096,
-    "modality": [
-      "text"
-    ],
+    "modality": ["text"],
     "architecture": "decoder-only",
     "license": "DeepSeek License",
     "open_weights": true,

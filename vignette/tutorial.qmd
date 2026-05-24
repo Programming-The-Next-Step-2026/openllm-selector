@@ -10,7 +10,7 @@ format:
 
 Most LLM comparison tools ask "which model scores highest on MMLU?" That is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 18 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions.
+`openllm-selector` is a curated database of 18 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
 
 ## Installation
 

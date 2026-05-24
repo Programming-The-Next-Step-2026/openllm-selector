@@ -14,9 +14,9 @@ _AXIS_LABELS = {
     "num_languages": "Languages supported",
 }
 
-# Default axes: context window (x) vs training tokens (y).
-_X_DEFAULT_IDX = 0   # context_window
-_Y_DEFAULT_IDX = 2   # training_tokens_b
+# Default axes: training tokens (x) vs context window (y).
+_X_DEFAULT_IDX = 2   # training_tokens_b
+_Y_DEFAULT_IDX = 0   # context_window
 
 
 def _build_figure(
@@ -93,25 +93,29 @@ def _build_figure(
     if y_axis == "num_languages":
         fig.update_yaxes(tickformat="d")
 
-    # training_tokens_b: dip below 0 so large bubbles at y=0 aren't clipped,
-    # but suppress the negative region with explicit non-negative tick labels.
+    # Dip below 0 so large bubbles near the axis floor aren't clipped, but
+    # suppress negative values with explicit non-negative tick labels.
+    # The negative padding is proportional to the data range so it scales
+    # correctly when filters shrink the visible set.
     if y_axis == "training_tokens_b":
         y_max = df["training_tokens_b"].dropna().max()
         fig.update_yaxes(
-            range=[-500, y_max * 1.1],
+            range=[-(y_max * 0.06), y_max * 1.1],
             tickvals=[0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000],
         )
     elif y_axis == "num_languages":
-        fig.update_yaxes(range=[0, df["num_languages"].max() * 1.15])
+        y_max = df["num_languages"].max()
+        fig.update_yaxes(range=[-(y_max * 0.06), y_max * 1.15])
 
     if x_axis == "training_tokens_b":
         x_max = df["training_tokens_b"].dropna().max()
         fig.update_xaxes(
-            range=[-500, x_max * 1.1],
+            range=[-(x_max * 0.25), x_max * 1.1],
             tickvals=[0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000],
         )
     elif x_axis == "num_languages":
-        fig.update_xaxes(range=[0, df["num_languages"].max() * 1.15])
+        x_max = df["num_languages"].max()
+        fig.update_xaxes(range=[-(x_max * 0.25), x_max * 1.15])
 
     # Draw a highlight ring at the selected model's position.
     # Using a separate go.Scatter trace instead of Plotly's built-in selection

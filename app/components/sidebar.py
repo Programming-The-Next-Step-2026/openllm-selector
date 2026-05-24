@@ -121,9 +121,9 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             key="sb_licenses",
         )
         multilingual = st.checkbox("Multilingual", key="sb_multilingual")
-        has_instruct_version = st.checkbox("Has instruct version", key="sb_has_instruct_version")
+        has_instruct_version = st.checkbox("Instruct version available", key="sb_has_instruct_version")
         language = st.selectbox(
-            "Language",
+            "Language (official support only)",
             options=[""] + cached_get_languages(),
             format_func=lambda x: "All languages" if x == "" else x,
             key="sb_language",

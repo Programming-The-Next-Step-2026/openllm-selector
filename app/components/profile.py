@@ -91,8 +91,10 @@ def render_profile(model_name: str) -> None:
             langs = model.get("languages", [])
             st.caption(f"Languages: {', '.join(langs)}")
             st.markdown(
-                f"{'✅' if model['has_instruct_version'] else '❌'} Instruct version"
+                f"{'✅' if model['has_instruct_version'] else '❌'} Instruct version available"
             )
+            if model["name"] in ("Phi-3 Mini 4K", "LLaVA 1.5 7B"):
+                st.caption("This model is itself instruction-tuned.")
 
         # ------------------------------------------------------------------ #
         # Boolean feature badges                                              #

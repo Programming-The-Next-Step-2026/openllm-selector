@@ -213,7 +213,10 @@ def filter_models(
         If provided, keep only models where ``has_instruct_version`` matches.
     language : str, optional
         Keep only models whose ``languages`` list contains this language
-        (case-insensitive exact match against each list entry).
+        (case-insensitive exact match against each list entry). The
+        ``languages`` field reflects officially supported languages as
+        documented by the model authors — it does not capture limited or
+        incidental capabilities in other languages.
 
     Returns
     -------
