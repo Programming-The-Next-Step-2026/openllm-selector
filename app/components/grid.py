@@ -21,7 +21,7 @@ _COLUMN_CONFIG = {
     "openness_score": st.column_config.NumberColumn("Openness", format="%d ⭐"),
     "size_b": st.column_config.NumberColumn("Size (B)", format="%.1f"),
     "context_window": st.column_config.NumberColumn("Context (tokens)", format="%d"),
-    "training_tokens_b": st.column_config.NumberColumn("Training tokens (B)", format="%.0f"),
+    "training_tokens_b": st.column_config.TextColumn("Training tokens (B)"),
     "release_year": st.column_config.NumberColumn("Year"),
     "architecture": st.column_config.TextColumn("Architecture"),
     "license": st.column_config.TextColumn("License"),
@@ -61,7 +61,10 @@ def render_grid(filtered: list[dict]) -> None:
         st.session_state.selected_model = None
         st.session_state.pop("grid", None)
 
-    display_df = pd.DataFrame(filtered)[_GRID_COLUMNS]
+    display_df = pd.DataFrame(filtered)[_GRID_COLUMNS].copy()
+    display_df["training_tokens_b"] = display_df["training_tokens_b"].apply(
+        lambda x: "N/A" if x is None or pd.isna(x) else f"{x:.0f}"
+    )
 
     selection = st.dataframe(
         display_df,

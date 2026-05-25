@@ -1,4 +1,3 @@
-from .example import get_models
 from .database import (
     load_models,
     get_model,
@@ -13,7 +12,6 @@ from .database import (
 )
 
 __all__ = [
-    "get_models",
     "load_models",
     "get_model",
     "filter_models",

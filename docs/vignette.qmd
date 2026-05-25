@@ -12,6 +12,17 @@ Most LLM comparison tools ask "which model scores highest on MMLU?" That is not 
 
 `openllm-selector` is a curated database of 18 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
 
+```{mermaid}
+flowchart TD
+    A[Research question] --> B[Translate to filter constraints\ne.g. size, license, openness, language]
+    B --> C["filter_models()"]
+    C --> D["rank_by_openness()"]
+    D --> E{One clear winner?}
+    E -- Yes --> F["get_model() +\nfetch_recent_papers()"]
+    F --> G[Choose model]
+    E -- No --> B
+```
+
 ## Installation
 
 ```bash
@@ -40,7 +51,7 @@ The sidebar is organised into five sections:
 
 3. **Exclusion filters** expander — multiselects to remove models by family, organisation, architecture, country of origin, license, or modality.
 
-4. **Ranges** — sliders for size (B parameters), openness score (1–5), context window (tokens), release year, training tokens (B), and number of languages supported.
+4. **Ranges** — sliders for size (B parameters), context window (tokens), release year, and training tokens (B).
 
 5. **Reset all filters** button at the bottom.
 
@@ -50,7 +61,7 @@ The default view plots training tokens (B) on the x-axis against context window 
 
 ### Results grid
 
-The grid shows the filtered models ranked by openness score and displays: model name, openness score, size (B), context window, training tokens (B), release year, architecture, and license. Clicking a row also opens the profile card.
+The grid shows the filtered models ranked by openness score by default and displays: model name, openness score, size (B), context window, training tokens (B), release year, architecture, and license. Clicking any column header re-sorts the results by that column in ascending or descending order. Clicking a row opens the profile card.
 
 ### Profile card
 
@@ -98,11 +109,11 @@ Five models remain: BLOOM 176B and the two Mistral models (France) and the two F
 In the sidebar:
 
 1. Check the **Multilingual** checkbox
-2. Set the **Openness score** slider minimum to 3
+2. Open **Openness filters** → check **Open weights** and **Open training data**
 
 Three models match: BLOOM 176B (46 languages, BigScience RAIL license), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0). Use the **Language (official support only)** dropdown to check whether a specific language you need (e.g. Hindi) is present — it narrows the set to BLOOM 176B and Llama 3.1 8B. The license column in the grid makes the trade-off immediately visible.
 
-> *[Screenshot: Multilingual checked, openness slider at 3–5; grid showing BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
+> *[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
 
 ---
 
@@ -127,11 +138,11 @@ Four models appear. On the scatter plot with context window on the y-axis, Qwen2
 
 In the sidebar:
 
-1. Set the **Openness score** slider to a minimum of **5**
+1. Open **Openness filters** → check **Open weights**, **Open training data**, **Intermediate checkpoints**, **Open code**, and **Permissive license**
 
 Three models score 5: OLMo 7B, OLMo 2 7B, and Pythia 6.9B. Click any model to open the profile card, then expand **Recent arXiv papers** to see the latest citations — useful for a quick literature check before committing to a model.
 
-> *[Screenshot: openness slider set to 5–5; three results in the grid; OLMo 7B profile card open showing Recent arXiv papers expander]*
+> *[Screenshot: all five openness checkboxes checked; three results in the grid; OLMo 7B profile card open showing Recent arXiv papers expander]*
 
 ---
 

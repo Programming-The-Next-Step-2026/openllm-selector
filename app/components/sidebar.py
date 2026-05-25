@@ -26,10 +26,8 @@ _CTX_MAX = _CTX_OPTIONS[-1]
 
 # Full-range sentinels used to detect whether the user touched a slider.
 _SIZE_RANGE_DEFAULT = (2.0, 176.0)
-_OPENNESS_RANGE_DEFAULT = (1, 5)
 _YEAR_RANGE_DEFAULT = (2022, 2024)
 _TRAINING_TOKENS_RANGE_DEFAULT = (300, 15000)
-_NUM_LANGUAGES_RANGE_DEFAULT = (1, 46)
 
 # All widget keys — enumerated here so the reset button can clear them
 # without knowing implementation details of each widget.
@@ -46,11 +44,9 @@ _SIDEBAR_KEYS = [
     "sb_permissive_license",
     "sb_multilingual",
     "sb_size_range",
-    "sb_openness_range",
     "sb_ctx_range",
     "sb_year_range",
     "sb_training_tokens_range",
-    "sb_num_languages_range",
     "sb_has_instruct_version",
     "sb_language",
     "sb_excl_families",
@@ -120,8 +116,8 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             options=_LICENSES,
             key="sb_licenses",
         )
-        multilingual = st.checkbox("Multilingual", key="sb_multilingual")
         has_instruct_version = st.checkbox("Instruct version available", key="sb_has_instruct_version")
+        multilingual = st.checkbox("Multilingual", key="sb_multilingual")
         language = st.selectbox(
             "Language (official support only)",
             options=[""] + cached_get_languages(),
@@ -189,14 +185,6 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             step=0.5,
             key="sb_size_range",
         )
-        openness_range = st.slider(
-            "Openness score",
-            min_value=_OPENNESS_RANGE_DEFAULT[0],
-            max_value=_OPENNESS_RANGE_DEFAULT[1],
-            value=_OPENNESS_RANGE_DEFAULT,
-            step=1,
-            key="sb_openness_range",
-        )
         ctx_range = st.select_slider(
             "Context window (tokens)",
             options=_CTX_OPTIONS,
@@ -220,15 +208,6 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             step=100,
             key="sb_training_tokens_range",
         )
-        num_languages_range = st.slider(
-            "Languages supported",
-            min_value=_NUM_LANGUAGES_RANGE_DEFAULT[0],
-            max_value=_NUM_LANGUAGES_RANGE_DEFAULT[1],
-            value=_NUM_LANGUAGES_RANGE_DEFAULT,
-            step=1,
-            key="sb_num_languages_range",
-        )
-
         # ------------------------------------------------------------------ #
         # Reset                                                                #
         # ------------------------------------------------------------------ #
@@ -270,9 +249,6 @@ def render_sidebar() -> tuple[dict, dict, dict]:
     if size_range != _SIZE_RANGE_DEFAULT:
         filter_args["min_size_b"] = size_range[0]
         filter_args["max_size_b"] = size_range[1]
-    if openness_range != _OPENNESS_RANGE_DEFAULT:
-        filter_args["min_openness"] = openness_range[0]
-        filter_args["max_openness"] = openness_range[1]
     if ctx_range != (_CTX_MIN, _CTX_MAX):
         filter_args["min_context_window"] = ctx_range[0]
         filter_args["max_context_window"] = ctx_range[1]
@@ -282,10 +258,6 @@ def render_sidebar() -> tuple[dict, dict, dict]:
     if training_tokens_range != _TRAINING_TOKENS_RANGE_DEFAULT:
         filter_args["min_training_tokens_b"] = float(training_tokens_range[0])
         filter_args["max_training_tokens_b"] = float(training_tokens_range[1])
-    if num_languages_range != _NUM_LANGUAGES_RANGE_DEFAULT:
-        filter_args["min_num_languages"] = num_languages_range[0]
-        filter_args["max_num_languages"] = num_languages_range[1]
-
     multiselect_filters = {
         "family": families,
         "organization": orgs,
