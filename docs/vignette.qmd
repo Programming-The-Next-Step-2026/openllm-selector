@@ -10,15 +10,17 @@ format:
 
 Most LLM comparison tools ask "which model scores highest on MMLU?" That is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 18 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
+`openllm-selector` is a curated database of 23 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
+
+An optional `notes` field is present for models that require additional context, such as post-trained models where `training_tokens_b` is null for structural reasons rather than lack of disclosure (e.g. DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).
 
 ```{mermaid}
 flowchart TD
-    A[Research question] --> B[Translate to filter constraints\ne.g. size, license, openness, language]
+    A[Research question] --> B[Translate to filter constraints<br/>e.g. size, license, openness, language]
     B --> C["filter_models()"]
     C --> D["rank_by_openness()"]
     D --> E{One clear winner?}
-    E -- Yes --> F["get_model() +\nfetch_recent_papers()"]
+    E -- Yes --> F["get_model() +<br/>fetch_recent_papers()"]
     F --> G[Choose model]
     E -- No --> B
 ```
@@ -45,7 +47,7 @@ The app has three panels: a **filter sidebar** on the left, a **scatter plot** a
 
 The sidebar is organised into five sections:
 
-1. **Model characteristics** — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: a **Multilingual** checkbox, an **Instruct version available** checkbox, and a **Language (official support only)** dropdown to filter by a single officially supported language.
+1. **Model characteristics** — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: an **Instruct version available** checkbox, a **Think version available** checkbox, a **Multilingual** checkbox, a **Language (official support only)** dropdown to filter by a single officially supported language, and a **Model type** dropdown to restrict to `base`, `instruct`, or `reasoning` models. A note appears below the dropdown when `reasoning` is selected to clarify that DeepSeek-R1 is itself a reasoning model.
 
 2. **Openness filters** expander — checkboxes for open weights, open training data, intermediate checkpoints, open code, and permissive license (Apache 2.0 or MIT).
 

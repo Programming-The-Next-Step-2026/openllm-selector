@@ -31,8 +31,9 @@ def _build_figure(
     automatically when the context_window axis is selected, because that
     field spans two orders of magnitude (2 K – 131 K tokens).
 
-    BLOOM 176B is a size outlier (~88× the smallest model); size_max caps
-    the largest bubble at 40 px radius so smaller models remain visible.
+    Bubble area encodes ``size_b`` capped at 100 B so that outliers such as
+    BLOOM 176B and DeepSeek-R1 671B don't dwarf every other model. All models
+    above 100 B display at the same maximum bubble size.
 
     Parameters
     ----------
@@ -43,6 +44,9 @@ def _build_figure(
     selected_name : str or None
         Name of the currently selected model, used to draw a highlight ring.
     """
+    df = df.copy()
+    df["size_display"] = df["size_b"].clip(upper=100)
+
     fig = px.scatter(
         df,
         x=x_axis,
@@ -55,8 +59,9 @@ def _build_figure(
         hover_data={
             "openness_score": False,
             "size_b": False,
+            "size_display": False,
         },
-        size="size_b",
+        size="size_display",
         size_max=40,
         opacity=0.7,
         labels=_AXIS_LABELS,
@@ -193,7 +198,7 @@ def render_scatter(filtered: list[dict]) -> None:
         if name:
             st.session_state.selected_model = name
 
-    note = "Bubble area encodes model size (B parameters). BLOOM 176B is capped at the maximum bubble size."
+    note = "Bubble area encodes model size (B parameters), capped at 100 B — models larger than 100 B all display at the maximum bubble size."
     if x_axis == "training_tokens_b" or y_axis == "training_tokens_b":
         note += " Models with undisclosed training token counts are hidden."
     st.caption(note)

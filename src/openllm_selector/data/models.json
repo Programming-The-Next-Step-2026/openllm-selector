@@ -20,54 +20,20 @@
     "multilingual": true,
     "num_languages": 46,
     "languages": [
-      "Akkadian",
-      "Arabic",
-      "Assamese",
-      "Bambara",
-      "Basque",
-      "Bengali",
-      "Catalan",
-      "Chinese (Simplified)",
-      "Chinese (Traditional)",
-      "English",
-      "French",
-      "Fula",
-      "Gujarati",
-      "Hindi",
-      "Indonesian",
-      "Kinyarwanda",
-      "Korean",
-      "Lingala",
-      "Luganda",
-      "Malagasy",
-      "Malayalam",
-      "Marathi",
-      "Nepali",
-      "Nigerian Pidgin",
-      "Odia",
-      "Portuguese",
-      "Punjabi",
-      "Sanskrit",
-      "Shona",
-      "Sindhi",
-      "Somali",
-      "Spanish",
-      "Swahili",
-      "Tamil",
-      "Telugu",
-      "Thai",
-      "Tigrinya",
-      "Tsonga",
-      "Tswana",
-      "Turkish",
-      "Urdu",
-      "Vietnamese",
-      "Welsh",
-      "Wolof",
-      "Xhosa",
+      "Akkadian", "Arabic", "Assamese", "Bambara", "Basque",
+      "Bengali", "Catalan", "Chinese (Simplified)", "Chinese (Traditional)", "English",
+      "French", "Fula", "Gujarati", "Hindi", "Indonesian",
+      "Kinyarwanda", "Korean", "Lingala", "Luganda", "Malagasy",
+      "Malayalam", "Marathi", "Nepali", "Nigerian Pidgin", "Odia",
+      "Portuguese", "Punjabi", "Sanskrit", "Shona", "Sindhi",
+      "Somali", "Spanish", "Swahili", "Tamil", "Telugu",
+      "Thai", "Tigrinya", "Tsonga", "Tswana", "Turkish",
+      "Urdu", "Vietnamese", "Welsh", "Wolof", "Xhosa",
       "Yoruba"
     ],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2211.05100",
     "huggingface_id": "bigscience/bloom"
   },
@@ -91,13 +57,40 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 2,
-    "languages": [
-      "English",
-      "Chinese"
-    ],
+    "languages": ["English", "Chinese"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2401.02954",
     "huggingface_id": "deepseek-ai/deepseek-llm-7b-base"
+  },
+  {
+    "name": "DeepSeek-R1",
+    "family": "DeepSeek",
+    "organization": "DeepSeek AI",
+    "country_of_origin": "China",
+    "release_year": 2025,
+    "size_b": 671.0,
+    "training_tokens_b": null,
+    "context_window": 128000,
+    "modality": [
+      "text"
+    ],
+    "architecture": "mixture-of-experts",
+    "license": "MIT",
+    "open_weights": true,
+    "open_training_data": false,
+    "intermediate_checkpoints": false,
+    "open_code": false,
+    "multilingual": true,
+    "num_languages": 2,
+    "languages": ["English", "Chinese"],
+    "has_instruct_version": true,
+    "model_type": "reasoning",
+    "has_think_version": true,
+    "notes": "Post-trained reasoning model built on DeepSeek-V3-Base; training tokens not applicable.",
+    "foundational_paper": "https://arxiv.org/abs/2501.12948",
+    "huggingface_id": "deepseek-ai/DeepSeek-R1"
   },
   {
     "name": "Falcon 40B",
@@ -119,13 +112,10 @@
     "open_code": true,
     "multilingual": true,
     "num_languages": 4,
-    "languages": [
-      "English",
-      "German",
-      "Spanish",
-      "French"
-    ],
+    "languages": ["English", "German", "Spanish", "French"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2311.16867",
     "huggingface_id": "tiiuae/falcon-40b"
   },
@@ -149,13 +139,10 @@
     "open_code": true,
     "multilingual": true,
     "num_languages": 4,
-    "languages": [
-      "English",
-      "German",
-      "Spanish",
-      "French"
-    ],
+    "languages": ["English", "German", "Spanish", "French"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2311.16867",
     "huggingface_id": "tiiuae/falcon-7b"
   },
@@ -179,10 +166,10 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2408.00118",
     "huggingface_id": "google/gemma-2-9b"
   },
@@ -206,10 +193,10 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2403.08295",
     "huggingface_id": "google/gemma-2b"
   },
@@ -233,10 +220,10 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": false,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2204.06745",
     "huggingface_id": "EleutherAI/gpt-neox-20b"
   },
@@ -260,10 +247,10 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2307.09288",
     "huggingface_id": "meta-llama/Llama-2-7b"
   },
@@ -288,16 +275,12 @@
     "multilingual": true,
     "num_languages": 8,
     "languages": [
-      "English",
-      "German",
-      "French",
-      "Italian",
-      "Portuguese",
-      "Hindi",
-      "Spanish",
-      "Thai"
+      "English", "German", "French", "Italian", "Portuguese",
+      "Hindi", "Spanish", "Thai"
     ],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2407.21783",
     "huggingface_id": "meta-llama/Meta-Llama-3.1-8B"
   },
@@ -322,10 +305,11 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "instruct",
+    "has_think_version": false,
+    "notes": "Visual instruction fine-tune of Vicuna (Llama 2 7B); training tokens not applicable.",
     "foundational_paper": "https://arxiv.org/abs/2310.03744",
     "huggingface_id": "llava-hf/llava-1.5-7b-hf"
   },
@@ -349,10 +333,10 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": false,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2310.06825",
     "huggingface_id": "mistralai/Mistral-7B-v0.1"
   },
@@ -376,16 +360,39 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 5,
-    "languages": [
-      "English",
-      "French",
-      "Italian",
-      "German",
-      "Spanish"
-    ],
+    "languages": ["English", "French", "Italian", "German", "Spanish"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2401.04088",
     "huggingface_id": "mistralai/Mixtral-8x7B-v0.1"
+  },
+  {
+    "name": "OLMo 2 32B",
+    "family": "OLMo",
+    "organization": "Allen Institute for AI",
+    "country_of_origin": "United States",
+    "release_year": 2025,
+    "size_b": 32.0,
+    "training_tokens_b": 6000.0,
+    "context_window": 4096,
+    "modality": [
+      "text"
+    ],
+    "architecture": "decoder-only",
+    "license": "Apache 2.0",
+    "open_weights": true,
+    "open_training_data": true,
+    "intermediate_checkpoints": true,
+    "open_code": true,
+    "multilingual": false,
+    "num_languages": 1,
+    "languages": ["English"],
+    "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
+    "foundational_paper": "https://arxiv.org/abs/2501.00656",
+    "huggingface_id": "allenai/OLMo-2-0325-32B"
   },
   {
     "name": "OLMo 2 7B",
@@ -407,12 +414,39 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2501.00656",
     "huggingface_id": "allenai/OLMo-2-1124-7B"
+  },
+  {
+    "name": "OLMo 3 32B",
+    "family": "OLMo",
+    "organization": "Allen Institute for AI",
+    "country_of_origin": "United States",
+    "release_year": 2025,
+    "size_b": 32.0,
+    "training_tokens_b": 5500.0,
+    "context_window": 65536,
+    "modality": [
+      "text"
+    ],
+    "architecture": "decoder-only",
+    "license": "Apache 2.0",
+    "open_weights": true,
+    "open_training_data": true,
+    "intermediate_checkpoints": true,
+    "open_code": true,
+    "multilingual": false,
+    "num_languages": 1,
+    "languages": ["English"],
+    "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": true,
+    "foundational_paper": "https://arxiv.org/abs/2512.13961",
+    "huggingface_id": "allenai/Olmo-3-1125-32B"
   },
   {
     "name": "OLMo 7B",
@@ -434,10 +468,10 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2402.00838",
     "huggingface_id": "allenai/OLMo-7B"
   },
@@ -461,12 +495,39 @@
     "open_code": false,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": true,
+    "model_type": "instruct",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2404.14219",
     "huggingface_id": "microsoft/Phi-3-mini-4k-instruct"
+  },
+  {
+    "name": "Phi-4",
+    "family": "Phi",
+    "organization": "Microsoft",
+    "country_of_origin": "United States",
+    "release_year": 2024,
+    "size_b": 14.0,
+    "training_tokens_b": 9800.0,
+    "context_window": 16384,
+    "modality": [
+      "text"
+    ],
+    "architecture": "decoder-only",
+    "license": "MIT",
+    "open_weights": true,
+    "open_training_data": false,
+    "intermediate_checkpoints": false,
+    "open_code": false,
+    "multilingual": false,
+    "num_languages": 1,
+    "languages": ["English"],
+    "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": true,
+    "foundational_paper": "https://arxiv.org/abs/2412.08905",
+    "huggingface_id": "microsoft/phi-4"
   },
   {
     "name": "Pythia 6.9B",
@@ -488,10 +549,10 @@
     "open_code": true,
     "multilingual": false,
     "num_languages": 1,
-    "languages": [
-      "English"
-    ],
+    "languages": ["English"],
     "has_instruct_version": false,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2304.01373",
     "huggingface_id": "EleutherAI/pythia-6.9b"
   },
@@ -515,13 +576,46 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 27,
-    "languages": [
-      "English",
-      "Chinese"
-    ],
+    "languages": ["English", "Chinese"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2407.10671",
     "huggingface_id": "Qwen/Qwen2-7B"
+  },
+  {
+    "name": "Qwen2.5 7B",
+    "family": "Qwen",
+    "organization": "Alibaba",
+    "country_of_origin": "China",
+    "release_year": 2024,
+    "size_b": 7.6,
+    "training_tokens_b": 18000.0,
+    "context_window": 131072,
+    "modality": [
+      "text"
+    ],
+    "architecture": "decoder-only",
+    "license": "Apache 2.0",
+    "open_weights": true,
+    "open_training_data": false,
+    "intermediate_checkpoints": false,
+    "open_code": false,
+    "multilingual": true,
+    "num_languages": 29,
+    "languages": [
+      "Arabic", "Chinese (Simplified)", "Chinese (Traditional)", "Czech", "Danish",
+      "Dutch", "English", "Finnish", "French", "German",
+      "Greek", "Hebrew", "Hungarian", "Indonesian", "Italian",
+      "Japanese", "Korean", "Malay", "Norwegian", "Persian",
+      "Polish", "Portuguese", "Romanian", "Russian", "Spanish",
+      "Swedish", "Thai", "Turkish", "Vietnamese"
+    ],
+    "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
+    "foundational_paper": "https://arxiv.org/abs/2412.15115",
+    "huggingface_id": "Qwen/Qwen2.5-7B"
   },
   {
     "name": "Yi 1.5 9B",
@@ -543,11 +637,10 @@
     "open_code": false,
     "multilingual": true,
     "num_languages": 2,
-    "languages": [
-      "English",
-      "Chinese"
-    ],
+    "languages": ["English", "Chinese"],
     "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": false,
     "foundational_paper": "https://arxiv.org/abs/2403.04652",
     "huggingface_id": "01-ai/Yi-1.5-9B"
   }

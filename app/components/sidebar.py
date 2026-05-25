@@ -17,6 +17,7 @@ _LICENSES = [
     "MIT",
 ]
 _MODALITIES = ["image", "text"]
+_MODEL_TYPES = ["base", "instruct", "reasoning"]
 
 # Context window filter uses discrete buckets rather than a linear slider
 # because the range spans two orders of magnitude (2 K – 131 K).
@@ -48,6 +49,8 @@ _SIDEBAR_KEYS = [
     "sb_year_range",
     "sb_training_tokens_range",
     "sb_has_instruct_version",
+    "sb_has_think_version",
+    "sb_model_type",
     "sb_language",
     "sb_excl_families",
     "sb_excl_orgs",
@@ -117,6 +120,7 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             key="sb_licenses",
         )
         has_instruct_version = st.checkbox("Instruct version available", key="sb_has_instruct_version")
+        has_think_version = st.checkbox("Think version available", key="sb_has_think_version")
         multilingual = st.checkbox("Multilingual", key="sb_multilingual")
         language = st.selectbox(
             "Language (official support only)",
@@ -124,6 +128,14 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             format_func=lambda x: "All languages" if x == "" else x,
             key="sb_language",
         )
+        model_type = st.selectbox(
+            "Model type",
+            options=[""] + _MODEL_TYPES,
+            format_func=lambda x: "All types" if x == "" else x.capitalize(),
+            key="sb_model_type",
+        )
+        if model_type == "reasoning":
+            st.caption("DeepSeek-R1 is itself a reasoning model and counts as a reasoning-type model.")
 
         # ------------------------------------------------------------------ #
         # Boolean checkboxes                                                  #
@@ -244,6 +256,10 @@ def render_sidebar() -> tuple[dict, dict, dict]:
         filter_args["multilingual"] = True
     if language:
         filter_args["language"] = language
+    if model_type:
+        filter_args["model_type"] = model_type
+    if has_think_version:
+        filter_args["has_think_version"] = True
 
     # Range sliders: only add when the user narrowed from the full range.
     if size_range != _SIZE_RANGE_DEFAULT:

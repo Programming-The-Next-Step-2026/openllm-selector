@@ -5,3 +5,6 @@
 *.egg-info/
 dist/
 build/
+docs/vignette.html
+docs/vignette_files/
+*.deb

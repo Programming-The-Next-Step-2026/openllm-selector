@@ -47,7 +47,7 @@ class TestNewFields:
 
     def test_training_tokens_b_null_models(self, all_models):
         null_names = {m["name"] for m in all_models if m["training_tokens_b"] is None}
-        assert null_names == {"Mistral 7B", "Mixtral 8x7B", "LLaVA 1.5 7B"}
+        assert null_names == {"Mistral 7B", "Mixtral 8x7B", "LLaVA 1.5 7B", "DeepSeek-R1"}
 
     def test_training_tokens_b_positive_when_present(self, all_models):
         for m in all_models:
@@ -170,7 +170,7 @@ class TestNewFields:
     def test_filter_max_num_languages(self):
         results = filter_models(max_num_languages=1)
         assert all(m["num_languages"] == 1 for m in results)
-        assert len(results) == 10  # all English-only models
+        assert len(results) == 13  # all English-only models
 
     def test_filter_num_languages_range(self):
         results = filter_models(min_num_languages=2, max_num_languages=5)
@@ -199,7 +199,7 @@ class TestNewFields:
 
     def test_filter_has_instruct_version_true(self):
         results = filter_models(has_instruct_version=True)
-        assert len(results) == 15
+        assert len(results) == 20
         assert all(m["has_instruct_version"] is True for m in results)
 
     def test_filter_has_instruct_and_openness(self):
@@ -306,7 +306,7 @@ class TestNewFields:
 
     def test_filter_language_english(self):
         results = filter_models(language="English")
-        assert len(results) == 18  # all models support English
+        assert len(results) == 23  # all models support English
 
     def test_filter_language_hindi(self):
         results = filter_models(language="Hindi")
@@ -316,12 +316,12 @@ class TestNewFields:
     def test_filter_language_thai(self):
         results = filter_models(language="Thai")
         names = {m["name"] for m in results}
-        assert names == {"BLOOM 176B", "Llama 3.1 8B"}
+        assert names == {"BLOOM 176B", "Llama 3.1 8B", "Qwen2.5 7B"}
 
     def test_filter_language_italian(self):
         results = filter_models(language="Italian")
         names = {m["name"] for m in results}
-        assert names == {"Mixtral 8x7B", "Llama 3.1 8B"}
+        assert names == {"Mixtral 8x7B", "Llama 3.1 8B", "Qwen2.5 7B"}
 
     def test_filter_language_case_insensitive(self):
         assert filter_models(language="english") == filter_models(language="English")
@@ -334,6 +334,115 @@ class TestNewFields:
         results = filter_models(language="French", min_openness=4)
         assert all("French" in m["languages"] for m in results)
         assert all(m["openness_score"] >= 4 for m in results)
+
+    # --- model_type field ---
+
+    def test_model_type_present(self, all_models):
+        for m in all_models:
+            assert "model_type" in m, f"{m['name']} missing model_type field"
+
+    def test_model_type_is_string(self, all_models):
+        for m in all_models:
+            assert isinstance(m["model_type"], str), (
+                f"{m['name']} model_type should be str"
+            )
+
+    def test_model_type_valid_values(self, all_models):
+        valid = {"base", "instruct", "reasoning"}
+        for m in all_models:
+            assert m["model_type"] in valid, (
+                f"{m['name']} has invalid model_type '{m['model_type']}'"
+            )
+
+    def test_known_model_type_instruct(self):
+        assert get_model("Phi-3 Mini 4K")["model_type"] == "instruct"
+        assert get_model("LLaVA 1.5 7B")["model_type"] == "instruct"
+
+    def test_known_model_type_reasoning(self):
+        assert get_model("DeepSeek-R1")["model_type"] == "reasoning"
+
+    def test_known_model_type_base(self):
+        for name in ["OLMo 7B", "Llama 3.1 8B", "Pythia 6.9B", "BLOOM 176B"]:
+            assert get_model(name)["model_type"] == "base", (
+                f"{name} should have model_type='base'"
+            )
+
+    def test_filter_model_type_base(self):
+        results = filter_models(model_type="base")
+        assert all(m["model_type"] == "base" for m in results)
+        assert len(results) == 20
+
+    def test_filter_model_type_instruct(self):
+        results = filter_models(model_type="instruct")
+        names = {m["name"] for m in results}
+        assert names == {"Phi-3 Mini 4K", "LLaVA 1.5 7B"}
+
+    def test_filter_model_type_reasoning(self):
+        results = filter_models(model_type="reasoning")
+        assert len(results) == 1
+        assert results[0]["name"] == "DeepSeek-R1"
+
+    def test_filter_model_type_case_insensitive(self):
+        assert filter_models(model_type="BASE") == filter_models(model_type="base")
+        assert filter_models(model_type="Instruct") == filter_models(model_type="instruct")
+
+    def test_filter_model_type_no_match_returns_empty(self):
+        assert filter_models(model_type="unknown") == []
+
+    # --- has_think_version field ---
+
+    def test_has_think_version_present(self, all_models):
+        for m in all_models:
+            assert "has_think_version" in m, f"{m['name']} missing has_think_version field"
+
+    def test_has_think_version_is_bool(self, all_models):
+        for m in all_models:
+            assert isinstance(m["has_think_version"], bool), (
+                f"{m['name']} has_think_version should be bool"
+            )
+
+    def test_known_has_think_version_true(self):
+        assert get_model("OLMo 3 32B")["has_think_version"] is True
+        assert get_model("DeepSeek-R1")["has_think_version"] is True
+        assert get_model("Phi-4")["has_think_version"] is True
+
+    def test_known_has_think_version_false(self):
+        for name in ["OLMo 7B", "OLMo 2 7B", "Pythia 6.9B", "Llama 3.1 8B"]:
+            assert get_model(name)["has_think_version"] is False, (
+                f"{name} should have has_think_version=False"
+            )
+
+    def test_filter_has_think_version_true(self):
+        results = filter_models(has_think_version=True)
+        names = {m["name"] for m in results}
+        assert names == {"OLMo 3 32B", "DeepSeek-R1", "Phi-4"}
+
+    def test_filter_has_think_version_false(self):
+        results = filter_models(has_think_version=False)
+        assert len(results) == 20
+        assert all(m["has_think_version"] is False for m in results)
+
+    def test_filter_has_think_version_combined(self):
+        results = filter_models(has_think_version=True, open_weights=True)
+        assert all(m["has_think_version"] is True for m in results)
+        assert all(m["open_weights"] is True for m in results)
+
+    # --- notes field (optional) ---
+
+    def test_notes_present_on_deepseek_r1(self):
+        model = get_model("DeepSeek-R1")
+        assert "notes" in model
+
+    def test_notes_absent_or_none_on_standard_model(self):
+        model = get_model("OLMo 7B")
+        assert model.get("notes") is None
+
+    def test_notes_non_empty_string_when_present(self, all_models):
+        for m in all_models:
+            if "notes" in m:
+                assert isinstance(m["notes"], str) and m["notes"].strip(), (
+                    f"{m['name']} has an empty or non-string notes field"
+                )
 
 
 # ---------------------------------------------------------------------------
@@ -422,8 +531,9 @@ class TestLoadModels:
             "release_year", "size_b", "training_tokens_b", "context_window",
             "modality", "architecture", "license", "open_weights",
             "open_training_data", "intermediate_checkpoints", "open_code",
-            "multilingual", "num_languages", "has_instruct_version",
-            "foundational_paper", "huggingface_id", "openness_score",
+            "multilingual", "num_languages", "languages", "has_instruct_version",
+            "model_type", "has_think_version", "foundational_paper",
+            "huggingface_id", "openness_score",
         }
         for model in all_models:
             assert required <= model.keys(), f"{model['name']} is missing fields"

@@ -88,6 +88,8 @@ def render_profile(model_name: str) -> None:
                 "Training tokens",
                 f"{tokens:,.0f} B" if tokens is not None else "Undisclosed",
             )
+            if model.get("notes"):
+                st.caption(model["notes"])
             langs = model.get("languages", [])
             st.caption(f"Languages: {', '.join(langs)}")
             st.markdown(

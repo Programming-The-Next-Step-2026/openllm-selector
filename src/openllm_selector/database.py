@@ -58,8 +58,11 @@ def load_models() -> list[dict]:
         country_of_origin, release_year, size_b, training_tokens_b,
         context_window, modality, architecture, license, open_weights,
         open_training_data, intermediate_checkpoints, open_code, multilingual,
-        num_languages, has_instruct_version, foundational_paper,
-        huggingface_id, and openness_score (computed).
+        num_languages, languages, has_instruct_version, model_type,
+        has_think_version, foundational_paper, huggingface_id, and
+        openness_score (computed). The ``notes`` field is optional and present
+        only for models where additional context is needed (e.g. post-trained
+        models where ``training_tokens_b`` is null for structural reasons).
         ``training_tokens_b`` is ``None`` for models whose training token
         count has not been publicly disclosed.
     """
@@ -81,7 +84,9 @@ def get_model(name: str) -> dict | None:
     Returns
     -------
     dict or None
-        The model record if found, ``None`` otherwise.
+        The model record if found, ``None`` otherwise. The optional ``notes``
+        field is present only on models that carry additional context; use
+        ``model.get("notes")`` to avoid a ``KeyError`` on models that omit it.
 
     Examples
     --------
@@ -129,6 +134,8 @@ def filter_models(
     max_num_languages: int | None = None,
     has_instruct_version: bool | None = None,
     language: str | None = None,
+    model_type: str | None = None,
+    has_think_version: bool | None = None,
 ) -> list[dict]:
     """Filter models by one or more criteria.
 
@@ -217,6 +224,18 @@ def filter_models(
         ``languages`` field reflects officially supported languages as
         documented by the model authors — it does not capture limited or
         incidental capabilities in other languages.
+    model_type : str, optional
+        Exact model type to match (case-insensitive). One of ``"base"``,
+        ``"instruct"``, or ``"reasoning"``.
+    has_think_version : bool, optional
+        If provided, keep only models where ``has_think_version`` matches.
+
+    Notes
+    -----
+    The ``notes`` field is optional and not a filter criterion. It is present
+    only on models that require additional context (e.g. post-trained models
+    where ``training_tokens_b`` is null for structural reasons). Access it
+    with ``model.get("notes")`` to safely handle models that omit it.
 
     Returns
     -------
@@ -239,6 +258,8 @@ def filter_models(
     >>> many_langs = filter_models(min_num_languages=5)
     >>> no_instruct = filter_models(has_instruct_version=False)
     >>> hindi_models = filter_models(language="Hindi")
+    >>> base_only = filter_models(model_type="base")
+    >>> think_models = filter_models(has_think_version=True)
     """
     results = []
     for m in load_models():
@@ -306,6 +327,10 @@ def filter_models(
         if language is not None:
             if not any(lang.lower() == language.lower() for lang in m["languages"]):
                 continue
+        if model_type is not None and m["model_type"].lower() != model_type.lower():
+            continue
+        if has_think_version is not None and m["has_think_version"] != has_think_version:
+            continue
         results.append(m)
     return results
 
