@@ -70,10 +70,12 @@ def render_profile(model_name: str) -> None:
         col_left, col_right = st.columns([2, 1])
 
         with col_left:
+            langs = model.get("languages", [])
             st.markdown(
                 f"**Family:** {model['family']}  \n"
                 f"**Architecture:** {model['architecture']}  \n"
-                f"**License:** {model['license']}"
+                f"**License:** {model['license']}  \n"
+                f"**Languages:** {', '.join(langs)}"
             )
             st.markdown(
                 f"[Foundational paper ↗]({model['foundational_paper']})  ·  "
@@ -90,8 +92,6 @@ def render_profile(model_name: str) -> None:
             )
             if model.get("notes"):
                 st.caption(model["notes"])
-            langs = model.get("languages", [])
-            st.caption(f"Languages: {', '.join(langs)}")
             st.markdown(
                 f"{'✅' if model['has_instruct_version'] else '❌'} Instruct version available"
             )
@@ -121,8 +121,12 @@ def render_profile(model_name: str) -> None:
             with st.spinner("Fetching papers…"):
                 try:
                     papers = cached_fetch_recent_papers(model["name"], max_results=3)
-                except Exception:
-                    st.warning("Could not reach arXiv. Check your network connection.")
+                except Exception as exc:
+                    import requests as _req
+                    if isinstance(exc, _req.exceptions.HTTPError) and exc.response is not None and exc.response.status_code == 429:
+                        st.warning("429 Too Many Requests — arXiv rate limit reached, please wait a few minutes and try again.")
+                    else:
+                        st.warning("Could not reach arXiv. Check your network connection.")
                     papers = []
 
             if not papers:

@@ -502,14 +502,14 @@ def fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]:
     dict_keys(['title', 'authors', 'summary', 'published', 'arxiv_url'])
     """
     response = requests.get(
-        "https://export.arxiv.org/api/query",
+        "http://arxiv.org/api/query",
         params={
             "search_query": f'all:"{model_name}"',
             "sortBy": "submittedDate",
             "sortOrder": "descending",
             "max_results": max_results,
         },
-        timeout=10,
+        timeout=30,
     )
     response.raise_for_status()
 
