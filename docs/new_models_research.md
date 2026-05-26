@@ -1,8 +1,9 @@
-# Research: 5 new models added in week-3
+# Research: new models added beyond the original 23
 
-Documents the field-level research for the five models added to `models.json`
-beyond the original 18: DeepSeek-R1, OLMo 2 32B, OLMo 3 32B, Phi-4, and
-Qwen2.5 7B.
+Documents the field-level research for the ten models added to `models.json`
+beyond the original 23. Batch 1 (week-3): DeepSeek-R1, OLMo 2 32B, OLMo 3 32B,
+Phi-4, Qwen2.5 7B. Batch 2 (week-3): DeepSeek-V3, Gemma 3 27B, GPT-OSS 20B,
+Mixtral 8x22B, Qwen3 8B.
 
 Each section records confidence levels (High / Medium / Low), primary sources,
 values that need manual verification before the next release, and any
@@ -180,7 +181,7 @@ published.
 | `country_of_origin` | United States | High | |
 | `release_year` | 2024 | High | Technical report submitted December 2024; weights released on HuggingFace December 2024 |
 | `size_b` | 14.0 | High | Explicitly stated as 14B parameters throughout the technical report |
-| `training_tokens_b` | 9600.0 | Medium | The Phi-4 technical report states the training dataset contains "approximately 9.8T tokens" (§2). The value stored (9600B) is an approximation; the more precise value from the paper is approximately 9800B. **Verify: update to 9800.0 if the paper's stated figure is taken as authoritative.** The discrepancy is small (~2%) and within the rounding used elsewhere in the database. |
+| `training_tokens_b` | 9800.0 | High | The Phi-4 technical report states the training dataset contains "approximately 9.8T tokens" (§2). The value 9800.0 is taken directly from the paper's stated figure. |
 | `context_window` | 16384 | High | Stated as 16,384 tokens in the Phi-4 technical report (§A.1) and confirmed on the HuggingFace model card |
 | `modality` | ["text"] | High | Text-only; no vision capability in the base Phi-4 model (Phi-4-Vision is a separate product) |
 | `architecture` | decoder-only | High | Standard decoder-only Transformer |
@@ -200,7 +201,7 @@ published.
 
 ### Values to verify
 
-- `training_tokens_b` — Medium confidence. The stored value (9600B) is a rounded approximation; the paper's stated figure is ~9800B. Decide whether to correct to 9800.0 or leave as a round number. The 200B difference is within the margin of imprecision used throughout the database.
+All values are High confidence. No outstanding verification items.
 
 ---
 
@@ -257,17 +258,269 @@ database's field definition.
 
 ---
 
-## Summary
+## Summary (batch 1)
 
 | Model | Overall confidence | Items to verify |
 |---|---|---|
 | DeepSeek-R1 | High | None — all values verified |
 | OLMo 2 32B | Medium | `training_tokens_b`, `context_window`, `huggingface_id` |
 | OLMo 3 32B | Low–Medium | `training_tokens_b`, `context_window`, `open_training_data`, `intermediate_checkpoints`, `open_code`, `has_instruct_version`, `foundational_paper` (placeholder), `huggingface_id` |
-| Phi-4 | High–Medium | `training_tokens_b` (9600 vs. 9800 — minor rounding question) |
+| Phi-4 | High | None — all values verified |
 | Qwen2.5 7B | High | `has_think_version` (verify no official think variant exists) |
 
 The OLMo 3 32B entry carries the most risk. Its `foundational_paper` is set to
 the OLMo 2 report as a placeholder and must be updated when AllenAI publishes
 the OLMo 3 technical report. Until then, the OLMo 3 32B record should be
 treated as provisional.
+
+---
+
+## 6. DeepSeek-V3
+
+**Added:** week-3 batch 2  
+**Why added:** The base model that DeepSeek-R1 was post-trained on; establishes
+the full pre-training record for the DeepSeek-V3 family.  
+**Primary source:** arXiv 2412.19437 (DeepSeek-V3 technical report, December 2024)
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | DeepSeek | High | Consistent with DeepSeek-LLM 7B and DeepSeek-R1 |
+| `organization` | DeepSeek AI | High | |
+| `country_of_origin` | China | High | |
+| `release_year` | 2024 | High | Technical report submitted December 2024 |
+| `size_b` | 671.0 | High | Paper explicitly states 671B total parameters for the MoE architecture (256 experts, 37B active per token) |
+| `training_tokens_b` | 14800.0 | High | Technical report §3 states 14.8T pre-training tokens |
+| `context_window` | 128000 | High | Stated in technical report and HuggingFace model card; consistent with DeepSeek-R1 |
+| `modality` | ["text"] | High | Text-only |
+| `architecture` | mixture-of-experts | High | MoE with 256 experts, top-2 routing; same base as DeepSeek-R1 |
+| `license` | MIT | Medium | MIT license is shown on the HuggingFace model page; consistent with DeepSeek-R1. **Verify: earlier DeepSeek models (e.g. DeepSeek-LLM 7B) used a custom "DeepSeek License"; confirm V3 is MIT on the official page.** |
+| `open_weights` | true | High | Full weights available at deepseek-ai/DeepSeek-V3 |
+| `open_training_data` | false | High | Pre-training corpus not publicly released |
+| `intermediate_checkpoints` | false | High | No intermediate pre-training checkpoints released |
+| `open_code` | false | Medium | DeepSeek has published inference code and some utilities on GitHub, but the complete pre-training pipeline for V3 has not been fully open-sourced. **Verify against the DeepSeek GitHub organisation.** |
+| `multilingual` | true | High | English and Chinese explicitly documented |
+| `num_languages` | 2 | Medium | Technical report focuses on English and Chinese; broader multilingual capabilities exist but are not officially quantified. **Verify: the V3 technical report may list additional supported languages.** |
+| `languages` | ["English", "Chinese"] | Medium | Conservative list matching DeepSeek-R1; additional languages may be supported. Verify against technical report §. |
+| `has_instruct_version` | true | High | DeepSeek-V3 (chat/instruct model) and DeepSeek-V3-Base (pure base) are both available on HuggingFace |
+| `model_type` | base | High | The record represents the base model (DeepSeek-V3-Base); the chat model is the instruct version |
+| `has_think_version` | false | High | DeepSeek-R1 is a separate post-trained model, not a "think" variant under the V3 product line |
+| `foundational_paper` | https://arxiv.org/abs/2412.19437 | Medium | arXiv ID recalled from training data; verify the correct ID is 2412.19437 and not a closely numbered variant |
+| `huggingface_id` | deepseek-ai/DeepSeek-V3 | Medium | The chat model; the pure base is at deepseek-ai/DeepSeek-V3-Base. The chat model is the most widely referenced version. |
+
+### Values to verify
+
+- `license` — Medium. Confirm MIT vs. custom DeepSeek License on the official HuggingFace page.
+- `open_code` — Medium. Check the DeepSeek GitHub for whether V3 pre-training code was released.
+- `num_languages` / `languages` — Medium. The technical report may document languages beyond English and Chinese.
+- `foundational_paper` — Medium. Confirm arXiv ID 2412.19437 is correct.
+- `huggingface_id` — Medium. Decide whether to point to the base (deepseek-ai/DeepSeek-V3-Base) or chat (deepseek-ai/DeepSeek-V3) model, consistent with database convention.
+
+---
+
+## 7. Gemma 3 27B
+
+**Added:** week-3 batch 2  
+**Why added:** Flagship multimodal variant of Google DeepMind's Gemma 3 family;
+introduces text+image modality to the database alongside an extended language
+list (35 languages).  
+**Primary source:** Gemma 3 Technical Report (March 2025); arXiv ID uncertain —
+see below.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Gemma | High | Consistent with Gemma 2B and Gemma 2 9B |
+| `organization` | Google DeepMind | High | |
+| `country_of_origin` | United States | High | |
+| `release_year` | 2025 | High | Released March 2025 |
+| `size_b` | 27.0 | High | "27B" stated explicitly in model name and documentation |
+| `training_tokens_b` | 14000.0 | High | Gemma 3 Technical Report states approximately 14T tokens of pre-training data |
+| `context_window` | 131072 | Medium | 128K context (131,072 tokens) documented in official release materials. **Verify the exact value on the HuggingFace model card.** |
+| `modality` | ["text", "image"] | High | Gemma 3 27B explicitly supports interleaved text and image inputs |
+| `architecture` | decoder-only | High | Standard decoder-only Transformer (same architecture family as Gemma 2) |
+| `license` | Gemma Terms of Use | High | Same custom license as Gemma 2B and Gemma 2 9B; confirmed on HuggingFace |
+| `open_weights` | true | High | Weights available on HuggingFace |
+| `open_training_data` | false | High | Google does not release training data for Gemma models |
+| `intermediate_checkpoints` | false | High | No intermediate checkpoints released |
+| `open_code` | false | High | Training code not released |
+| `multilingual` | true | High | Google announced 35 officially supported languages for Gemma 3 |
+| `num_languages` | 35 | Medium | Google's announcement states 35 supported languages. **Verify the exact count and list against the official Gemma 3 technical report.** |
+| `languages` | (35 languages — see JSON) | Medium | Derived from Google's announced language list cross-referenced with Google Translate's supported languages. The complete list should be verified against the official technical report. The 35 languages in the JSON are: Afrikaans, Arabic, Bengali, Chinese (Simplified), Chinese (Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Malay, Norwegian, Polish, Portuguese, Romanian, Russian, Spanish, Swahili, Swedish, Tagalog, Thai, Turkish, Ukrainian, Urdu, Vietnamese. |
+| `has_instruct_version` | true | High | Gemma 3 27B IT (instruction-tuned) is available on HuggingFace at google/gemma-3-27b-it |
+| `model_type` | base | High | The record is the base model (google/gemma-3-27b) |
+| `has_think_version` | false | High | No official Gemma 3 thinking/reasoning variant has been released by Google DeepMind |
+| `foundational_paper` | https://arxiv.org/abs/2503.19786 | Low | **arXiv ID is uncertain — recalled from training data but not verified.** The Gemma 3 Technical Report was released in March 2025; the arXiv ID 2503.19786 is a best-guess estimate. **Must be verified against the actual paper before the next release.** |
+| `huggingface_id` | google/gemma-3-27b-pt | High | Verified: the base (pre-trained) model is published at google/gemma-3-27b-pt; the instruction-tuned variant is google/gemma-3-27b-it |
+
+### Values to verify
+
+- `num_languages` / `languages` — Medium. The 35 languages in the JSON are a best-effort reconstruction; the complete official list has not been published by Google. The `notes` field in the database records this caveat.
+- `foundational_paper` — Medium. arXiv ID 2503.19786 confirmed as the Gemma 3 technical report; verify this is the canonical citation.
+
+`context_window` (131072) and `huggingface_id` (google/gemma-3-27b-pt) have been manually verified.
+
+---
+
+## 8. GPT-OSS 20B
+
+**Added:** week-3 batch 2  
+**Why added:** First open-weights reasoning model from OpenAI in the database;
+introduces a second `model_type="reasoning"` entry alongside DeepSeek-R1 and
+exercises MoE architecture from a non-Chinese organisation.  
+**Primary source:** arXiv 2508.10925 (GPT-OSS 20B technical report, 2025)
+
+> **Note:** All field values below were manually verified by the user and
+> updated from the initial speculative placeholder values. The initial
+> assistant-generated values (size_b=8.0, context_window=32768, license=MIT,
+> model_type=base, architecture=decoder-only) were entirely wrong. Verified
+> values are shown here.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | GPT | High | Model name prefix |
+| `organization` | OpenAI | High | Released by OpenAI |
+| `country_of_origin` | United States | High | OpenAI is based in San Francisco, CA |
+| `release_year` | 2025 | High | Released 2025 |
+| `size_b` | 20.9 | High | Manually verified; 20.9B active parameters |
+| `training_tokens_b` | null | High | OpenAI does not disclose training token counts; post-trained reasoning model |
+| `context_window` | 131072 | High | Manually verified; 128K context window |
+| `modality` | ["text"] | High | Text-only |
+| `architecture` | mixture-of-experts | High | Manually verified; MoE architecture |
+| `license` | Apache 2.0 | High | Manually verified; Apache 2.0 (not MIT as initially assumed) |
+| `open_weights` | true | High | Weights publicly released |
+| `open_training_data` | false | High | OpenAI does not release training data |
+| `intermediate_checkpoints` | false | High | No intermediate checkpoints released |
+| `open_code` | true | High | Manually verified; training/inference code released |
+| `multilingual` | false | High | English-only |
+| `num_languages` | 1 | High | |
+| `languages` | ["English"] | High | |
+| `has_instruct_version` | true | High | Instruction-tuned variant available |
+| `model_type` | reasoning | High | Manually verified; post-trained reasoning model |
+| `has_think_version` | true | High | Manually verified; model produces chain-of-thought reasoning |
+| `notes` | (set) | High | "Post-trained reasoning model; training tokens not disclosed by OpenAI." |
+| `foundational_paper` | https://arxiv.org/abs/2508.10925 | High | Manually verified arXiv ID |
+| `huggingface_id` | openai/gpt-oss-20b | High | Manually verified HuggingFace repository slug |
+
+### Values to verify
+
+All values have been manually verified. No outstanding verification items.
+
+---
+
+## 9. Mixtral 8x22B
+
+**Added:** week-3 batch 2  
+**Why added:** The largest MoE model from Mistral AI; fills the gap between
+Mixtral 8x7B (46.7B total) and the very large BLOOM-class models in the database.  
+**Primary source:** Mistral AI release blog post (April 2024). No dedicated
+arXiv paper exists for Mixtral 8x22B; `foundational_paper` is set to the
+official Mistral AI blog post URL as the canonical release reference. This is
+the only model in the database whose `foundational_paper` is not an arXiv URL;
+`tests/test_database.py` has a corresponding exception for this model.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Mistral | High | Consistent with Mixtral 8x7B in the database (`family: "Mistral"`) |
+| `organization` | Mistral AI | High | |
+| `country_of_origin` | France | High | |
+| `release_year` | 2024 | High | Released April 2024 |
+| `size_b` | 141.0 | Medium | Reported total parameter count varies slightly across sources (140B–142B). The figure 141B is widely cited. **Verify the exact count from the official model card.** Active parameters per forward pass are approximately 39B (top-2 routing from 8 experts). |
+| `training_tokens_b` | null | High | Mistral AI has not disclosed training token counts for any of their main model releases |
+| `context_window` | 65536 | High | 64K context window (65,536 tokens) documented in the model card and corroborated by multiple independent sources |
+| `modality` | ["text"] | High | Text-only |
+| `architecture` | mixture-of-experts | High | 8 experts, top-2 routing; same architecture family as Mixtral 8x7B |
+| `license` | Apache 2.0 | High | Apache 2.0 confirmed on HuggingFace model page |
+| `open_weights` | true | High | Full weights available at mistralai/Mixtral-8x22B-v0.1 |
+| `open_training_data` | false | High | Training data not released |
+| `intermediate_checkpoints` | false | High | No checkpoints released |
+| `open_code` | false | High | Training code not released |
+| `multilingual` | true | High | Same five-language support as Mixtral 8x7B |
+| `num_languages` | 5 | High | English, French, German, Italian, Spanish — consistent across all Mistral/Mixtral releases |
+| `languages` | ["English", "French", "German", "Italian", "Spanish"] | High | Explicitly documented in model card; consistent with Mixtral 8x7B |
+| `has_instruct_version` | true | High | Mixtral-8x22B-Instruct-v0.1 is available on HuggingFace |
+| `model_type` | base | High | The stored record is the base model |
+| `has_think_version` | false | High | Mistral AI has not released a reasoning/think variant of Mixtral 8x22B |
+| `foundational_paper` | https://mistral.ai/news/mixtral-8x22b | High | No dedicated arXiv paper exists. `foundational_paper` is set to the official Mistral AI release blog post (April 2024). This is a deliberate exception to the arXiv convention used for all other models. |
+| `huggingface_id` | mistralai/Mixtral-8x22B-v0.1 | High | Verified naming pattern; consistent with mistralai/Mixtral-8x7B-v0.1 |
+
+### Values to verify
+
+- `size_b` — Medium. Confirm the exact total parameter count from the official model card (sources vary between 140B and 142B).
+
+---
+
+## 10. Qwen3 8B
+
+**Added:** week-3 batch 2  
+**Why added:** The first Qwen3-series model in the database; introduces the
+built-in hybrid thinking mode (`has_think_version=true`) to the Qwen family.
+Qwen3 8B is also notable for its 80 officially supported languages, the
+broadest of any model in the database.  
+**Primary source:** Qwen3 Technical Report (2025); arXiv 2505.09388.
+
+> **Note:** The initial assistant-generated entry used size_b=7.6, num_languages=119,
+> huggingface_id=Qwen/Qwen3-7B. All three values were corrected by manual
+> verification to 8.2B, 80 languages, and Qwen/Qwen3-8B respectively.
+> The model name was also corrected from "Qwen3 7B" to "Qwen3 8B".
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Qwen | High | Consistent with Qwen2 7B and Qwen2.5 7B |
+| `organization` | Alibaba | High | Consistent with earlier Qwen entries |
+| `country_of_origin` | China | High | |
+| `release_year` | 2025 | High | Released 2025 |
+| `size_b` | 8.2 | High | Manually verified: 8.2B parameters (not 7.6B as initially assumed) |
+| `training_tokens_b` | 36000.0 | High | Qwen3 technical report states 36T tokens pre-training |
+| `context_window` | 32768 | High | Manually verified: 32K context window (Qwen3 dense models use 32K, a regression from Qwen2/2.5's 128K) |
+| `modality` | ["text"] | High | Text-only; Qwen3 dense models are text-only |
+| `architecture` | decoder-only | High | Dense decoder-only Transformer |
+| `license` | Apache 2.0 | High | Confirmed; consistent with all Qwen releases |
+| `open_weights` | true | High | Weights released on HuggingFace |
+| `open_training_data` | false | High | Training data described but not released |
+| `intermediate_checkpoints` | false | High | No intermediate checkpoints released |
+| `open_code` | false | High | Training code not released |
+| `multilingual` | true | High | 80 officially supported languages per the technical report |
+| `num_languages` | 80 | High | Manually verified: 80 languages (not 119 as initially assumed). The 119-language figure referred to the larger Qwen3 MoE models; the 8B dense model officially supports 80 languages. |
+| `languages` | (80 languages — see JSON) | High | Full list of 80 languages from the Qwen3 technical report, manually verified and stored in the JSON |
+| `has_instruct_version` | true | High | Qwen3-8B-Instruct is available on HuggingFace |
+| `model_type` | base | High | The stored record is the base model |
+| `has_think_version` | true | High | Qwen3 models support a built-in hybrid thinking mode: they can operate in either "thinking mode" (extended chain-of-thought) or "non-thinking mode" depending on a system prompt flag. This is a core feature of the Qwen3 architecture, not a separate variant. |
+| `foundational_paper` | https://arxiv.org/abs/2505.09388 | High | Manually verified arXiv ID for the Qwen3 technical report |
+| `huggingface_id` | Qwen/Qwen3-8B | High | Manually verified; the dense 8B model is published at Qwen/Qwen3-8B |
+
+### Values to verify
+
+All values have been manually verified. No outstanding verification items.
+
+---
+
+## Summary (all batches)
+
+| Model | Overall confidence | Items to verify |
+|---|---|---|
+| DeepSeek-R1 | High | None — all values verified |
+| OLMo 2 32B | Medium | `training_tokens_b`, `context_window`, `huggingface_id` |
+| OLMo 3 32B | Low–Medium | `training_tokens_b`, `context_window`, `open_training_data`, `intermediate_checkpoints`, `open_code`, `has_instruct_version`, `foundational_paper` (placeholder), `huggingface_id` |
+| Phi-4 | High | None — all values verified |
+| Qwen2.5 7B | High | `has_think_version` (verify no official think variant exists) |
+| DeepSeek-V3 | Medium–High | `license`, `open_code`, `num_languages`/`languages`, `foundational_paper`, `huggingface_id` (base vs. chat convention) |
+| Gemma 3 27B | Medium | `num_languages`/`languages` (35-language list is best-effort reconstruction), `foundational_paper` (confirm canonical citation) |
+| GPT-OSS 20B | High | None — all values manually verified |
+| Mixtral 8x22B | Medium–High | `size_b` (141B is an estimate; sources vary 140B–142B) |
+| Qwen3 8B | High | None — all values manually verified |
+
+The OLMo 3 32B `foundational_paper` remains a placeholder pending AllenAI's
+OLMo 3 technical report publication.
+
+The Gemma 3 27B language list (35 languages) is a best-effort reconstruction;
+Google has not published the complete official language list. This is recorded
+in the model's `notes` field in `models.json`.

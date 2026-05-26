@@ -47,7 +47,7 @@ class TestNewFields:
 
     def test_training_tokens_b_null_models(self, all_models):
         null_names = {m["name"] for m in all_models if m["training_tokens_b"] is None}
-        assert null_names == {"Mistral 7B", "Mixtral 8x7B", "LLaVA 1.5 7B", "DeepSeek-R1"}
+        assert null_names == {"Mistral 7B", "Mixtral 8x7B", "LLaVA 1.5 7B", "DeepSeek-R1", "Mixtral 8x22B", "GPT-OSS 20B"}
 
     def test_training_tokens_b_positive_when_present(self, all_models):
         for m in all_models:
@@ -170,7 +170,7 @@ class TestNewFields:
     def test_filter_max_num_languages(self):
         results = filter_models(max_num_languages=1)
         assert all(m["num_languages"] == 1 for m in results)
-        assert len(results) == 13  # all English-only models
+        assert len(results) == 14  # all English-only models
 
     def test_filter_num_languages_range(self):
         results = filter_models(min_num_languages=2, max_num_languages=5)
@@ -183,8 +183,9 @@ class TestNewFields:
 
     def test_filter_num_languages_bloom(self):
         results = filter_models(min_num_languages=40)
-        assert len(results) == 1
-        assert results[0]["name"] == "BLOOM 176B"
+        assert len(results) == 2
+        names = {m["name"] for m in results}
+        assert names == {"BLOOM 176B", "Qwen3 8B"}
 
     def test_filter_num_languages_boundary_inclusive(self):
         assert any(m["name"] == "Mixtral 8x7B" for m in filter_models(min_num_languages=5))
@@ -199,7 +200,7 @@ class TestNewFields:
 
     def test_filter_has_instruct_version_true(self):
         results = filter_models(has_instruct_version=True)
-        assert len(results) == 20
+        assert len(results) == 25
         assert all(m["has_instruct_version"] is True for m in results)
 
     def test_filter_has_instruct_and_openness(self):
@@ -306,22 +307,22 @@ class TestNewFields:
 
     def test_filter_language_english(self):
         results = filter_models(language="English")
-        assert len(results) == 23  # all models support English
+        assert len(results) == 28  # all models support English
 
     def test_filter_language_hindi(self):
         results = filter_models(language="Hindi")
         names = {m["name"] for m in results}
-        assert names == {"BLOOM 176B", "Llama 3.1 8B"}
+        assert names == {"BLOOM 176B", "Llama 3.1 8B", "Gemma 3 27B", "Qwen3 8B"}
 
     def test_filter_language_thai(self):
         results = filter_models(language="Thai")
         names = {m["name"] for m in results}
-        assert names == {"BLOOM 176B", "Llama 3.1 8B", "Qwen2.5 7B"}
+        assert names == {"BLOOM 176B", "Llama 3.1 8B", "Qwen2.5 7B", "Gemma 3 27B", "Qwen3 8B"}
 
     def test_filter_language_italian(self):
         results = filter_models(language="Italian")
         names = {m["name"] for m in results}
-        assert names == {"Mixtral 8x7B", "Llama 3.1 8B", "Qwen2.5 7B"}
+        assert names == {"Mixtral 8x7B", "Llama 3.1 8B", "Qwen2.5 7B", "Mixtral 8x22B", "Gemma 3 27B", "Qwen3 8B"}
 
     def test_filter_language_case_insensitive(self):
         assert filter_models(language="english") == filter_models(language="English")
@@ -370,7 +371,7 @@ class TestNewFields:
     def test_filter_model_type_base(self):
         results = filter_models(model_type="base")
         assert all(m["model_type"] == "base" for m in results)
-        assert len(results) == 20
+        assert len(results) == 24
 
     def test_filter_model_type_instruct(self):
         results = filter_models(model_type="instruct")
@@ -379,8 +380,9 @@ class TestNewFields:
 
     def test_filter_model_type_reasoning(self):
         results = filter_models(model_type="reasoning")
-        assert len(results) == 1
-        assert results[0]["name"] == "DeepSeek-R1"
+        assert len(results) == 2
+        names = {m["name"] for m in results}
+        assert names == {"DeepSeek-R1", "GPT-OSS 20B"}
 
     def test_filter_model_type_case_insensitive(self):
         assert filter_models(model_type="BASE") == filter_models(model_type="base")
@@ -415,11 +417,11 @@ class TestNewFields:
     def test_filter_has_think_version_true(self):
         results = filter_models(has_think_version=True)
         names = {m["name"] for m in results}
-        assert names == {"OLMo 3 32B", "DeepSeek-R1", "Phi-4"}
+        assert names == {"OLMo 3 32B", "DeepSeek-R1", "Phi-4", "Qwen3 8B", "GPT-OSS 20B"}
 
     def test_filter_has_think_version_false(self):
         results = filter_models(has_think_version=False)
-        assert len(results) == 20
+        assert len(results) == 23
         assert all(m["has_think_version"] is False for m in results)
 
     def test_filter_has_think_version_combined(self):
@@ -562,8 +564,12 @@ class TestLoadModels:
                     f"{model['name']}.{field} should be bool"
                 )
 
+    _NON_ARXIV_PAPERS = {"Mixtral 8x22B"}  # no arXiv paper exists; links to Mistral blog
+
     def test_foundational_paper_is_arxiv_url(self, all_models):
         for model in all_models:
+            if model["name"] in self._NON_ARXIV_PAPERS:
+                continue
             assert model["foundational_paper"].startswith("https://arxiv.org/"), (
                 f"{model['name']} foundational_paper is not an arXiv URL"
             )
@@ -794,7 +800,7 @@ class TestFilterModels:
         assert {m["name"] for m in lower} == {m["name"] for m in upper}
 
     def test_filter_organization_no_match_returns_empty(self):
-        assert filter_models(organization="OpenAI") == []
+        assert filter_models(organization="Anthropic") == []
 
     # --- family ---
 
@@ -902,8 +908,9 @@ class TestFilterModels:
 
     def test_combined_country_and_architecture(self):
         results = filter_models(country_of_origin="France", architecture="mixture-of-experts")
-        assert len(results) == 1
-        assert results[0]["name"] == "Mixtral 8x7B"
+        assert len(results) == 2
+        names = {m["name"] for m in results}
+        assert names == {"Mixtral 8x7B", "Mixtral 8x22B"}
 
     # --- context window ---
 
@@ -1066,7 +1073,7 @@ class TestFilterModels:
     def test_exclude_modality(self, all_models):
         results = filter_models(exclude_modality="image")
         assert all("image" not in m["modality"] for m in results)
-        assert len(results) == len(all_models) - 1  # only LLaVA has image
+        assert len(results) == len(all_models) - 2  # LLaVA 1.5 7B and Gemma 3 27B have image
 
     def test_exclude_modality_case_insensitive(self):
         lower = filter_models(exclude_modality="image")
