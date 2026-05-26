@@ -23,7 +23,7 @@ _COLUMN_CONFIG = {
     "context_window": st.column_config.NumberColumn("Context (tokens)", format="%d"),
     "training_tokens_b": st.column_config.TextColumn("Training tokens (B)"),
     "release_year": st.column_config.NumberColumn("Year"),
-    "architecture": st.column_config.TextColumn("Architecture"),
+    "architecture": st.column_config.TextColumn("Architecture", width=150),
     "license": st.column_config.TextColumn("License"),
 }
 
@@ -43,6 +43,7 @@ def render_grid(filtered: list[dict]) -> None:
     """
     total = len(cached_load_models())
     st.caption(f"{len(filtered)} of {total} models")
+    st.caption("Sorted by openness score by default. Click any column header to re-sort.")
 
     if not filtered:
         st.info("No models match your search.")
@@ -78,4 +79,8 @@ def render_grid(filtered: list[dict]) -> None:
 
     if selection.selection.rows:
         row_idx = selection.selection.rows[0]
-        st.session_state.selected_model = display_df.iloc[row_idx]["name"]
+        if row_idx < len(display_df):
+            st.session_state.selected_model = display_df.iloc[row_idx]["name"]
+    else:
+        # Row was deselected — close the profile card.
+        st.session_state.selected_model = None

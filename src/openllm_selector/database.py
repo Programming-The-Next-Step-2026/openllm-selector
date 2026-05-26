@@ -128,6 +128,7 @@ def filter_models(
     exclude_license: str | None = None,
     exclude_architecture: str | None = None,
     exclude_country_of_origin: str | None = None,
+    exclude_model_type: str | None = None,
     min_training_tokens_b: float | None = None,
     max_training_tokens_b: float | None = None,
     min_num_languages: int | None = None,
@@ -204,6 +205,9 @@ def filter_models(
         Remove models whose architecture exactly matches this value (case-insensitive).
     exclude_country_of_origin : str, optional
         Remove models whose country exactly matches this value (case-insensitive).
+    exclude_model_type : str, optional
+        Remove models whose model_type exactly matches this value (case-insensitive).
+        One of ``"base"``, ``"instruct"``, or ``"reasoning"``.
     min_training_tokens_b : float, optional
         Minimum pre-training token count in billions (inclusive). Models with
         an undisclosed token count (``None``) are excluded when this filter
@@ -260,6 +264,7 @@ def filter_models(
     >>> hindi_models = filter_models(language="Hindi")
     >>> base_only = filter_models(model_type="base")
     >>> think_models = filter_models(has_think_version=True)
+    >>> no_base = filter_models(exclude_model_type="base")
     """
     results = []
     for m in load_models():
@@ -311,6 +316,8 @@ def filter_models(
         if exclude_architecture is not None and m["architecture"].lower() == exclude_architecture.lower():
             continue
         if exclude_country_of_origin is not None and m["country_of_origin"].lower() == exclude_country_of_origin.lower():
+            continue
+        if exclude_model_type is not None and m["model_type"].lower() == exclude_model_type.lower():
             continue
         if min_training_tokens_b is not None:
             if m["training_tokens_b"] is None or m["training_tokens_b"] < min_training_tokens_b:

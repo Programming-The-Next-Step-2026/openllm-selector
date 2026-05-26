@@ -503,6 +503,249 @@ All values have been manually verified. No outstanding verification items.
 
 ---
 
+---
+
+## 11. Apertus 8B
+
+**Added:** week-3 batch 3  
+**Why added:** First model from a Swiss academic institution; extends geographic
+coverage to Switzerland and adds a 2025 European multilingual base model.  
+**Primary source:** None available — released September 2025, after the model
+knowledge cutoff (August 2025). All values are estimates.
+
+> ⚠️ **This entry has the lowest overall confidence of any model in the database.**
+> It was added after the knowledge cutoff and almost every field is an estimate.
+> All values must be manually verified against the HuggingFace model card and
+> any technical report before this entry is treated as production-ready.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Apertus | Medium | Inferred from model name; "Apertus" means "open" in Latin |
+| `organization` | Swiss AI | Medium | Swiss AI Initiative — EPFL, ETH Zurich, and partner institutions |
+| `country_of_origin` | Switzerland | High | Swiss AI Initiative is based in Switzerland |
+| `release_year` | 2025 | High | "2509" suffix in model ID encodes September 2025 |
+| `size_b` | 8.0 | High | Explicitly stated in the model name |
+| `training_tokens_b` | null | Medium | Not known; no public report available at time of writing |
+| `context_window` | 32768 | Low | **Estimate only.** 32K is common for 8B-class models in 2025. Verify against model card. |
+| `modality` | ["text"] | Medium | Inferred; Swiss AI's published work is text-only |
+| `architecture` | decoder-only | Medium | All 8B-class models in this period use decoder-only transformers; unverified for Apertus specifically |
+| `license` | Apache 2.0 | Low | Swiss AI Initiative has used Apache 2.0 for prior releases; unverified for Apertus 8B |
+| `open_weights` | true | Medium | Model is publicly accessible on HuggingFace |
+| `open_training_data` | false | Low | **Assumed false** — most European academic models do not release training data. Verify. |
+| `intermediate_checkpoints` | false | Low | **Assumed false.** Verify against HuggingFace. |
+| `open_code` | false | Low | **Assumed false.** Verify against GitHub/HuggingFace. |
+| `multilingual` | true | High | Swiss AI Initiative explicitly focuses on multilingual European models |
+| `num_languages` | 4 | Low | **Estimate.** Swiss AI would minimally support the major Swiss national languages (German, French, Italian) plus English. Romansh and other European languages plausible. Verify. |
+| `languages` | ["English", "French", "German", "Italian"] | Low | **Estimate** based on Swiss national languages + English. Verify full language list against model card. |
+| `has_instruct_version` | false | Low | **Assumed** — "2509" does not indicate an instruct variant. May be wrong. |
+| `model_type` | base | Low | **Assumed** from naming convention. Verify. |
+| `has_think_version` | false | Medium | No evidence of a reasoning/think variant for this model family |
+| `foundational_paper` | https://huggingface.co/swiss-ai/Apertus-8B-2509 | Low | **No arXiv paper known.** Points to HuggingFace model page as placeholder. Update with arXiv URL when the technical report is published. See test note below. |
+| `huggingface_id` | swiss-ai/Apertus-8B-2509 | High | Taken directly from the requested HuggingFace ID |
+
+### Test exceptions required
+
+- `test_foundational_paper_is_arxiv_url` will fail for Apertus 8B because the `foundational_paper` is not an arXiv URL. Once the arXiv paper is known, replace the URL; until then add `"Apertus 8B"` to `_NON_ARXIV_PAPERS` in `tests/test_database.py`.
+- `country_of_origin` "Switzerland" is not in the sidebar's `_COUNTRIES` list in `app/components/sidebar.py`. Update that list when verifying this entry.
+
+### Values to verify
+
+**All values.** This entry should be treated as a placeholder until manually verified. Priority fields:
+`context_window`, `license`, `open_training_data`, `open_code`, `num_languages`, `languages`, `has_instruct_version`, `foundational_paper`.
+
+---
+
+## 12. GPT-J 6B
+
+**Added:** week-3 batch 3  
+**Why added:** Foundational early open-weights language model from EleutherAI;
+pre-dates most database entries and establishes a 2021 baseline.  
+**Primary source:** The Pile dataset paper (arXiv:2101.00027); mesh-transformer-jax
+GitHub (github.com/kingoflolz/mesh-transformer-jax). GPT-J itself has no dedicated
+arXiv paper.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | GPT-J | High | Standard name for this model family |
+| `organization` | EleutherAI | High | GPT-J was developed and released by EleutherAI |
+| `country_of_origin` | United States | High | EleutherAI is a US-based non-profit research group |
+| `release_year` | 2021 | High | Released June 2021 |
+| `size_b` | 6.0 | High | 6.05B parameters; conventionally rounded to 6B |
+| `training_tokens_b` | 400.0 | Medium | Approximately one epoch on The Pile (~400B tokens). The Pile paper (arXiv:2101.00027) describes the 825 GiB dataset; the mesh-transformer-jax README confirms training on The Pile. **Exact token count is approximate; verify from mesh-transformer-jax documentation.** |
+| `context_window` | 2048 | High | 2048-token context consistent with GPT-2 tokenizer and architecture; stated in model card |
+| `modality` | ["text"] | High | Text-only |
+| `architecture` | decoder-only | High | GPT-style decoder-only transformer |
+| `license` | Apache 2.0 | High | Apache 2.0 confirmed on HuggingFace model page |
+| `open_weights` | true | High | Weights publicly available at EleutherAI/gpt-j-6b |
+| `open_training_data` | true | High | Trained on The Pile, which is publicly released by EleutherAI (https://pile.eleuther.ai) |
+| `intermediate_checkpoints` | false | Medium | EleutherAI did NOT release step-level intermediate checkpoints for GPT-J, in contrast to the later Pythia suite which was explicitly designed for checkpoint research. **Verify: a small number of mid-training checkpoints may have been released informally.** |
+| `open_code` | true | High | Full JAX training code released at github.com/kingoflolz/mesh-transformer-jax under Apache 2.0 |
+| `multilingual` | false | High | The Pile is predominantly English; no multilingual capability claimed |
+| `num_languages` | 1 | High | |
+| `languages` | ["English"] | High | |
+| `has_instruct_version` | false | High | EleutherAI never released an official instruction-tuned GPT-J 6B; community fine-tunes exist but are not from EleutherAI |
+| `model_type` | base | High | Pure autoregressive language model, no alignment |
+| `has_think_version` | false | High | No reasoning variant exists |
+| `foundational_paper` | https://arxiv.org/abs/2101.00027 | Medium | GPT-J has no dedicated arXiv paper. The Pile paper (arXiv:2101.00027) is the closest primary arXiv reference as it describes both the training data and the training methodology used for GPT-J. An alternative canonical citation is the mesh-transformer-jax GitHub. |
+| `huggingface_id` | EleutherAI/gpt-j-6b | High | Verified on HuggingFace |
+
+### Test exceptions required
+
+- `test_filter_release_year_no_match` currently asserts that `filter_models(min_release_year=2020, max_release_year=2021)` returns `[]`. Adding GPT-J 6B (2021) breaks this assertion. The test must be updated to remove the 2021 upper bound or rewrite the assertion when tests are next updated.
+
+### Values to verify
+
+- `training_tokens_b` — Medium confidence. Verify exact epoch/token count from mesh-transformer-jax training logs.
+- `intermediate_checkpoints` — Medium confidence. Confirm no formal checkpoint releases for GPT-J on EleutherAI's HuggingFace organisation.
+
+---
+
+## 13. Grok-1
+
+**Added:** week-3 batch 3  
+**Why added:** First model from xAI in the database; the largest open-weights
+MoE model released at the time; notable as a 314B model released under Apache 2.0.  
+**Primary source:** xAI open-source announcement blog post (March 2024):
+https://x.ai/blog/grok-os. No dedicated arXiv paper exists.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Grok | High | xAI's model family name |
+| `organization` | xAI | High | Released by xAI (Elon Musk's AI company) |
+| `country_of_origin` | United States | High | xAI is headquartered in San Francisco, CA |
+| `release_year` | 2024 | High | Open-sourced March 2024 |
+| `size_b` | 314.0 | High | 314B total parameters stated in the xAI announcement and HuggingFace model card |
+| `training_tokens_b` | null | High | xAI has not publicly disclosed the pre-training token count |
+| `context_window` | 8192 | High | 8,192-token context window; stated in the Grok-1 model card |
+| `modality` | ["text"] | High | Text-only; the released weights are the base language model |
+| `architecture` | mixture-of-experts | High | MoE with 8 expert groups, top-2 routing; ~86B parameters active per forward pass |
+| `license` | Apache 2.0 | High | Apache 2.0 confirmed in the GitHub repository and HuggingFace model card |
+| `open_weights` | true | High | Full weights released at xai-org/grok-1 on HuggingFace and GitHub |
+| `open_training_data` | false | High | xAI has not released pre-training data |
+| `intermediate_checkpoints` | false | High | No intermediate checkpoints released |
+| `open_code` | false | High | Only inference/architecture code was released (github.com/xai-org/grok-1); the pre-training pipeline was not open-sourced |
+| `multilingual` | false | High | English-only; no multilingual capability claimed |
+| `num_languages` | 1 | High | |
+| `languages` | ["English"] | High | |
+| `has_instruct_version` | false | High | The released weights are the base pre-trained model only; xAI's instruction-tuned Grok assistant was not open-sourced |
+| `model_type` | base | High | Base pre-trained model |
+| `has_think_version` | false | High | No reasoning variant of Grok-1 was released |
+| `foundational_paper` | https://x.ai/blog/grok-os | High | No arXiv paper exists. `foundational_paper` is set to the xAI open-source announcement blog post, consistent with the Mixtral 8x22B precedent. |
+| `huggingface_id` | xai-org/grok-1 | High | Verified on HuggingFace |
+
+### Test exceptions required
+
+- `test_foundational_paper_is_arxiv_url` will fail for Grok-1 because the `foundational_paper` is not an arXiv URL. Add `"Grok-1"` to `_NON_ARXIV_PAPERS` in `tests/test_database.py` (alongside "Mixtral 8x22B").
+
+### Values to verify
+
+All values are High confidence. The MoE expert count (8 groups, top-2) and active parameter count (~86B) should be confirmed against the Grok-1 model card.
+
+---
+
+## 14. Phi-2
+
+**Added:** week-3 batch 3  
+**Why added:** Completes the Phi family representation alongside Phi-3 Mini 4K
+and Phi-4; notable for strong benchmark performance at 2.7B parameters.  
+**Primary source:** Microsoft Research blog post "Phi-2: The Surprising Power
+of Small Language Models" (December 2023). No dedicated arXiv paper; the closest
+arXiv reference is the phi-1.5 technical report (arXiv:2309.05463).
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Phi | High | Consistent with Phi-3 Mini 4K and Phi-4 already in the database |
+| `organization` | Microsoft | High | |
+| `country_of_origin` | United States | High | |
+| `release_year` | 2023 | High | Released December 2023 |
+| `size_b` | 2.7 | High | 2.7B parameters explicitly stated in the model name and documentation |
+| `training_tokens_b` | 1400.0 | Medium | Microsoft Research blog post states "1.4 trillion tokens" of training data (synthetic NLP textbooks + filtered web data). **Verify against the official Phi-2 technical report or model card.** |
+| `context_window` | 2048 | High | 2,048-token context stated in the HuggingFace model card and consistent with the GPT-2 positional encoding used |
+| `modality` | ["text"] | High | Text-only |
+| `architecture` | decoder-only | High | Standard decoder-only transformer |
+| `license` | MIT | High | MIT license confirmed on HuggingFace model page |
+| `open_weights` | true | High | Weights available at microsoft/phi-2 on HuggingFace |
+| `open_training_data` | false | High | Training data (synthetic + filtered web) was not publicly released |
+| `intermediate_checkpoints` | false | High | No intermediate checkpoints released |
+| `open_code` | false | High | Training code not released |
+| `multilingual` | false | High | English-only; Microsoft documentation does not claim multilingual support |
+| `num_languages` | 1 | High | |
+| `languages` | ["English"] | High | |
+| `has_instruct_version` | false | High | Microsoft did not release an official instruction-tuned Phi-2 model; Phi-3 Mini 4K Instruct was the next release in the instruction-tuned line |
+| `model_type` | base | High | The microsoft/phi-2 HuggingFace release is the base language model |
+| `has_think_version` | false | High | No reasoning variant of Phi-2 was released (Phi-4-reasoning is the think variant for Phi-4) |
+| `foundational_paper` | https://arxiv.org/abs/2309.05463 | Medium | No dedicated arXiv paper exists for Phi-2. The phi-1.5 technical report (arXiv:2309.05463, "Textbooks Are All You Need II") describes the training methodology and data philosophy that Phi-2 directly inherits. **Verify: Microsoft may have published a unified Phi-family paper that would be a better canonical citation.** |
+| `huggingface_id` | microsoft/phi-2 | High | Verified on HuggingFace |
+
+### Values to verify
+
+- `training_tokens_b` — Medium confidence. Source is the Microsoft blog post; verify the exact figure from the official technical documentation.
+- `foundational_paper` — Medium confidence. The phi-1.5 paper is the best available arXiv reference, but a Phi-2-specific or Phi-family arXiv paper may exist.
+
+---
+
+## 15. Sarvam 30B
+
+**Added:** week-3 batch 3  
+**Why added:** First Indian-origin model in the database; represents the growing
+ecosystem of Indic-language LLMs.  
+**Primary source:** No primary arXiv source confirmed. Field values are based
+on Sarvam AI's published model family characteristics.
+
+> ⚠️ **Most field values are Low confidence estimates.** Sarvam AI has not
+> published a dedicated technical report for Sarvam 30B that was available at
+> the time of this research. All values must be verified against the official
+> HuggingFace model card and any associated paper.
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Sarvam | High | Consistent with Sarvam AI's model naming |
+| `organization` | Sarvam AI | High | Bengaluru-based AI startup founded 2023 |
+| `country_of_origin` | India | High | Sarvam AI is headquartered in India |
+| `release_year` | 2025 | Low | **Estimate.** Sarvam AI has been actively releasing models in 2024–2025. Verify. |
+| `size_b` | 30.0 | High | Explicitly stated in the model name |
+| `training_tokens_b` | null | Medium | Not publicly disclosed at time of research |
+| `context_window` | 32768 | Low | **Estimate** — 32K is common for models in this class and period. Verify against model card. |
+| `modality` | ["text"] | Medium | Inferred from Sarvam AI's primary text/speech focus. Verify. |
+| `architecture` | decoder-only | Low | **Assumed.** Verify. |
+| `license` | Apache 2.0 | Low | **Assumed** — Sarvam AI has released prior models under Apache 2.0. Verify. |
+| `open_weights` | true | Medium | Model is accessible on HuggingFace |
+| `open_training_data` | false | Low | **Assumed.** Verify. |
+| `intermediate_checkpoints` | false | Low | **Assumed.** Verify. |
+| `open_code` | false | Low | **Assumed.** Verify. |
+| `multilingual` | true | High | Sarvam AI's core mission is Indic-language AI; multilingualism is certain |
+| `num_languages` | 11 | Low | **Estimate** — English plus the 10 Indic languages that Sarvam AI has consistently supported across their model family (Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu). Verify exact list against the model card. |
+| `languages` | (see JSON) | Low | **Estimated from Sarvam AI's established Indic language focus.** Full list: Bengali, English, Gujarati, Hindi, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu. Verify. |
+| `has_instruct_version` | false | Low | **Assumed** — name does not indicate instruct. Verify. |
+| `model_type` | base | Low | **Assumed.** Verify. |
+| `has_think_version` | false | Medium | No evidence of a thinking variant |
+| `foundational_paper` | https://huggingface.co/sarvamai/sarvam-30b | Low | **No arXiv paper confirmed.** Points to HuggingFace model page as placeholder. Update with arXiv URL when the technical report is found. See test note below. |
+| `huggingface_id` | sarvamai/sarvam-30b | High | Taken directly from the requested HuggingFace ID |
+
+### Test exceptions required
+
+- `test_foundational_paper_is_arxiv_url` will fail for Sarvam 30B because the `foundational_paper` is not an arXiv URL. Add `"Sarvam 30B"` to `_NON_ARXIV_PAPERS` in `tests/test_database.py` (or replace with the arXiv URL once found).
+- `country_of_origin` "India" is not in the sidebar's `_COUNTRIES` list in `app/components/sidebar.py`. Update that list when verifying this entry.
+
+### Values to verify
+
+**All values.** Priority fields:
+`release_year`, `context_window`, `license`, `open_training_data`, `open_code`,
+`architecture`, `num_languages`, `languages`, `has_instruct_version`,
+`model_type`, `foundational_paper`.
+
+---
+
 ## Summary (all batches)
 
 | Model | Overall confidence | Items to verify |

@@ -49,9 +49,7 @@ def render_profile(model_name: str) -> None:
 
     with st.container(border=True):
 
-        # ------------------------------------------------------------------ #
-        # Header row: title + close button                                    #
-        # ------------------------------------------------------------------ #
+        # Header: title and close button
         title_col, close_col = st.columns([6, 1])
         with title_col:
             st.subheader(model["name"])
@@ -64,9 +62,7 @@ def render_profile(model_name: str) -> None:
             if st.button("✕ Close", key="close_profile", width="stretch"):
                 _close()
 
-        # ------------------------------------------------------------------ #
-        # Main layout: details (left) + key metrics (right)                  #
-        # ------------------------------------------------------------------ #
+        # Two-column layout: details left, key metrics right
         col_left, col_right = st.columns([2, 1])
 
         with col_left:
@@ -95,12 +91,15 @@ def render_profile(model_name: str) -> None:
             st.markdown(
                 f"{'✅' if model['has_instruct_version'] else '❌'} Instruct version available"
             )
-            if model["name"] in ("Phi-3 Mini 4K", "LLaVA 1.5 7B"):
-                st.caption("This model is itself instruction-tuned.")
+            if model["model_type"] == "instruct":
+                st.caption("This model is itself an instruct model.")
+            st.markdown(
+                f"{'✅' if model['has_think_version'] else '❌'} Think version available"
+            )
+            if model["model_type"] == "reasoning":
+                st.caption("This model is itself a reasoning model.")
 
-        # ------------------------------------------------------------------ #
-        # Boolean feature badges                                              #
-        # ------------------------------------------------------------------ #
+        # Openness badge row
         st.divider()
         st.caption(f"Openness score: {model['openness_score']} / 5")
         permissive = model["license"] in _PERMISSIVE_LICENSES
@@ -113,9 +112,6 @@ def render_profile(model_name: str) -> None:
                 icon = "✅" if model[field] else "❌"
             col.markdown(f"{icon} {label}")
 
-        # ------------------------------------------------------------------ #
-        # Recent arXiv papers                                                 #
-        # ------------------------------------------------------------------ #
         st.divider()
         with st.expander("Recent arXiv papers", expanded=True):
             with st.spinner("Fetching papers…"):

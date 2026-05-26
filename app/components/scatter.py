@@ -1,5 +1,6 @@
 """Scatter plot component for the openllm-selector Streamlit app."""
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -28,8 +29,9 @@ def _build_figure(
     """Construct the Plotly figure for the current filter state.
 
     Bubble area encodes model size (size_b). Log scale is applied
-    automatically when the context_window axis is selected, because that
-    field spans two orders of magnitude (2 K – 131 K tokens).
+    automatically when ``context_window`` or ``training_tokens_b`` is
+    selected — both fields span multiple orders of magnitude where a linear
+    scale would compress most models into a narrow band.
 
     Bubble area encodes ``size_b`` capped at 100 B so that outliers such as
     BLOOM 176B and DeepSeek-R1 671B don't dwarf every other model. All models
@@ -47,10 +49,28 @@ def _build_figure(
     df = df.copy()
     df["size_display"] = df["size_b"].clip(upper=100)
 
+    # Add ±0.15 jitter to release_year to separate overlapping bubbles.
+    # A fixed seed ensures the offsets are stable across rerenders.
+    rng = np.random.default_rng(42)
+    x_col, y_col = x_axis, y_axis
+    if x_axis == "release_year":
+        df["_x_plot"] = df["release_year"] + rng.uniform(-0.15, 0.15, len(df))
+        x_col = "_x_plot"
+    if y_axis == "release_year":
+        df["_y_plot"] = df["release_year"] + rng.uniform(-0.15, 0.15, len(df))
+        y_col = "_y_plot"
+
+    # Ensure jittered column names resolve to the same axis label.
+    plot_labels = dict(_AXIS_LABELS)
+    if x_col != x_axis:
+        plot_labels[x_col] = _AXIS_LABELS[x_axis]
+    if y_col != y_axis:
+        plot_labels[y_col] = _AXIS_LABELS[y_axis]
+
     fig = px.scatter(
         df,
-        x=x_axis,
-        y=y_axis,
+        x=x_col,
+        y=y_col,
         color="openness_score",
         color_continuous_scale="Viridis",
         range_color=[1, 5],
@@ -64,11 +84,11 @@ def _build_figure(
         size="size_display",
         size_max=40,
         opacity=0.7,
-        labels=_AXIS_LABELS,
-        # Log scale for context_window: linear scale would compress 2 K–32 K
-        # into a tiny band while 131 K dominates.
-        log_x=(x_axis == "context_window"),
-        log_y=(y_axis == "context_window"),
+        labels=plot_labels,
+        # Log scale for fields that span multiple orders of magnitude;
+        # linear scale would compress most models into a narrow band.
+        log_x=(x_axis in ("context_window", "training_tokens_b", "num_languages")),
+        log_y=(y_axis in ("context_window", "training_tokens_b", "num_languages")),
     )
 
     fig.update_traces(hovertemplate="%{hovertext}<extra></extra>")
@@ -84,43 +104,22 @@ def _build_figure(
         uirevision="scatter",       # preserve zoom/pan when data updates
     )
 
-    # Release year is an integer field; dtick=1 prevents Plotly from inserting
-    # fractional ticks (2022.5 etc.) when the range is narrow.
+    # Release year: dtick=1 prevents fractional ticks (e.g. 2022.5) on a
+    # narrow integer range; rangemode guards against any incidental negative
+    # padding Plotly might apply during bubble layout.
     if x_axis == "release_year":
-        fig.update_xaxes(dtick=1)
+        fig.update_xaxes(dtick=1, rangemode="nonnegative")
     if y_axis == "release_year":
-        fig.update_yaxes(dtick=1)
+        fig.update_yaxes(dtick=1, rangemode="nonnegative")
 
-    # num_languages is an integer; tickformat="d" prevents decimal ticks
-    # while letting Plotly pick sensible spacing across the 1–46 range.
+    # Suppress sub-1 ticks on the log-scale num_languages axis.
+    # range=[0, None] sets the minimum to 10^0=1; rangemode and explicit
+    # tickvals together ensure no 0.1/0.5 labels appear despite Plotly padding.
+    _lang_tick_vals = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000]
     if x_axis == "num_languages":
-        fig.update_xaxes(tickformat="d")
+        fig.update_xaxes(rangemode="nonnegative", range=[0, None], tickvals=_lang_tick_vals)
     if y_axis == "num_languages":
-        fig.update_yaxes(tickformat="d")
-
-    # Dip below 0 so large bubbles near the axis floor aren't clipped, but
-    # suppress negative values with explicit non-negative tick labels.
-    # The negative padding is proportional to the data range so it scales
-    # correctly when filters shrink the visible set.
-    if y_axis == "training_tokens_b":
-        y_max = df["training_tokens_b"].dropna().max()
-        fig.update_yaxes(
-            range=[-(y_max * 0.06), y_max * 1.1],
-            tickvals=[0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000],
-        )
-    elif y_axis == "num_languages":
-        y_max = df["num_languages"].max()
-        fig.update_yaxes(range=[-(y_max * 0.06), y_max * 1.15])
-
-    if x_axis == "training_tokens_b":
-        x_max = df["training_tokens_b"].dropna().max()
-        fig.update_xaxes(
-            range=[-(x_max * 0.25), x_max * 1.1],
-            tickvals=[0, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000],
-        )
-    elif x_axis == "num_languages":
-        x_max = df["num_languages"].max()
-        fig.update_xaxes(range=[-(x_max * 0.25), x_max * 1.15])
+        fig.update_yaxes(rangemode="nonnegative", range=[0, None], tickvals=_lang_tick_vals)
 
     # Draw a highlight ring at the selected model's position.
     # Using a separate go.Scatter trace instead of Plotly's built-in selection
@@ -130,8 +129,8 @@ def _build_figure(
         if not sel.empty:
             fig.add_trace(
                 go.Scatter(
-                    x=sel[x_axis],
-                    y=sel[y_axis],
+                    x=sel[x_col],
+                    y=sel[y_col],
                     mode="markers",
                     marker=dict(
                         size=22,
@@ -198,7 +197,7 @@ def render_scatter(filtered: list[dict]) -> None:
         if name:
             st.session_state.selected_model = name
 
-    note = "Bubble area encodes model size (B parameters), capped at 100 B — models larger than 100 B all display at the maximum bubble size."
+    note = "Bubble area encodes model size; models over 100 B are capped. Use fullscreen for detail."
     if x_axis == "training_tokens_b" or y_axis == "training_tokens_b":
         note += " Models with undisclosed training token counts are hidden."
     st.caption(note)

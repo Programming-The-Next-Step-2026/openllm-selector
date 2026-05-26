@@ -2,11 +2,16 @@
 
 import streamlit as st
 
-from utils import cached_get_families, cached_get_languages, cached_get_organizations
+from utils import (
+    cached_get_families,
+    cached_get_languages,
+    cached_get_organizations,
+    cached_load_models,
+)
 
 # Hard-coded controlled vocabularies (derived from models.json; update if DB grows).
 _ARCHITECTURES = ["decoder-only", "encoder-decoder", "mixture-of-experts"]
-_COUNTRIES = ["China", "France", "United Arab Emirates", "United States"]
+_COUNTRIES = ["China", "France", "India", "Switzerland", "United Arab Emirates", "United States"]
 _LICENSES = [
     "Apache 2.0",
     "BigScience RAIL",
@@ -18,17 +23,6 @@ _LICENSES = [
 ]
 _MODALITIES = ["image", "text"]
 _MODEL_TYPES = ["base", "instruct", "reasoning"]
-
-# Context window filter uses discrete buckets rather than a linear slider
-# because the range spans two orders of magnitude (2 K – 131 K).
-_CTX_OPTIONS = [2_048, 4_096, 8_192, 32_768, 131_072]
-_CTX_MIN = _CTX_OPTIONS[0]
-_CTX_MAX = _CTX_OPTIONS[-1]
-
-# Full-range sentinels used to detect whether the user touched a slider.
-_SIZE_RANGE_DEFAULT = (2.0, 176.0)
-_YEAR_RANGE_DEFAULT = (2022, 2024)
-_TRAINING_TOKENS_RANGE_DEFAULT = (300, 15000)
 
 # All widget keys — enumerated here so the reset button can clear them
 # without knowing implementation details of each widget.
@@ -54,10 +48,8 @@ _SIDEBAR_KEYS = [
     "sb_language",
     "sb_excl_families",
     "sb_excl_orgs",
-    "sb_excl_architectures",
     "sb_excl_countries",
     "sb_excl_licenses",
-    "sb_excl_modalities",
 ]
 
 
@@ -70,6 +62,10 @@ def _multiselect_label(label: str, selected: list) -> str:
 def render_sidebar() -> tuple[dict, dict, dict]:
     """Render all filter widgets and return the active filter state.
 
+    Slider bounds are computed dynamically from the current model database via
+    ``cached_load_models()`` so they automatically cover any new models added
+    to models.json without requiring code changes.
+
     Returns
     -------
     filter_args : dict
@@ -78,20 +74,47 @@ def render_sidebar() -> tuple[dict, dict, dict]:
     multiselect_filters : dict
         Maps each categorical field to the list of selected values.
         Handled with OR logic in ``get_filtered_models()``.
-        Keys: family, organization, architecture, country_of_origin, license.
-        An empty list means no restriction for that field.
+        Keys: family, organization, architecture, country_of_origin, license,
+        model_type. An empty list means no restriction for that field.
     exclude_filters : dict
         Maps each categorical field to the list of values to exclude.
         Applied as a post-filter in ``get_filtered_models()``.
-        Keys: family, organization, architecture, country_of_origin, license,
-        modality. An empty list means no exclusion for that field.
+        Keys: family, organization, country_of_origin, license.
+        An empty list means no exclusion for that field.
     """
+    # Compute slider bounds dynamically; cached_load_models() is free after first render.
+    _models = cached_load_models()
+
+    _size_min = float(min(m["size_b"] for m in _models))
+    _size_max = float(max(m["size_b"] for m in _models))
+    _size_default = (_size_min, _size_max)
+
+    # Context window: unique discrete values used as select_slider options.
+    _ctx_options = sorted({m["context_window"] for m in _models})
+    _ctx_default = (_ctx_options[0], _ctx_options[-1])
+
+    _year_min = int(min(m["release_year"] for m in _models))
+    _year_max = int(max(m["release_year"] for m in _models))
+    _year_default = (_year_min, _year_max)
+
+    # Exclude models whose training token count was not publicly disclosed.
+    _disclosed = [m["training_tokens_b"] for m in _models if m["training_tokens_b"] is not None]
+    _tokens_min = int(min(_disclosed))
+    _tokens_max = int(max(_disclosed))
+    _tokens_default = (_tokens_min, _tokens_max)
+
     with st.sidebar:
         st.header("Filters")
 
-        # ------------------------------------------------------------------ #
-        # Categorical multiselects (OR logic)                                 #
-        # ------------------------------------------------------------------ #
+        with st.expander("Openness filters", expanded=True):
+            open_weights = st.checkbox("Open weights", key="sb_open_weights")
+            open_training_data = st.checkbox("Open training data", key="sb_open_training_data")
+            intermediate_checkpoints = st.checkbox(
+                "Intermediate checkpoints", key="sb_intermediate_checkpoints"
+            )
+            open_code = st.checkbox("Open code", key="sb_open_code")
+            permissive_license = st.checkbox("Permissive license (Apache 2.0 / MIT)", key="sb_permissive_license")
+
         st.subheader("Model characteristics")
 
         families = st.multiselect(
@@ -119,39 +142,23 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             options=_LICENSES,
             key="sb_licenses",
         )
+        model_types = st.multiselect(
+            "Model type",
+            options=_MODEL_TYPES,
+            placeholder="Choose options",
+            key="sb_model_type",
+        )
+        language = st.selectbox(
+            "Language (official support only)",
+            options=cached_get_languages(),
+            index=None,
+            placeholder="Choose options",
+            key="sb_language",
+        )
         has_instruct_version = st.checkbox("Instruct version available", key="sb_has_instruct_version")
         has_think_version = st.checkbox("Think version available", key="sb_has_think_version")
         multilingual = st.checkbox("Multilingual", key="sb_multilingual")
-        language = st.selectbox(
-            "Language (official support only)",
-            options=[""] + cached_get_languages(),
-            format_func=lambda x: "All languages" if x == "" else x,
-            key="sb_language",
-        )
-        model_type = st.selectbox(
-            "Model type",
-            options=[""] + _MODEL_TYPES,
-            format_func=lambda x: "All types" if x == "" else x.capitalize(),
-            key="sb_model_type",
-        )
-        if model_type == "reasoning":
-            st.caption("DeepSeek-R1 is itself a reasoning model and counts as a reasoning-type model.")
 
-        # ------------------------------------------------------------------ #
-        # Boolean checkboxes                                                  #
-        # ------------------------------------------------------------------ #
-        with st.expander("Openness filters", expanded=True):
-            open_weights = st.checkbox("Open weights", key="sb_open_weights")
-            open_training_data = st.checkbox("Open training data", key="sb_open_training_data")
-            intermediate_checkpoints = st.checkbox(
-                "Intermediate checkpoints", key="sb_intermediate_checkpoints"
-            )
-            open_code = st.checkbox("Open code", key="sb_open_code")
-            permissive_license = st.checkbox("Permissive license (Apache 2.0 / MIT)", key="sb_permissive_license")
-
-        # ------------------------------------------------------------------ #
-        # Exclusion filters                                                    #
-        # ------------------------------------------------------------------ #
         with st.expander("Exclusion filters", expanded=False):
             excl_families = st.multiselect(
                 _multiselect_label("Exclude family", st.session_state.get("sb_excl_families", [])),
@@ -163,11 +170,6 @@ def render_sidebar() -> tuple[dict, dict, dict]:
                 options=cached_get_organizations(),
                 key="sb_excl_orgs",
             )
-            excl_architectures = st.multiselect(
-                _multiselect_label("Exclude architecture", st.session_state.get("sb_excl_architectures", [])),
-                options=_ARCHITECTURES,
-                key="sb_excl_architectures",
-            )
             excl_countries = st.multiselect(
                 _multiselect_label("Exclude country of origin", st.session_state.get("sb_excl_countries", [])),
                 options=_COUNTRIES,
@@ -178,51 +180,41 @@ def render_sidebar() -> tuple[dict, dict, dict]:
                 options=_LICENSES,
                 key="sb_excl_licenses",
             )
-            excl_modalities = st.multiselect(
-                _multiselect_label("Exclude modality", st.session_state.get("sb_excl_modalities", [])),
-                options=_MODALITIES,
-                key="sb_excl_modalities",
-            )
 
-        # ------------------------------------------------------------------ #
-        # Range sliders                                                        #
-        # ------------------------------------------------------------------ #
         st.subheader("Ranges")
 
         size_range = st.slider(
             "Size (B parameters)",
-            min_value=_SIZE_RANGE_DEFAULT[0],
-            max_value=_SIZE_RANGE_DEFAULT[1],
-            value=_SIZE_RANGE_DEFAULT,
+            min_value=_size_min,
+            max_value=_size_max,
+            value=_size_default,
             step=0.5,
             key="sb_size_range",
         )
         ctx_range = st.select_slider(
             "Context window (tokens)",
-            options=_CTX_OPTIONS,
-            value=(_CTX_MIN, _CTX_MAX),
+            options=_ctx_options,
+            value=_ctx_default,
             format_func=lambda x: f"{x:,}",
             key="sb_ctx_range",
         )
         year_range = st.slider(
             "Release year",
-            min_value=_YEAR_RANGE_DEFAULT[0],
-            max_value=_YEAR_RANGE_DEFAULT[1],
-            value=_YEAR_RANGE_DEFAULT,
+            min_value=_year_min,
+            max_value=_year_max,
+            value=_year_default,
             step=1,
             key="sb_year_range",
         )
         training_tokens_range = st.slider(
             "Training tokens (B)",
-            min_value=_TRAINING_TOKENS_RANGE_DEFAULT[0],
-            max_value=_TRAINING_TOKENS_RANGE_DEFAULT[1],
-            value=_TRAINING_TOKENS_RANGE_DEFAULT,
+            min_value=_tokens_min,
+            max_value=_tokens_max,
+            value=_tokens_default,
             step=100,
             key="sb_training_tokens_range",
         )
-        # ------------------------------------------------------------------ #
-        # Reset                                                                #
-        # ------------------------------------------------------------------ #
+
         st.divider()
         if st.button("Reset all filters", width="stretch"):
             for key in _SIDEBAR_KEYS:
@@ -232,9 +224,7 @@ def render_sidebar() -> tuple[dict, dict, dict]:
             st.session_state.pop("scatter", None)
             st.rerun()
 
-    # ---------------------------------------------------------------------- #
-    # Build filter_args — only include keys for non-default values           #
-    # ---------------------------------------------------------------------- #
+    # Build filter_args — only include keys the user actively set.
     filter_args: dict = {}
 
     # Boolean flags: only add when checked (True). Never add False — that
@@ -256,39 +246,37 @@ def render_sidebar() -> tuple[dict, dict, dict]:
         filter_args["multilingual"] = True
     if language:
         filter_args["language"] = language
-    if model_type:
-        filter_args["model_type"] = model_type
     if has_think_version:
         filter_args["has_think_version"] = True
 
     # Range sliders: only add when the user narrowed from the full range.
-    if size_range != _SIZE_RANGE_DEFAULT:
+    if size_range != _size_default:
         filter_args["min_size_b"] = size_range[0]
         filter_args["max_size_b"] = size_range[1]
-    if ctx_range != (_CTX_MIN, _CTX_MAX):
+    if ctx_range != _ctx_default:
         filter_args["min_context_window"] = ctx_range[0]
         filter_args["max_context_window"] = ctx_range[1]
-    if year_range != _YEAR_RANGE_DEFAULT:
+    if year_range != _year_default:
         filter_args["min_release_year"] = year_range[0]
         filter_args["max_release_year"] = year_range[1]
-    if training_tokens_range != _TRAINING_TOKENS_RANGE_DEFAULT:
+    if training_tokens_range != _tokens_default:
         filter_args["min_training_tokens_b"] = float(training_tokens_range[0])
         filter_args["max_training_tokens_b"] = float(training_tokens_range[1])
+
     multiselect_filters = {
         "family": families,
         "organization": orgs,
         "architecture": architectures,
         "country_of_origin": countries,
         "license": licenses,
+        "model_type": model_types,
     }
 
     exclude_filters = {
         "family": excl_families,
         "organization": excl_orgs,
-        "architecture": excl_architectures,
         "country_of_origin": excl_countries,
         "license": excl_licenses,
-        "modality": excl_modalities,
     }
 
     return filter_args, multiselect_filters, exclude_filters
