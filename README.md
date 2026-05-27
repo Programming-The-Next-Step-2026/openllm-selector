@@ -4,7 +4,7 @@ A tool to help researchers pick the right open LLM for their study.
 
 Choosing the right open LLM for research is hard given the rapidly growing landscape of available models. Most comparison tools ask "which model scores highest on MMLU?" — that is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 38 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions rather than benchmark scores.
+`openllm-selector` is a curated database of 41 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions rather than benchmark scores.
 
 ## Database fields
 

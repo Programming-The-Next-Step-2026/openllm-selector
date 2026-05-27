@@ -10,7 +10,7 @@ format:
 
 Most LLM comparison tools ask "which model scores highest on MMLU?" That is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 38 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
+`openllm-selector` is a curated database of 41 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
 
 An optional `notes` field is present for models that require additional context, such as post-trained models where `training_tokens_b` is null for structural reasons rather than lack of disclosure (e.g. DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).
 
@@ -75,7 +75,7 @@ In the sidebar:
 1. Under **Openness filters** → check **Intermediate checkpoints**
 2. Under **Ranges**, drag the **Size (B parameters)** slider to a maximum of 11 B
 
-The grid immediately narrows to ten models, all with an openness score of 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 3 7B, OLMo 7B, and all five Pythia models (Pythia 160M, Pythia 1B, Pythia 410M, Pythia 6.9B, and Pythia 70M). Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.
+The grid immediately narrows to twelve models, all with an openness score of 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 3 7B, OLMo 7B, and seven Pythia models (Pythia 1.4B, Pythia 160M, Pythia 1B, Pythia 2.8B, Pythia 410M, Pythia 6.9B, and Pythia 70M). Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.
 
 ::: {layout='[[1,4]]'}
 
@@ -211,9 +211,9 @@ In the sidebar:
 
 1. Under **Openness filters** → check **Open weights**, **Open training data**, **Intermediate checkpoints**, **Open code**, and **Permissive license**
 
-Twelve models score 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 2 32B, OLMo 3 7B, OLMo 3 32B, OLMo 7B, Pythia 160M, Pythia 1B, Pythia 410M, Pythia 6.9B, and Pythia 70M. To narrow to fully open models with a think variant, also check the **Think version available** checkbox — two models remain: OLMo 3 7B and OLMo 3 32B. Click **OLMo 3 7B** to open its profile card — it and OLMo 3 32B are the only fully open models in the database with a chain-of-thought (think) variant. OLMo 3 7B is the recommended starting point for most research workflows — it scores 5/5 on openness and has a think variant, while being more accessible than the 32B variant due to its lower compute requirements. Check the recent arXiv papers fetched in the profile card to confirm that OLMo 3 7B is being actively used in the literature and that there are relevant papers building on it.
+Fifteen models score 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 2 32B, OLMo 3 7B, OLMo 3 32B, OLMo 7B, and all eight Pythia models. To narrow to fully open models with a think variant, also check the **Think version available** checkbox — two models remain: OLMo 3 7B and OLMo 3 32B. Click **OLMo 3 7B** to open its profile card — it and OLMo 3 32B are the only fully open models in the database with a chain-of-thought (think) variant. OLMo 3 7B is the recommended starting point for most research workflows — it scores 5/5 on openness and has a think variant, while being more accessible than the 32B variant due to its lower compute requirements. Check the recent arXiv papers fetched in the profile card to confirm that OLMo 3 7B is being actively used in the literature and that there are relevant papers building on it.
 
-> *[Screenshot: all five openness checkboxes checked; twelve results in the grid; OLMo 3 7B profile card open showing Recent arXiv papers expander]*
+> *[Screenshot: all five openness checkboxes checked; fifteen results in the grid; OLMo 3 7B profile card open showing Recent arXiv papers expander]*
 
 ---
 
@@ -240,14 +240,16 @@ for m in ranked:
 #> OLMo 2 7B (7.0 B,  score 5,  4000 B tokens)
 #> OLMo 3 7B (7.0 B,  score 5,  5930 B tokens)
 #> OLMo 7B (7.0 B,  score 5,  2500 B tokens)
+#> Pythia 1.4B (1.4 B,  score 5,  300 B tokens)
 #> Pythia 160M (0.16 B,  score 5,  300 B tokens)
 #> Pythia 1B (1.0 B,  score 5,  300 B tokens)
+#> Pythia 2.8B (2.8 B,  score 5,  300 B tokens)
 #> Pythia 410M (0.41 B,  score 5,  300 B tokens)
 #> Pythia 6.9B (6.9 B,  score 5,  300 B tokens)
 #> Pythia 70M (0.07 B,  score 5,  300 B tokens)
 ```
 
-All ten score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: Apertus 8B leads with 15,000 B tokens; OLMo 2 7B was trained on 13× more tokens than any Pythia model and has a 4 K context window versus Pythia's 2 K. The Pythia suite is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals across multiple model sizes. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.
+All twelve score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: Apertus 8B leads with 15,000 B tokens; OLMo 2 7B was trained on 13× more tokens than any Pythia model and has a 4 K context window versus Pythia's 2 K. The Pythia suite is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals across multiple model sizes. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.
 
 ```python
 # Look up the foundational paper and confirm checkpoint availability
@@ -402,14 +404,17 @@ for m in ranked:
 #> OLMo 3 32B   32.0 B  tokens=5500 B  think=True
 #> OLMo 3 7B   7.0 B  tokens=5930 B  think=True
 #> OLMo 7B   7.0 B  tokens=2500 B  think=False
+#> Pythia 1.4B   1.4 B  tokens=300 B  think=False
+#> Pythia 12B   12.0 B  tokens=300 B  think=False
 #> Pythia 160M   0.16 B  tokens=300 B  think=False
 #> Pythia 1B   1.0 B  tokens=300 B  think=False
+#> Pythia 2.8B   2.8 B  tokens=300 B  think=False
 #> Pythia 410M   0.41 B  tokens=300 B  think=False
 #> Pythia 6.9B   6.9 B  tokens=300 B  think=False
 #> Pythia 70M   0.07 B  tokens=300 B  think=False
 ```
 
-All twelve score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. OLMo 3 7B and OLMo 3 32B are the only fully open models with a think variant. OLMo 3 7B is the recommended starting point — it is the smaller model and, being more widely cited in the literature, is likely to return more relevant arXiv papers.
+All fifteen score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. OLMo 3 7B and OLMo 3 32B are the only fully open models with a think variant. OLMo 3 7B is the recommended starting point — it is the smaller model and, being more widely cited in the literature, is likely to return more relevant arXiv papers.
 
 ```python
 # Narrow to fully open models with a think variant

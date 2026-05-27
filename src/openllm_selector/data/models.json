@@ -842,6 +842,66 @@
     "huggingface_id": "microsoft/phi-4"
   },
   {
+  "name": "Pythia 1.4B",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 1.4,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "notes": "Pythia 1.4B is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-1.4b"
+  },
+  {
+  "name": "Pythia 12B",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 12.0,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "notes": "Pythia 12B is the largest model in the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-12b"
+  },
+  {
   "name": "Pythia 160M",
   "family": "Pythia",
   "organization": "EleutherAI",
@@ -899,6 +959,36 @@
   "has_think_version": false,
   "foundational_paper": "https://arxiv.org/abs/2304.01373",
   "huggingface_id": "EleutherAI/pythia-1b"
+  },
+  {
+  "name": "Pythia 2.8B",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 2.8,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "notes": "Pythia 2.8B is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-2.8b"
   },
   {
   "name": "Pythia 410M",

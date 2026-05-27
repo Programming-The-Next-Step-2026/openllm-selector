@@ -790,21 +790,19 @@ All values have been manually verified. No outstanding verification items.
 
 ---
 
-## 17. Pythia scaling suite (Pythia 70M, 160M, 410M, 1B)
+## 17. Pythia scaling suite (Pythia 70M, 160M, 410M, 1B, 1.4B, 2.8B, 12B)
 
 **Added:** week-3 batch 5 (manually verified by user)  
 **Why added:** The Pythia family (EleutherAI, 2023) is a canonical scaling-laws
 benchmark suite: all models were trained on the same data (The Pile, 300B tokens)
 with the same training code, and intermediate checkpoints at every 1000 training
-steps are publicly available. Adding the 70M, 160M, 410M, and 1B members
-complements the existing Pythia 6.9B entry and makes the full sub-10B range
-accessible for training-dynamics research. (Pythia 12B is the largest member but
-exceeds the 10 B size threshold common to single-GPU research workflows and is
-excluded for now.)  
+steps are publicly available. Adding all seven members (70M, 160M, 410M, 1B,
+1.4B, 2.8B, 12B) alongside the existing Pythia 6.9B entry gives researchers
+access to the complete 8-model suite for training-dynamics and scaling studies.  
 **Primary source:** arXiv 2304.01373 (Biderman et al., "Pythia: A Suite for
 Analyzing Large Language Models Across Training and Scaling", April 2023)
 
-### Field values (shared across all four new Pythia models)
+### Field values (shared across all seven new Pythia models)
 
 | Field | Value | Confidence | Source / notes |
 |---|---|---|---|
@@ -825,7 +823,7 @@ Analyzing Large Language Models Across Training and Scaling", April 2023)
 | `num_languages` | 1 | High | |
 | `languages` | ["English"] | High | |
 | `has_instruct_version` | false | High | No instruction-tuned Pythia variants were released by EleutherAI |
-| `model_type` | base | High | All four are base pretrained models |
+| `model_type` | base | High | All seven are base pretrained models |
 | `has_think_version` | false | High | No chain-of-thought or reasoning variants |
 | `foundational_paper` | https://arxiv.org/abs/2304.01373 | High | Shared with existing Pythia 6.9B entry |
 
@@ -837,34 +835,39 @@ Analyzing Large Language Models Across Training and Scaling", April 2023)
 | Pythia 160M | 0.16 | `EleutherAI/pythia-160m` |
 | Pythia 410M | 0.41 | `EleutherAI/pythia-410m` |
 | Pythia 1B | 1.0 | `EleutherAI/pythia-1b` |
+| Pythia 1.4B | 1.4 | `EleutherAI/pythia-1.4b` |
+| Pythia 2.8B | 2.8 | `EleutherAI/pythia-2.8b` |
+| Pythia 12B | 12.0 | `EleutherAI/pythia-12b` |
 
 ### Notes field
 
-Pythia 70M, Pythia 160M, and Pythia 410M each have a `notes` field explaining
-why they are included (the full Pythia suite rationale). Pythia 1B has no
-`notes` field (the rationale is already apparent from the model name and family).
-Pythia 6.9B also received a `notes` field as part of this batch, noting its
-role as the second-largest member of the suite.
+All new Pythia models except Pythia 1B have a `notes` field explaining their
+role in the scaling suite. Pythia 1B has no `notes` field (no additional context
+is needed). Pythia 6.9B and the four later-added models (1.4B, 2.8B, 12B) all
+received notes fields noting their place in the full suite.
 
 ### Sorting
 
-The five Pythia models are sorted case-insensitively in `models.json`:
-Pythia 160M, Pythia 1B, Pythia 410M, Pythia 6.9B, Pythia 70M.
-"Pythia 160M" sorts before "Pythia 1B" because the character '6' (ASCII 54)
-is less than 'B' (ASCII 66) at the second character position after "Pythia 1".
+The eight Pythia models are sorted case-insensitively in `models.json`:
+Pythia 1.4B, Pythia 12B, Pythia 160M, Pythia 1B, Pythia 2.8B, Pythia 410M,
+Pythia 6.9B, Pythia 70M.
+
+Key ordering rules (characters compared after "Pythia "):
+- '.' (ASCII 46) < '2' (50) < '6' (54) < '7' (55) < 'B' (66)
+- so Pythia 1.4B < Pythia 12B < Pythia 160M < Pythia 1B (second char after '1')
+- and Pythia 2.8B < Pythia 410M (first char '2' < '4')
 
 ### Test exceptions required
 
-- `test_filter_size_range_no_matches`: previously asserted that the range
-  1.0–1.5 B has no matches; Pythia 1B (1.0 B) now falls in this range. Updated
-  to use 1.1–1.9 B, which remains empty.
-- `test_filter_max_num_languages`: updated from 18 to 22.
-- `test_filter_has_instruct_version_false`: four new names added to the exact set.
-- `test_filter_language_english`: updated from 33 to 37.
-- `test_filter_model_type_base`: updated from 29 to 33.
-- `test_filter_has_think_version_false`: updated from 27 to 31.
-- `test_notes_present_on_all_expected_models`: four new names added (Pythia 70M,
-  160M, 410M, 6.9B — Pythia 1B has no notes).
+- `test_filter_size_range_no_matches`: previously 1.1–1.9 B (empty after Pythia 1B
+  addition); Pythia 1.4B (1.4 B) now falls in that range. Updated to 1.5–1.9 B.
+- `test_filter_max_num_languages`: updated from 22 to 25.
+- `test_filter_has_instruct_version_false`: seven new names now in the exact set.
+- `test_filter_language_english`: updated from 37 to 40.
+- `test_filter_model_type_base`: updated from 33 to 36.
+- `test_filter_has_think_version_false`: updated from 31 to 34.
+- `test_notes_present_on_all_expected_models`: Pythia 1.4B, 2.8B, and 12B added
+  (Pythia 1B still has no notes).
 
 ### Values to verify
 
@@ -892,6 +895,9 @@ HuggingFace model pages. No outstanding verification items.
 | Pythia 160M | High | None — all values manually verified |
 | Pythia 410M | High | None — all values manually verified |
 | Pythia 1B | High | None — all values manually verified |
+| Pythia 1.4B | High | None — all values manually verified |
+| Pythia 2.8B | High | None — all values manually verified |
+| Pythia 12B | High | None — all values manually verified |
 
 The OLMo 3 32B `foundational_paper` remains a placeholder pending AllenAI's
 OLMo 3 technical report publication.
