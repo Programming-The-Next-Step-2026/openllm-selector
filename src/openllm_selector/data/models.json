@@ -700,6 +700,31 @@
     "huggingface_id": "allenai/Olmo-3-1125-32B"
   },
   {
+    "name": "OLMo 3 7B",
+    "family": "OLMo",
+    "organization": "Allen Institute for AI",
+    "country_of_origin": "United States",
+    "release_year": 2025,
+    "size_b": 7.0,
+    "training_tokens_b": 5930.0,
+    "context_window": 65536,
+    "modality": ["text"],
+    "architecture": "decoder-only",
+    "license": "Apache 2.0",
+    "open_weights": true,
+    "open_training_data": true,
+    "intermediate_checkpoints": true,
+    "open_code": true,
+    "multilingual": false,
+    "num_languages": 1,
+    "languages": ["English"],
+    "has_instruct_version": true,
+    "model_type": "base",
+    "has_think_version": true,
+    "foundational_paper": "https://arxiv.org/abs/2512.13961",
+    "huggingface_id": "allenai/Olmo-3-1025-7B"
+},
+  {
     "name": "OLMo 7B",
     "family": "OLMo",
     "organization": "Allen Institute for AI",
@@ -817,6 +842,95 @@
     "huggingface_id": "microsoft/phi-4"
   },
   {
+  "name": "Pythia 160M",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 0.16,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "notes": "Pythia 160M is the second smallest model in the Pythia family, which includes a range of models from 160M to 12B parameters, all trained on the same dataset for controlled scaling studies.",
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-160m"
+  },
+  {
+  "name": "Pythia 1B",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 1.0,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-1b"
+  },
+  {
+  "name": "Pythia 410M",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 0.41,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "notes": "Pythia 410M is the third smallest model in the Pythia family, included here to provide a reference point for the full range of model sizes in the Pythia suite.",
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-410m"
+  },
+  {
     "name": "Pythia 6.9B",
     "family": "Pythia",
     "organization": "EleutherAI",
@@ -842,8 +956,39 @@
     "has_instruct_version": false,
     "model_type": "base",
     "has_think_version": false,
+    "notes": "Pythia 6.9B is the second largest model in the Pythia family, included here to provide a reference point for the full range of model sizes in the Pythia suite.",
     "foundational_paper": "https://arxiv.org/abs/2304.01373",
     "huggingface_id": "EleutherAI/pythia-6.9b"
+  },
+  {
+  "name": "Pythia 70M",
+  "family": "Pythia",
+  "organization": "EleutherAI",
+  "country_of_origin": "United States",
+  "release_year": 2023,
+  "size_b": 0.07,
+  "training_tokens_b": 300.0,
+  "context_window": 2048,
+  "modality": [
+    "text"
+  ],
+  "architecture": "decoder-only",
+  "license": "Apache 2.0",
+  "open_weights": true,
+  "open_training_data": true,
+  "intermediate_checkpoints": true,
+  "open_code": true,
+  "multilingual": false,
+  "num_languages": 1,
+  "languages": [
+    "English"
+  ],
+  "has_instruct_version": false,
+  "model_type": "base",
+  "has_think_version": false,
+  "notes": "Pythia 70M is the smallest model in the Pythia family, included here for completeness and to provide a reference point for the full range of model sizes in the Pythia suite.",
+  "foundational_paper": "https://arxiv.org/abs/2304.01373",
+  "huggingface_id": "EleutherAI/pythia-70m"
   },
   {
     "name": "Qwen2 7B",

@@ -173,7 +173,7 @@ class TestNewFields:
     def test_filter_max_num_languages(self):
         results = filter_models(max_num_languages=1)
         assert all(m["num_languages"] == 1 for m in results)
-        assert len(results) == 17  # all English-only models
+        assert len(results) == 22  # all English-only models
 
     def test_filter_num_languages_range(self):
         results = filter_models(min_num_languages=2, max_num_languages=5)
@@ -202,11 +202,12 @@ class TestNewFields:
         assert names == {
             "Pythia 6.9B", "GPT-NeoX 20B", "Mistral 7B",
             "GPT-J 6B", "Grok-1", "Phi-2",
+            "Pythia 70M", "Pythia 160M", "Pythia 410M", "Pythia 1B",
         }
 
     def test_filter_has_instruct_version_true(self):
         results = filter_models(has_instruct_version=True)
-        assert len(results) == 27
+        assert len(results) == 28
         assert all(m["has_instruct_version"] is True for m in results)
 
     def test_filter_has_instruct_and_openness(self):
@@ -313,7 +314,7 @@ class TestNewFields:
 
     def test_filter_language_english(self):
         results = filter_models(language="English")
-        assert len(results) == 32  # all models except Apertus 8B (FineWeb-2 languages, no English)
+        assert len(results) == 37  # all models except Apertus 8B (FineWeb-2 languages, no English)
 
     def test_filter_language_hindi(self):
         results = filter_models(language="Hindi")
@@ -380,7 +381,7 @@ class TestNewFields:
     def test_filter_model_type_base(self):
         results = filter_models(model_type="base")
         assert all(m["model_type"] == "base" for m in results)
-        assert len(results) == 28
+        assert len(results) == 33
 
     def test_filter_model_type_instruct(self):
         results = filter_models(model_type="instruct")
@@ -414,6 +415,7 @@ class TestNewFields:
 
     def test_known_has_think_version_true(self):
         assert get_model("OLMo 3 32B")["has_think_version"] is True
+        assert get_model("OLMo 3 7B")["has_think_version"] is True
         assert get_model("DeepSeek-R1")["has_think_version"] is True
         assert get_model("Phi-4")["has_think_version"] is True
 
@@ -426,11 +428,11 @@ class TestNewFields:
     def test_filter_has_think_version_true(self):
         results = filter_models(has_think_version=True)
         names = {m["name"] for m in results}
-        assert names == {"OLMo 3 32B", "DeepSeek-R1", "Phi-4", "Qwen3 8B", "GPT-OSS 20B", "Sarvam 30B"}
+        assert names == {"OLMo 3 32B", "OLMo 3 7B", "DeepSeek-R1", "Phi-4", "Qwen3 8B", "GPT-OSS 20B", "Sarvam 30B"}
 
     def test_filter_has_think_version_false(self):
         results = filter_models(has_think_version=False)
-        assert len(results) == 27
+        assert len(results) == 31
         assert all(m["has_think_version"] is False for m in results)
 
     def test_filter_has_think_version_combined(self):
@@ -460,6 +462,7 @@ class TestNewFields:
             "Apertus 8B", "DeepSeek-R1", "Gemma 3 27B", "GPT-J 6B",
             "GPT-OSS 20B", "Grok-1", "LLaVA 1.5 7B", "Mixtral 8x22B",
             "Phi-2", "Qwen3 8B", "Sarvam 30B",
+            "Pythia 6.9B", "Pythia 70M", "Pythia 160M", "Pythia 410M",
         }
         actual_with_notes = {m["name"] for m in all_models if m.get("notes")}
         assert actual_with_notes == expected_with_notes
@@ -539,6 +542,75 @@ class TestNewFields:
         assert "Japanese" in apertus["languages"]
         # Apertus is trained on FineWeb-2 which does not include English
         assert "English" not in apertus["languages"]
+
+    # --- Pythia scaling suite ---
+
+    def test_pythia_suite_sizes(self):
+        assert get_model("Pythia 70M")["size_b"] == 0.07
+        assert get_model("Pythia 160M")["size_b"] == 0.16
+        assert get_model("Pythia 410M")["size_b"] == 0.41
+        assert get_model("Pythia 1B")["size_b"] == 1.0
+
+    def test_pythia_suite_training_tokens(self):
+        for name in ["Pythia 70M", "Pythia 160M", "Pythia 410M", "Pythia 1B"]:
+            assert get_model(name)["training_tokens_b"] == 300.0, (
+                f"{name} training_tokens_b should be 300.0"
+            )
+
+    def test_pythia_suite_openness(self):
+        for name in ["Pythia 70M", "Pythia 160M", "Pythia 410M", "Pythia 1B"]:
+            m = get_model(name)
+            assert m["open_weights"] is True
+            assert m["open_training_data"] is True
+            assert m["intermediate_checkpoints"] is True
+            assert m["open_code"] is True
+            assert m["license"] == "Apache 2.0"
+
+    def test_pythia_suite_huggingface_ids(self):
+        assert get_model("Pythia 70M")["huggingface_id"] == "EleutherAI/pythia-70m"
+        assert get_model("Pythia 160M")["huggingface_id"] == "EleutherAI/pythia-160m"
+        assert get_model("Pythia 410M")["huggingface_id"] == "EleutherAI/pythia-410m"
+        assert get_model("Pythia 1B")["huggingface_id"] == "EleutherAI/pythia-1b"
+
+    def test_pythia_suite_model_flags(self):
+        for name in ["Pythia 70M", "Pythia 160M", "Pythia 410M", "Pythia 1B"]:
+            m = get_model(name)
+            assert m["has_instruct_version"] is False
+            assert m["model_type"] == "base"
+            assert m["has_think_version"] is False
+            assert m["multilingual"] is False
+            assert m["num_languages"] == 1
+            assert m["languages"] == ["English"]
+            assert m["context_window"] == 2048
+            assert m["release_year"] == 2023
+            assert m["organization"] == "EleutherAI"
+            assert m["country_of_origin"] == "United States"
+
+    def test_pythia_suite_shared_paper(self):
+        for name in ["Pythia 70M", "Pythia 160M", "Pythia 410M", "Pythia 1B", "Pythia 6.9B"]:
+            assert get_model(name)["foundational_paper"] == "https://arxiv.org/abs/2304.01373"
+
+    def test_pythia_1b_has_no_notes(self):
+        assert get_model("Pythia 1B").get("notes") is None
+
+    def test_pythia_suite_included_in_intermediate_checkpoints_filter(self):
+        results = filter_models(intermediate_checkpoints=True)
+        names = {m["name"] for m in results}
+        for name in ["Pythia 70M", "Pythia 160M", "Pythia 410M", "Pythia 1B"]:
+            assert name in names
+
+    def test_pythia_suite_included_in_max_size_filter(self):
+        results = filter_models(max_size_b=1.0)
+        names = {m["name"] for m in results}
+        assert "Pythia 70M" in names
+        assert "Pythia 160M" in names
+        assert "Pythia 410M" in names
+        assert "Pythia 1B" in names
+
+    def test_pythia_1b_boundary_inclusive(self):
+        # Pythia 1B has size_b=1.0; both bounds should include it
+        assert any(m["name"] == "Pythia 1B" for m in filter_models(min_size_b=1.0))
+        assert any(m["name"] == "Pythia 1B" for m in filter_models(max_size_b=1.0))
 
     # --- language filter: new languages ---
 
@@ -797,8 +869,8 @@ class TestFilterModels:
         assert all(5.0 <= m["size_b"] <= 10.0 for m in results)
 
     def test_filter_size_range_no_matches(self):
-        # No model has exactly 1 B parameters in the DB
-        assert filter_models(min_size_b=1.0, max_size_b=1.5) == []
+        # No model has size between 1.1 B and 1.9 B in the DB
+        assert filter_models(min_size_b=1.1, max_size_b=1.9) == []
 
     def test_size_boundary_inclusive(self):
         # OLMo 7B has size_b = 7.0; both bounds should include it

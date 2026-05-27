@@ -746,6 +746,133 @@ on Sarvam AI's published model family characteristics.
 
 ---
 
+---
+
+## 16. OLMo 3 7B
+
+**Added:** week-3 batch 4 (manually verified by user)
+**Why added:** The 7B member of the OLMo 3 family; shares the `has_think_version=true`
+property with OLMo 3 32B but at a smaller, more accessible scale. Being more
+widely cited in the literature, it is the recommended entry point for the
+fully-open-with-think-variant use case in the vignette.  
+**Primary source:** arXiv 2512.13961 (OLMo 3 technical report)
+
+### Field values
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | OLMo | High | Consistent with all other OLMo entries |
+| `organization` | Allen Institute for AI | High | |
+| `country_of_origin` | United States | High | |
+| `release_year` | 2025 | High | Released 2025 per AllenAI |
+| `size_b` | 7.0 | High | Explicitly stated in the model name |
+| `training_tokens_b` | 5930.0 | High | Manually verified against primary source |
+| `context_window` | 65536 | High | Manually verified; 64K context window |
+| `modality` | ["text"] | High | Text-only; consistent with all OLMo models |
+| `architecture` | decoder-only | High | Standard decoder-only Transformer; consistent across all OLMo variants |
+| `license` | Apache 2.0 | High | All OLMo models use Apache 2.0 |
+| `open_weights` | true | High | Weights released openly by AllenAI |
+| `open_training_data` | true | High | Trained on a public Dolma corpus variant |
+| `intermediate_checkpoints` | true | High | AllenAI releases intermediate checkpoints for all OLMo models |
+| `open_code` | true | High | OLMo training framework publicly available on GitHub |
+| `multilingual` | false | High | English-only; consistent with all OLMo models |
+| `num_languages` | 1 | High | |
+| `languages` | ["English"] | High | |
+| `has_instruct_version` | true | High | AllenAI released an instruction-tuned OLMo 3 7B variant |
+| `model_type` | base | High | The stored record is the base model |
+| `has_think_version` | true | High | OLMo 3 7B Think is available; this is the key distinguishing feature of the OLMo 3 family |
+| `foundational_paper` | https://arxiv.org/abs/2512.13961 | High | Manually verified arXiv ID |
+| `huggingface_id` | allenai/Olmo-3-1025-7B | High | Manually verified on HuggingFace |
+
+### Values to verify
+
+All values have been manually verified. No outstanding verification items.
+
+---
+
+## 17. Pythia scaling suite (Pythia 70M, 160M, 410M, 1B)
+
+**Added:** week-3 batch 5 (manually verified by user)  
+**Why added:** The Pythia family (EleutherAI, 2023) is a canonical scaling-laws
+benchmark suite: all models were trained on the same data (The Pile, 300B tokens)
+with the same training code, and intermediate checkpoints at every 1000 training
+steps are publicly available. Adding the 70M, 160M, 410M, and 1B members
+complements the existing Pythia 6.9B entry and makes the full sub-10B range
+accessible for training-dynamics research. (Pythia 12B is the largest member but
+exceeds the 10 B size threshold common to single-GPU research workflows and is
+excluded for now.)  
+**Primary source:** arXiv 2304.01373 (Biderman et al., "Pythia: A Suite for
+Analyzing Large Language Models Across Training and Scaling", April 2023)
+
+### Field values (shared across all four new Pythia models)
+
+| Field | Value | Confidence | Source / notes |
+|---|---|---|---|
+| `family` | Pythia | High | Consistent with existing Pythia 6.9B entry |
+| `organization` | EleutherAI | High | |
+| `country_of_origin` | United States | High | EleutherAI is a US non-profit |
+| `release_year` | 2023 | High | Paper submitted April 2023; weights released same month |
+| `training_tokens_b` | 300.0 | High | Paper Table 1: all Pythia models trained on 300B tokens from The Pile |
+| `context_window` | 2048 | High | Paper §2: all Pythia models use 2048-token context |
+| `modality` | ["text"] | High | Text-only; no multimodal capability |
+| `architecture` | decoder-only | High | GPT-NeoX-based decoder-only Transformer; confirmed in paper and HuggingFace model cards |
+| `license` | Apache 2.0 | High | Apache 2.0 license confirmed on all HuggingFace model pages |
+| `open_weights` | true | High | All weights publicly available on HuggingFace |
+| `open_training_data` | true | High | Trained on The Pile (EleutherAI), which is publicly available |
+| `intermediate_checkpoints` | true | High | Paper explicitly highlights checkpoint availability as a core feature; checkpoints available on HuggingFace at every 1000 training steps |
+| `open_code` | true | High | Training code available via EleutherAI/gpt-neox on GitHub |
+| `multilingual` | false | High | English-only; The Pile is primarily English |
+| `num_languages` | 1 | High | |
+| `languages` | ["English"] | High | |
+| `has_instruct_version` | false | High | No instruction-tuned Pythia variants were released by EleutherAI |
+| `model_type` | base | High | All four are base pretrained models |
+| `has_think_version` | false | High | No chain-of-thought or reasoning variants |
+| `foundational_paper` | https://arxiv.org/abs/2304.01373 | High | Shared with existing Pythia 6.9B entry |
+
+### Size-specific field values
+
+| Model | `size_b` | `huggingface_id` |
+|---|---|---|
+| Pythia 70M | 0.07 | `EleutherAI/pythia-70m` |
+| Pythia 160M | 0.16 | `EleutherAI/pythia-160m` |
+| Pythia 410M | 0.41 | `EleutherAI/pythia-410m` |
+| Pythia 1B | 1.0 | `EleutherAI/pythia-1b` |
+
+### Notes field
+
+Pythia 70M, Pythia 160M, and Pythia 410M each have a `notes` field explaining
+why they are included (the full Pythia suite rationale). Pythia 1B has no
+`notes` field (the rationale is already apparent from the model name and family).
+Pythia 6.9B also received a `notes` field as part of this batch, noting its
+role as the second-largest member of the suite.
+
+### Sorting
+
+The five Pythia models are sorted case-insensitively in `models.json`:
+Pythia 160M, Pythia 1B, Pythia 410M, Pythia 6.9B, Pythia 70M.
+"Pythia 160M" sorts before "Pythia 1B" because the character '6' (ASCII 54)
+is less than 'B' (ASCII 66) at the second character position after "Pythia 1".
+
+### Test exceptions required
+
+- `test_filter_size_range_no_matches`: previously asserted that the range
+  1.0–1.5 B has no matches; Pythia 1B (1.0 B) now falls in this range. Updated
+  to use 1.1–1.9 B, which remains empty.
+- `test_filter_max_num_languages`: updated from 18 to 22.
+- `test_filter_has_instruct_version_false`: four new names added to the exact set.
+- `test_filter_language_english`: updated from 33 to 37.
+- `test_filter_model_type_base`: updated from 29 to 33.
+- `test_filter_has_think_version_false`: updated from 27 to 31.
+- `test_notes_present_on_all_expected_models`: four new names added (Pythia 70M,
+  160M, 410M, 6.9B — Pythia 1B has no notes).
+
+### Values to verify
+
+All values have been manually verified against the foundational paper and
+HuggingFace model pages. No outstanding verification items.
+
+---
+
 ## Summary (all batches)
 
 | Model | Overall confidence | Items to verify |
@@ -753,6 +880,7 @@ on Sarvam AI's published model family characteristics.
 | DeepSeek-R1 | High | None — all values verified |
 | OLMo 2 32B | Medium | `training_tokens_b`, `context_window`, `huggingface_id` |
 | OLMo 3 32B | Low–Medium | `training_tokens_b`, `context_window`, `open_training_data`, `intermediate_checkpoints`, `open_code`, `has_instruct_version`, `foundational_paper` (placeholder), `huggingface_id` |
+| OLMo 3 7B | High | None — all values manually verified |
 | Phi-4 | High | None — all values verified |
 | Qwen2.5 7B | High | `has_think_version` (verify no official think variant exists) |
 | DeepSeek-V3 | Medium–High | `license`, `open_code`, `num_languages`/`languages`, `foundational_paper`, `huggingface_id` (base vs. chat convention) |
@@ -760,6 +888,10 @@ on Sarvam AI's published model family characteristics.
 | GPT-OSS 20B | High | None — all values manually verified |
 | Mixtral 8x22B | Medium–High | `size_b` (141B is an estimate; sources vary 140B–142B) |
 | Qwen3 8B | High | None — all values manually verified |
+| Pythia 70M | High | None — all values manually verified |
+| Pythia 160M | High | None — all values manually verified |
+| Pythia 410M | High | None — all values manually verified |
+| Pythia 1B | High | None — all values manually verified |
 
 The OLMo 3 32B `foundational_paper` remains a placeholder pending AllenAI's
 OLMo 3 technical report publication.
