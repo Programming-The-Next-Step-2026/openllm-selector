@@ -26,6 +26,7 @@ def _close() -> None:
     st.session_state.selected_model = None
     st.session_state.pop("grid", None)
     st.session_state.pop("scatter", None)
+    st.session_state.pop("selection_source", None)
     st.rerun()
 
 

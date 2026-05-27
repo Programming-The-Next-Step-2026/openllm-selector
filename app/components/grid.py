@@ -81,6 +81,11 @@ def render_grid(filtered: list[dict]) -> None:
         row_idx = selection.selection.rows[0]
         if row_idx < len(display_df):
             st.session_state.selected_model = display_df.iloc[row_idx]["name"]
+            st.session_state.selection_source = "grid"
     else:
-        # Row was deselected — close the profile card.
-        st.session_state.selected_model = None
+        # Only close the profile card if the grid was the component that opened
+        # it. If the source was the scatter plot, leave selected_model alone —
+        # the grid has no highlighted row in that case, but that is expected.
+        if st.session_state.get("selection_source") == "grid":
+            st.session_state.selected_model = None
+            st.session_state.selection_source = None

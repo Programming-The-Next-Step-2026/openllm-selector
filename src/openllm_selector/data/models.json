@@ -897,7 +897,7 @@
   "has_instruct_version": false,
   "model_type": "base",
   "has_think_version": false,
-  "notes": "Pythia 12B is the largest model in the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
+  "notes": "Pythia 12B is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
   "foundational_paper": "https://arxiv.org/abs/2304.01373",
   "huggingface_id": "EleutherAI/pythia-12b"
   },
@@ -927,7 +927,7 @@
   "has_instruct_version": false,
   "model_type": "base",
   "has_think_version": false,
-  "notes": "Pythia 160M is the second smallest model in the Pythia family, which includes a range of models from 160M to 12B parameters, all trained on the same dataset for controlled scaling studies.",
+  "notes": "Pythia 160M is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
   "foundational_paper": "https://arxiv.org/abs/2304.01373",
   "huggingface_id": "EleutherAI/pythia-160m"
   },
@@ -957,6 +957,7 @@
   "has_instruct_version": false,
   "model_type": "base",
   "has_think_version": false,
+  "notes": "Pythia 1B is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
   "foundational_paper": "https://arxiv.org/abs/2304.01373",
   "huggingface_id": "EleutherAI/pythia-1b"
   },
@@ -1016,7 +1017,7 @@
   "has_instruct_version": false,
   "model_type": "base",
   "has_think_version": false,
-  "notes": "Pythia 410M is the third smallest model in the Pythia family, included here to provide a reference point for the full range of model sizes in the Pythia suite.",
+  "notes": "Pythia 410M is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
   "foundational_paper": "https://arxiv.org/abs/2304.01373",
   "huggingface_id": "EleutherAI/pythia-410m"
   },
@@ -1046,7 +1047,7 @@
     "has_instruct_version": false,
     "model_type": "base",
     "has_think_version": false,
-    "notes": "Pythia 6.9B is the second largest model in the Pythia family, included here to provide a reference point for the full range of model sizes in the Pythia suite.",
+    "notes": "Pythia 6.9B is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
     "foundational_paper": "https://arxiv.org/abs/2304.01373",
     "huggingface_id": "EleutherAI/pythia-6.9b"
   },
@@ -1076,7 +1077,7 @@
   "has_instruct_version": false,
   "model_type": "base",
   "has_think_version": false,
-  "notes": "Pythia 70M is the smallest model in the Pythia family, included here for completeness and to provide a reference point for the full range of model sizes in the Pythia suite.",
+  "notes": "Pythia 70M is part of the Pythia scaling suite; all Pythia models share the same training data (The Pile, 300B tokens) and training code, enabling controlled scaling studies.",
   "foundational_paper": "https://arxiv.org/abs/2304.01373",
   "huggingface_id": "EleutherAI/pythia-70m"
   },

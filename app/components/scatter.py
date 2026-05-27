@@ -180,22 +180,24 @@ def render_scatter(filtered: list[dict]) -> None:
     selected = st.session_state.get("selected_model")
     fig = _build_figure(df, x_axis, y_axis, selected)
 
-    event = st.plotly_chart(
-        fig,
-        width="stretch",
-        on_select="rerun",
-        key="scatter",
-    )
-
-    # Extract the clicked model name from the event.
+    # Handle click from the PREVIOUS rerun cycle.
+    # on_select='rerun' triggers a full rerun immediately, so any code after
+    # st.plotly_chart never executes in the same cycle the click occurred.
+    # Reading from session_state here (before the chart call) captures the
+    # selection that was stored during that previous cycle.
     # customdata[0] is the first element of the custom_data=["name"] list —
     # more reliable than "hovertext", which has changed key names across
     # Plotly/Streamlit minor versions.
-    if event and event.selection and event.selection.points:
-        point = event.selection.points[0]
+    prev = st.session_state.get("scatter")
+    if prev and prev.selection and prev.selection.points:
+        point = prev.selection.points[0]
         name = (point.get("customdata") or [None])[0] or point.get("hovertext")
-        if name:
+        if name and name != st.session_state.get("selected_model"):
             st.session_state.selected_model = name
+            st.session_state.selection_source = "scatter"
+            st.rerun()
+
+    st.plotly_chart(fig, width="stretch", on_select="rerun", key="scatter")
 
     note = "Bubble area encodes model size; models over 100 B are capped. Use fullscreen for detail."
     if x_axis == "training_tokens_b" or y_axis == "training_tokens_b":
