@@ -161,14 +161,14 @@ def render_scatter(filtered: list[dict]) -> None:
         "X axis",
         _AXIS_OPTIONS,
         index=_X_DEFAULT_IDX,
-        format_func=_AXIS_LABELS.get,
+        format_func=lambda k: _AXIS_LABELS.get(k) or str(k),
         key="scatter_x",
     )
     y_axis = col2.selectbox(
         "Y axis",
         _AXIS_OPTIONS,
         index=_Y_DEFAULT_IDX,
-        format_func=_AXIS_LABELS.get,
+        format_func=lambda k: _AXIS_LABELS.get(k) or str(k),
         key="scatter_y",
     )
 
