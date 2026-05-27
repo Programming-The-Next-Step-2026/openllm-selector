@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="vignette_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="vignette_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="vignette_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="vignette_files/libs/bootstrap/bootstrap-5669b80454662a7c4792165a2c2b8715.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="vignette_files/libs/bootstrap/bootstrap-ad714adc18c416ca11c67b4149ecee89.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="vignette_files/libs/quarto-diagram/mermaid.min.js"></script>
 <script src="vignette_files/libs/quarto-diagram/mermaid-init.js"></script>
 <link href="vignette_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
@@ -122,7 +122,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>Most LLM comparison tools ask “which model scores highest on MMLU?” That is not a useful question for research. What matters is: can I reproduce this model’s training? Is the license compatible with my institution’s data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?</p>
-<p><code>openllm-selector</code> is a curated database of 28 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g.&nbsp;Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).</p>
+<p><code>openllm-selector</code> is a curated database of 33 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g.&nbsp;Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).</p>
 <p>An optional <code>notes</code> field is present for models that require additional context, such as post-trained models where <code>training_tokens_b</code> is null for structural reasons rather than lack of disclosure (e.g.&nbsp;DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
@@ -187,9 +187,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Open <strong>Openness filters</strong> → check <strong>Intermediate checkpoints</strong></li>
 <li>Under <strong>Ranges</strong>, drag the <strong>Size (B parameters)</strong> slider to a maximum of 10 B</li>
 </ol>
-<p>The grid immediately narrows to three models: OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.</p>
+<p>The grid immediately narrows to five models: Apertus 8B, GPT-J 6B, OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.</p>
 <blockquote class="blockquote">
-<p><em>[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing three results; OLMo 2 7B profile card open with arXiv papers]</em></p>
+<p><em>[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing five results; OLMo 2 7B profile card open with arXiv papers]</em></p>
 </blockquote>
 <hr>
 </section>
@@ -200,9 +200,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ol type="1">
 <li>Open <strong>Exclusion filters</strong> → <strong>Exclude country of origin</strong> → select <strong>United States</strong> and <strong>China</strong></li>
 </ol>
-<p>Six models remain: BLOOM 176B and the three Mistral models (France) and the two Falcon models (United Arab Emirates). The scatter plot makes the trade-offs immediately visible: BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.</p>
+<p>Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three Mistral models (France), the two Falcon models (United Arab Emirates), and Sarvam 30B (India, score 2). The scatter plot makes the trade-offs immediately visible: Apertus 8B leads on openness; BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.</p>
 <blockquote class="blockquote">
-<p><em>[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 6 bubbles; grid listing BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B, Mixtral 8x22B]</em></p>
+<p><em>[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 8 bubbles; grid listing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B, Mixtral 8x22B, Sarvam 30B]</em></p>
 </blockquote>
 <hr>
 </section>
@@ -214,9 +214,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Check the <strong>Multilingual</strong> checkbox</li>
 <li>Open <strong>Openness filters</strong> → check <strong>Open weights</strong> and <strong>Open training data</strong></li>
 </ol>
-<p>Three models match: BLOOM 176B (46 languages, BigScience RAIL license), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0). Use the <strong>Language (official support only)</strong> dropdown to check whether a specific language you need is present. Selecting <strong>Hindi</strong> narrows the set to BLOOM 176B, Llama 3.1 8B, Gemma 3 27B, and Qwen3 8B. Selecting <strong>Japanese</strong> returns Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B. The license column in the grid makes the trade-off immediately visible.</p>
+<p>Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B (46 languages, BigScience RAIL license, score 4), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0, score 4). Use the <strong>Language (official support only)</strong> dropdown to check whether a specific language you need is present. Selecting <strong>Hindi</strong> narrows the set to Apertus 8B, BLOOM 176B, Gemma 3 27B, Llama 3.1 8B, Qwen3 8B, and Sarvam 30B. Selecting <strong>Japanese</strong> returns Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B. The license column in the grid makes the trade-off immediately visible.</p>
 <blockquote class="blockquote">
-<p><em>[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]</em></p>
+<p><em>[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]</em></p>
 </blockquote>
 <hr>
 </section>
@@ -228,9 +228,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Drag the <strong>Size (B parameters)</strong> slider to a maximum of 8 B</li>
 <li>Move the <strong>Context window (tokens)</strong> slider minimum to <strong>8,192</strong></li>
 </ol>
-<p>Five models appear. On the scatter plot with context window on the y-axis, three models stand out immediately — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B all have a 131 K token context window, an order of magnitude larger than Mistral 7B and Gemma 2B. Click each model to compare licenses and training details in the profile card before deciding.</p>
+<p>Six models appear. On the scatter plot with context window on the y-axis, three models stand out at 131 K context — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B — an order of magnitude larger than Mistral 7B, Gemma 2B, and the newly added Apertus 8B (65,536 tokens). Click each model to compare licenses and training details in the profile card before deciding.</p>
 <blockquote class="blockquote">
-<p><em>[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Mistral 7B and Gemma 2B]</em></p>
+<p><em>[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Apertus 8B, Mistral 7B, and Gemma 2B]</em></p>
 </blockquote>
 <hr>
 </section>
@@ -241,9 +241,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ol type="1">
 <li>Open <strong>Openness filters</strong> → check <strong>Open weights</strong>, <strong>Open training data</strong>, <strong>Intermediate checkpoints</strong>, <strong>Open code</strong>, and <strong>Permissive license</strong></li>
 </ol>
-<p>Five models score 5: OLMo 7B, OLMo 2 7B, OLMo 2 32B, OLMo 3 32B, and Pythia 6.9B. Click <strong>OLMo 3 32B</strong> to open its profile card — it is the only fully open model in the database that also has a chain-of-thought (think) variant available. To narrow to that model alone, also check the <strong>Think version available</strong> checkbox. Expand <strong>Recent arXiv papers</strong> to see the latest citations — useful for a quick literature check before committing to a model.</p>
+<p>Seven models score 5: Apertus 8B, GPT-J 6B, OLMo 7B, OLMo 2 7B, OLMo 2 32B, OLMo 3 32B, and Pythia 6.9B. Click <strong>OLMo 3 32B</strong> to open its profile card — it is the only fully open model in the database that also has a chain-of-thought (think) variant available. To narrow to that model alone, also check the <strong>Think version available</strong> checkbox. Expand <strong>Recent arXiv papers</strong> to see the latest citations — useful for a quick literature check before committing to a model.</p>
 <blockquote class="blockquote">
-<p><em>[Screenshot: all five openness checkboxes checked; five results in the grid; OLMo 3 32B profile card open showing Recent arXiv papers expander]</em></p>
+<p><em>[Screenshot: all five openness checkboxes checked; seven results in the grid; OLMo 3 32B profile card open showing Recent arXiv papers expander]</em></p>
 </blockquote>
 <hr>
 </section>
@@ -260,10 +260,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>], <span class="ss">f"(</span><span class="sc">{</span>m[<span class="st">'size_b'</span>]<span class="sc">}</span><span class="ss"> B,  score </span><span class="sc">{</span>m[<span class="st">'openness_score'</span>]<span class="sc">}</span><span class="ss">,  </span><span class="sc">{</span>m[<span class="st">'training_tokens_b'</span>]<span class="sc">:.0f}</span><span class="ss"> B tokens)"</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 7B (7.0 B,  score 5,  4000 B tokens)</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 7B (7.0 B,  score 5,  2500 B tokens)</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 6.9B (6.9 B,  score 5,  300 B tokens)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>All three score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: OLMo 2 7B was trained on 13× more tokens than Pythia and has a 4 K context window versus Pythia’s 2 K. Pythia is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.</p>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B (8.0 B,  score 5,  15000 B tokens)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; GPT-J 6B (6.0 B,  score 5,  402 B tokens)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 7B (7.0 B,  score 5,  4000 B tokens)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 7B (7.0 B,  score 5,  2500 B tokens)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 6.9B (6.9 B,  score 5,  300 B tokens)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All five score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: Apertus 8B leads with 15,000 B tokens; OLMo 2 7B was trained on 13× more tokens than Pythia and has a 4 K context window versus Pythia’s 2 K. Pythia is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Look up the foundational paper and confirm checkpoint availability</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> o.get_model(<span class="st">"OLMo 2 7B"</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model[<span class="st">"foundational_paper"</span>])</span>
@@ -281,13 +283,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>], <span class="ss">f"— </span><span class="sc">{</span>m[<span class="st">'country_of_origin'</span>]<span class="sc">}</span><span class="ss">  (score </span><span class="sc">{</span>m[<span class="st">'openness_score'</span>]<span class="sc">}</span><span class="ss">)"</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B — France  (score 4)</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 40B — United Arab Emirates  (score 4)</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 7B — United Arab Emirates  (score 4)</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mistral 7B — France  (score 2)</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mixtral 8x22B — France  (score 2)</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mixtral 8x7B — France  (score 2)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Six models remain. The three Mistral models score 2 — their training data composition and token count are not publicly disclosed. BLOOM and the two Falcons score 4 and have Apache 2.0 or equivalent-permissive licenses. For most European research use cases, Falcon 7B is the pragmatic choice: small, Apache-licensed, and trained on a documented multilingual corpus.</p>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B — Switzerland  (score 5)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B — France  (score 4)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 40B — United Arab Emirates  (score 4)</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 7B — United Arab Emirates  (score 4)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mistral 7B — France  (score 2)</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mixtral 8x22B — France  (score 2)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mixtral 8x7B — France  (score 2)</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Sarvam 30B — India  (score 2)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Eight models remain. Apertus 8B (Switzerland) scores 5 — the only fully open model outside the US and China. BLOOM and the two Falcons score 4. The three Mistral models and Sarvam 30B score 2 — their training data composition is not publicly disclosed. For most European research use cases, Falcon 7B or Apertus 8B is the pragmatic choice: both are Apache-licensed and trained on documented multilingual corpora.</p>
 <hr>
 </section>
 <section id="scenario-c-multilingual-nlp-researcher-1" class="level3">
@@ -302,18 +306,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  license: </span><span class="sc">{</span>m[<span class="st">'license'</span>]<span class="sc">}</span><span class="ss">"</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  score: </span><span class="sc">{</span>m[<span class="st">'openness_score'</span>]<span class="sc">}</span><span class="ss">"</span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B   46 languages  license: BigScience RAIL  score: 4</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 7B   4 languages  license: Apache 2.0  score: 4</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 40B   4 languages  license: Apache 2.0  score: 4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The trade-off is clear: BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic, BLOOM is the strongest multilingual option. If you need to redistribute fine-tuned derivatives without restriction, Falcon 7B with Apache 2.0 is the safer choice.</p>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B  1811 languages  license: Apache 2.0  score: 5</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B  46 languages  license: BigScience RAIL  score: 4</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 40B  4 languages  license: Apache 2.0  score: 4</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 7B  4 languages  license: Apache 2.0  score: 4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Apertus 8B leads with 1,811 languages and a score of 5 — the broadest language coverage of any Apache-licensed model in the database. BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic and you need broad language coverage, BLOOM is a strong option. If you need to redistribute fine-tuned derivatives without restriction, Apertus 8B or Falcon 7B with Apache 2.0 is the safer choice.</p>
 <p>Use <code>filter_models(language=...)</code> to check whether a specific language you need is officially supported:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hindi_models <span class="op">=</span> o.filter_models(language<span class="op">=</span><span class="st">"Hindi"</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> hindi_models:</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>], <span class="st">"—"</span>, m[<span class="st">"languages"</span>])</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B — ['Akkadian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 3 27B — ['Afrikaans', 'Arabic', ..., 'Hindi', ..., 'Vietnamese']</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B — ['English', 'German', 'French', 'Italian', 'Portuguese', 'Hindi', 'Spanish', 'Thai']</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B — ['Afrikaans', 'Albanian', ..., 'Hindi', ..., 'Waray']</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B — ['Albanian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B — ['Akkadian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 3 27B — ['Afrikaans', 'Arabic', ..., 'Hindi', ..., 'Vietnamese']</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B — ['English', 'German', 'French', 'Italian', 'Portuguese', 'Hindi', 'Spanish', 'Thai']</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B — ['Afrikaans', 'Albanian', ..., 'Hindi', ..., 'Waray']</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Sarvam 30B — ['Assamese', 'Bengali', ..., 'Hindi', ..., 'Urdu']</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the full language list for BLOOM</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>bloom <span class="op">=</span> o.get_model(<span class="st">"BLOOM 176B"</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(bloom[<span class="st">"num_languages"</span>])    <span class="co"># 46</span></span>
@@ -324,15 +331,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Browse all languages present in the database</span></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>all_langs <span class="op">=</span> o.get_languages()</span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(all_langs), <span class="st">"unique languages"</span>)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 102 unique languages</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 111 unique languages</span></span>
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter by a single language — Japanese is supported by Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter by a single language — Japanese is supported by Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B</span></span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>japanese_models <span class="op">=</span> o.filter_models(language<span class="op">=</span><span class="st">"Japanese"</span>)</span>
 <span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> japanese_models:</span>
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>])</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 3 27B</span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 3 27B</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="scenario-d-compute-limited-researcher-1" class="level3">
@@ -347,12 +355,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  context: </span><span class="sc">{</span>m[<span class="st">'context_window'</span>]<span class="sc">:,}</span><span class="ss"> tokens"</span></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  license: </span><span class="sc">{</span>m[<span class="st">'license'</span>]<span class="sc">}</span><span class="ss">"</span></span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mistral 7B   7.3 B  context: 8,192 tokens  license: Apache 2.0</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 2B   2.0 B  context: 8,192 tokens  license: Gemma Terms of Use</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B   8.0 B  context: 131,072 tokens  license: Llama 3 Community License</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B all offer 131 K context windows — suitable for full-document processing. Both Qwen models use Apache 2.0; Llama 3.1 carries Meta’s community license, which restricts use beyond 700 M monthly users. For typical research use, any of the three works. Qwen2.5 7B is the strongest option on training scale and language coverage. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner alternative.</p>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B   8.0 B  context: 65,536 tokens  license: Apache 2.0</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mistral 7B   7.3 B  context: 8,192 tokens  license: Apache 2.0</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 2B   2.0 B  context: 8,192 tokens  license: Gemma Terms of Use</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B   8.0 B  context: 131,072 tokens  license: Llama 3 Community License</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Six models pass the filter. Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B offer 131 K context windows — suitable for full-document processing. Apertus 8B adds 65,536 tokens of context with an Apache 2.0 license and score 5. Both Qwen models use Apache 2.0; Llama 3.1 carries Meta’s community license, which restricts use beyond 700 M monthly users. For typical research use, any of the three long-context Apache options works. Qwen2.5 7B is the strongest on training scale and language coverage. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner alternative.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare training scale and language coverage across the three long-context options</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> [<span class="st">"Qwen2 7B"</span>, <span class="st">"Qwen2.5 7B"</span>, <span class="st">"Llama 3.1 8B"</span>]:</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> o.get_model(name)</span>
@@ -375,12 +384,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  tokens=</span><span class="sc">{</span>m[<span class="st">'training_tokens_b'</span>]<span class="sc">:.0f}</span><span class="ss"> B"</span></span>
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  think=</span><span class="sc">{</span>m[<span class="st">'has_think_version'</span>]<span class="sc">}</span><span class="ss">"</span></span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 32B   32.0 B  tokens=6000 B  think=False</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 7B   7.0 B  tokens=4000 B  think=False</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 32B   32.0 B  tokens=5500 B  think=True</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 7B   7.0 B  tokens=2500 B  think=False</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 6.9B   6.9 B  tokens=300 B  think=False</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>All five score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. For a methods paper, any of the five allows a reader to fully reproduce your pipeline from scratch. OLMo 3 32B is the standout choice if your study benefits from structured reasoning — it is the only fully open model in the database with a think variant.</p>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B   8.0 B  tokens=15000 B  think=False</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; GPT-J 6B   6.0 B  tokens=402 B  think=False</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 32B   32.0 B  tokens=6000 B  think=False</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 7B   7.0 B  tokens=4000 B  think=False</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 32B   32.0 B  tokens=5500 B  think=True</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 7B   7.0 B  tokens=2500 B  think=False</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 6.9B   6.9 B  tokens=300 B  think=False</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All seven score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. For a methods paper, any of the five allows a reader to fully reproduce your pipeline from scratch. OLMo 3 32B is the standout choice if your study benefits from structured reasoning — it is the only fully open model in the database with a think variant.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Narrow to fully open models with a think variant</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>think_open <span class="op">=</span> o.filter_models(min_openness<span class="op">=</span><span class="dv">5</span>, has_think_version<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> think_open:</span>
