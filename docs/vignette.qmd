@@ -14,16 +14,7 @@ Most LLM comparison tools ask "which model scores highest on MMLU?" That is not 
 
 An optional `notes` field is present for models that require additional context, such as post-trained models where `training_tokens_b` is null for structural reasons rather than lack of disclosure (e.g. DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).
 
-```{mermaid}
-flowchart TD
-    A[Research question] --> B[Translate to filter constraints<br/>e.g. size, license, openness, language]
-    B --> C["filter_models()"]
-    C --> D["rank_by_openness()"]
-    D --> E{One clear winner?}
-    E -- Yes --> F["get_model() +<br/>fetch_recent_papers()"]
-    F --> G[Choose model]
-    E -- No --> B
-```
+![Researcher workflow flowchart](flowchart.png)
 
 ## Installation
 
@@ -47,9 +38,9 @@ The app has three panels: a **filter sidebar** on the left, a **scatter plot** a
 
 The sidebar is organised into five sections:
 
-1. **Model characteristics** — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: an **Instruct version available** checkbox, a **Think version available** checkbox, a **Multilingual** checkbox, a **Language (official support only)** dropdown to filter by a single officially supported language, and a **Model type** dropdown to restrict to `base`, `instruct`, or `reasoning` models. A note appears below the dropdown when `reasoning` is selected to clarify that DeepSeek-R1 is itself a reasoning model.
+1. **Openness filters** expander — checkboxes for open weights, open training data, intermediate checkpoints, open code, and permissive license (Apache 2.0 or MIT).
 
-2. **Openness filters** expander — checkboxes for open weights, open training data, intermediate checkpoints, open code, and permissive license (Apache 2.0 or MIT).
+2. **Model characteristics** — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: an **Instruct version available** checkbox, a **Think version available** checkbox, a **Multilingual** checkbox, a **Language (official support only)** dropdown to filter by a single officially supported language, and a **Model type** dropdown to restrict to `base`, `instruct`, or `reasoning` models. A note appears below the dropdown when `reasoning` is selected to clarify that DeepSeek-R1 is itself a reasoning model.
 
 3. **Exclusion filters** expander — multiselects to remove models by family, organisation, architecture, country of origin, license, or modality.
 
@@ -81,12 +72,26 @@ The five scenarios below walk through how a researcher would use the app.
 
 In the sidebar:
 
-1. Open **Openness filters** → check **Intermediate checkpoints**
-2. Under **Ranges**, drag the **Size (B parameters)** slider to a maximum of 10 B
+1. Under **Openness filters** → check **Intermediate checkpoints**
+2. Under **Ranges**, drag the **Size (B parameters)** slider to a maximum of 11 B
 
 The grid immediately narrows to five models: Apertus 8B, GPT-J 6B, OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.
 
-> *[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing five results; OLMo 2 7B profile card open with arXiv papers]*
+::: {layout='[[1,4]]'}
+
+::: {}
+![Openness filters](scenarioafilter1.png)
+
+![Size range filter](scenarioafilter2.png)
+:::
+
+::: {}
+![Results grid](scenarioaresults.png)
+
+![Model card](scenarioamodelcard.png)
+:::
+
+:::
 
 ---
 
@@ -100,7 +105,19 @@ In the sidebar:
 
 Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three Mistral models (France), the two Falcon models (United Arab Emirates), and Sarvam 30B (India, score 2). The scatter plot makes the trade-offs immediately visible: Apertus 8B leads on openness; BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.
 
-> *[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 8 bubbles; grid listing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B, Mixtral 8x22B, Sarvam 30B]*
+::: {layout='[[1,4]]'}
+
+::: {}
+![Exclusion filters](scenariobfilter.png)
+:::
+
+::: {}
+![Scatter plot](scenariobscatterplot.png)
+:::
+
+:::
+
+![Results grid](scenariobresults.png)
 
 ---
 
@@ -110,12 +127,26 @@ Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three
 
 In the sidebar:
 
-1. Check the **Multilingual** checkbox
-2. Open **Openness filters** → check **Open weights** and **Open training data**
+1. Under **Openness filters** → check **Open weights** and **Open training data**
+2. Check the **Multilingual** checkbox
 
 Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B (46 languages, BigScience RAIL license, score 4), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0, score 4). Use the **Language (official support only)** dropdown to check whether a specific language you need is present. Selecting **Hindi** narrows the set to Apertus 8B, BLOOM 176B, Gemma 3 27B, Llama 3.1 8B, Qwen3 8B, and Sarvam 30B. Selecting **Japanese** returns Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B. The license column in the grid makes the trade-off immediately visible.
 
-> *[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
+
+::: {layout='[[1,4]]'}
+
+::: {}
+![Openness filters](scenariocfilter1.png)
+
+![Multilingual checkbox](scenariocfilter2.png)
+:::
+
+::: {}
+![Results grid](scenariocresults.png)
+
+:::
+
+:::
 
 ---
 
@@ -130,7 +161,7 @@ In the sidebar:
 
 Six models appear. On the scatter plot with context window on the y-axis, three models stand out at 131 K context — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B — an order of magnitude larger than Mistral 7B, Gemma 2B, and the newly added Apertus 8B (65,536 tokens). Click each model to compare licenses and training details in the profile card before deciding.
 
-> *[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Apertus 8B, Mistral 7B, and Gemma 2B]*
+** [Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Apertus 8B, Mistral 7B, and Gemma 2B] **
 
 ---
 
