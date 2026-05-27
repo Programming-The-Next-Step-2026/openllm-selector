@@ -72,10 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="vignette_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="vignette_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="vignette_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="vignette_files/libs/bootstrap/bootstrap-5669b80454662a7c4792165a2c2b8715.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<script src="vignette_files/libs/quarto-diagram/mermaid.min.js"></script>
-<script src="vignette_files/libs/quarto-diagram/mermaid-init.js"></script>
-<link href="vignette_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<link href="vignette_files/libs/bootstrap/bootstrap-ad714adc18c416ca11c67b4149ecee89.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -124,24 +121,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Most LLM comparison tools ask “which model scores highest on MMLU?” That is not a useful question for research. What matters is: can I reproduce this model’s training? Is the license compatible with my institution’s data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?</p>
 <p><code>openllm-selector</code> is a curated database of 33 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g.&nbsp;Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).</p>
 <p>An optional <code>notes</code> field is present for models that require additional context, such as post-trained models where <code>training_tokens_b</code> is null for structural reasons rather than lack of disclosure (e.g.&nbsp;DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">flowchart TD
-    A[Research question] --&gt; B[Translate to filter constraints&lt;br/&gt;e.g. size, license, openness, language]
-    B --&gt; C["filter_models()"]
-    C --&gt; D["rank_by_openness()"]
-    D --&gt; E{One clear winner?}
-    E -- Yes --&gt; F["get_model() +&lt;br/&gt;fetch_recent_papers()"]
-    F --&gt; G[Choose model]
-    E -- No --&gt; B
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="flowchart.png" class="img-fluid figure-img"></p>
+<figcaption>Researcher workflow flowchart</figcaption>
+</figure>
 </div>
 <section id="installation" class="level2">
 <h2 class="anchored" data-anchor-id="installation">Installation</h2>
@@ -157,8 +141,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="sidebar">Sidebar</h3>
 <p>The sidebar is organised into five sections:</p>
 <ol type="1">
-<li><p><strong>Model characteristics</strong> — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: an <strong>Instruct version available</strong> checkbox, a <strong>Think version available</strong> checkbox, a <strong>Multilingual</strong> checkbox, a <strong>Language (official support only)</strong> dropdown to filter by a single officially supported language, and a <strong>Model type</strong> dropdown to restrict to <code>base</code>, <code>instruct</code>, or <code>reasoning</code> models. A note appears below the dropdown when <code>reasoning</code> is selected to clarify that DeepSeek-R1 is itself a reasoning model.</p></li>
 <li><p><strong>Openness filters</strong> expander — checkboxes for open weights, open training data, intermediate checkpoints, open code, and permissive license (Apache 2.0 or MIT).</p></li>
+<li><p><strong>Model characteristics</strong> — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: an <strong>Instruct version available</strong> checkbox, a <strong>Think version available</strong> checkbox, a <strong>Multilingual</strong> checkbox, a <strong>Language (official support only)</strong> dropdown to filter by a single officially supported language, and a <strong>Model type</strong> dropdown to restrict to <code>base</code>, <code>instruct</code>, or <code>reasoning</code> models. A note appears below the dropdown when <code>reasoning</code> is selected to clarify that DeepSeek-R1 is itself a reasoning model.</p></li>
 <li><p><strong>Exclusion filters</strong> expander — multiselects to remove models by family, organisation, architecture, country of origin, license, or modality.</p></li>
 <li><p><strong>Ranges</strong> — sliders for size (B parameters), context window (tokens), release year, and training tokens (B).</p></li>
 <li><p><strong>Reset all filters</strong> button at the bottom.</p></li>
@@ -184,13 +168,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><em>You are studying how in-context learning ability develops over the course of training. You need a model that released intermediate checkpoints, is small enough to run on a single GPU, and is as openly licensed as possible.</em></p>
 <p>In the sidebar:</p>
 <ol type="1">
-<li>Open <strong>Openness filters</strong> → check <strong>Intermediate checkpoints</strong></li>
-<li>Under <strong>Ranges</strong>, drag the <strong>Size (B parameters)</strong> slider to a maximum of 10 B</li>
+<li>Under <strong>Openness filters</strong> → check <strong>Intermediate checkpoints</strong></li>
+<li>Under <strong>Ranges</strong>, drag the <strong>Size (B parameters)</strong> slider to a maximum of 11 B</li>
 </ol>
 <p>The grid immediately narrows to five models: Apertus 8B, GPT-J 6B, OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.</p>
-<blockquote class="blockquote">
-<p><em>[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing five results; OLMo 2 7B profile card open with arXiv papers]</em></p>
-</blockquote>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioafilter1.png" class="img-fluid figure-img"></p>
+<figcaption>Openness filters</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioafilter2.png" class="img-fluid figure-img"></p>
+<figcaption>Size range filter</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioaresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioamodelcard.png" class="img-fluid figure-img"></p>
+<figcaption>Model card</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
 <hr>
 </section>
 <section id="scenario-b-european-privacy-conscious-researcher" class="level3">
@@ -201,9 +214,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Open <strong>Exclusion filters</strong> → <strong>Exclude country of origin</strong> → select <strong>United States</strong> and <strong>China</strong></li>
 </ol>
 <p>Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three Mistral models (France), the two Falcon models (United Arab Emirates), and Sarvam 30B (India, score 2). The scatter plot makes the trade-offs immediately visible: Apertus 8B leads on openness; BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.</p>
-<blockquote class="blockquote">
-<p><em>[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 8 bubbles; grid listing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B, Mixtral 8x22B, Sarvam 30B]</em></p>
-</blockquote>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariobfilter.png" class="img-fluid figure-img"></p>
+<figcaption>Exclusion filters</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariobscatterplot.png" class="img-fluid figure-img"></p>
+<figcaption>Scatter plot</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariobresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
 <hr>
 </section>
 <section id="scenario-c-multilingual-nlp-researcher" class="level3">
@@ -211,13 +247,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><em>You are building a cross-lingual transfer benchmark and need a base model trained on multiple languages, with a license that allows redistributing fine-tuned derivatives.</em></p>
 <p>In the sidebar:</p>
 <ol type="1">
+<li>Under <strong>Openness filters</strong> → check <strong>Open weights</strong> and <strong>Open training data</strong></li>
 <li>Check the <strong>Multilingual</strong> checkbox</li>
-<li>Open <strong>Openness filters</strong> → check <strong>Open weights</strong> and <strong>Open training data</strong></li>
 </ol>
 <p>Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B (46 languages, BigScience RAIL license, score 4), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0, score 4). Use the <strong>Language (official support only)</strong> dropdown to check whether a specific language you need is present. Selecting <strong>Hindi</strong> narrows the set to Apertus 8B, BLOOM 176B, Gemma 3 27B, Llama 3.1 8B, Qwen3 8B, and Sarvam 30B. Selecting <strong>Japanese</strong> returns Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B. The license column in the grid makes the trade-off immediately visible.</p>
-<blockquote class="blockquote">
-<p><em>[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]</em></p>
-</blockquote>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocfilter1.png" class="img-fluid figure-img"></p>
+<figcaption>Openness filters</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocfilter2.png" class="img-fluid figure-img"></p>
+<figcaption>Multilingual checkbox</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
 <hr>
 </section>
 <section id="scenario-d-compute-limited-researcher" class="level3">
@@ -229,9 +288,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Move the <strong>Context window (tokens)</strong> slider minimum to <strong>8,192</strong></li>
 </ol>
 <p>Six models appear. On the scatter plot with context window on the y-axis, three models stand out at 131 K context — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B — an order of magnitude larger than Mistral 7B, Gemma 2B, and the newly added Apertus 8B (65,536 tokens). Click each model to compare licenses and training details in the profile card before deciding.</p>
-<blockquote class="blockquote">
-<p><em>[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Apertus 8B, Mistral 7B, and Gemma 2B]</em></p>
-</blockquote>
+<p>** [Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Apertus 8B, Mistral 7B, and Gemma 2B] **</p>
 <hr>
 </section>
 <section id="scenario-e-fully-open-science-researcher" class="level3">
