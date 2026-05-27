@@ -77,4 +77,4 @@ papers = o.fetch_recent_papers("OLMo", max_results=3)
 
 ## Documentation
 
-See [docs/vignette.qmd](docs/vignette.qmd) for a full walkthrough covering both the Streamlit app and the Python API, with five realistic researcher scenarios.
+See [docs/vignette.qmd](docs/vignette.qmd) for a full walkthrough covering both the Streamlit app and the Python API, with five realistic researcher scenarios. [View the tutorial](https://htmlpreview.github.io/?https://github.com/Programming-The-Next-Step-2026/openllm-selector/blob/week-3/docs/vignette.html)
