@@ -455,6 +455,105 @@ class TestNewFields:
                     f"{m['name']} has an empty or non-string notes field"
                 )
 
+    def test_notes_present_on_all_expected_models(self, all_models):
+        expected_with_notes = {
+            "Apertus 8B", "DeepSeek-R1", "Gemma 3 27B", "GPT-J 6B",
+            "GPT-OSS 20B", "Grok-1", "LLaVA 1.5 7B", "Mixtral 8x22B",
+            "Phi-2", "Qwen3 8B", "Sarvam 30B",
+        }
+        actual_with_notes = {m["name"] for m in all_models if m.get("notes")}
+        assert actual_with_notes == expected_with_notes
+
+    def test_notes_absent_on_simple_models(self):
+        for name in ["OLMo 2 7B", "Falcon 7B", "Llama 3.1 8B"]:
+            assert get_model(name).get("notes") is None, (
+                f"{name} should not have a notes field"
+            )
+
+    # --- new models: training tokens ---
+
+    def test_known_training_tokens_new_models(self):
+        assert get_model("Apertus 8B")["training_tokens_b"] == 15000.0
+        assert get_model("GPT-J 6B")["training_tokens_b"] == 402.0
+        assert get_model("Sarvam 30B")["training_tokens_b"] == 16000.0
+        assert get_model("Phi-2")["training_tokens_b"] == 1400.0
+        assert get_model("Qwen3 8B")["training_tokens_b"] == 36000.0
+
+    def test_filter_min_training_tokens_very_high(self):
+        # Only Qwen3 8B has training_tokens_b >= 30000 (36000 B)
+        results = filter_models(min_training_tokens_b=30000)
+        names = {m["name"] for m in results}
+        assert names == {"Qwen3 8B"}
+
+    # --- new models: num_languages ---
+
+    def test_known_num_languages_new_models(self):
+        assert get_model("Apertus 8B")["num_languages"] == 1811
+        assert get_model("Sarvam 30B")["num_languages"] == 23
+        assert get_model("Qwen3 8B")["num_languages"] == 80
+        assert get_model("Qwen2.5 7B")["num_languages"] == 29
+        assert get_model("Gemma 3 27B")["num_languages"] == 35
+
+    def test_filter_num_languages_very_large(self):
+        # Only Apertus 8B has num_languages >= 1000
+        results = filter_models(min_num_languages=1000)
+        names = {m["name"] for m in results}
+        assert names == {"Apertus 8B"}
+
+    # --- new models: model_type ---
+
+    def test_known_model_type_new_models(self):
+        for name in ["GPT-J 6B", "Grok-1", "Phi-2", "Apertus 8B"]:
+            assert get_model(name)["model_type"] == "base", (
+                f"{name} should have model_type='base'"
+            )
+        assert get_model("Sarvam 30B")["model_type"] == "reasoning"
+
+    # --- new models: has_think_version ---
+
+    def test_known_has_think_version_new_models(self):
+        for name in ["Apertus 8B", "GPT-J 6B", "Grok-1", "Phi-2"]:
+            assert get_model(name)["has_think_version"] is False, (
+                f"{name} should have has_think_version=False"
+            )
+        assert get_model("Sarvam 30B")["has_think_version"] is True
+
+    # --- new models: languages ---
+
+    def test_known_languages_sarvam(self):
+        sarvam = get_model("Sarvam 30B")
+        assert len(sarvam["languages"]) == 23
+        assert "Hindi" in sarvam["languages"]
+        assert "Tamil" in sarvam["languages"]
+        assert "Sanskrit" in sarvam["languages"]
+        assert "English" in sarvam["languages"]
+
+    def test_known_languages_apertus(self):
+        apertus = get_model("Apertus 8B")
+        # num_languages=1811 (total FineWeb-2 languages); languages list
+        # contains the 40 primary documented languages, not the full 1811.
+        assert apertus["num_languages"] == 1811
+        assert len(apertus["languages"]) == 40
+        assert "German" in apertus["languages"]
+        assert "Hindi" in apertus["languages"]
+        assert "Japanese" in apertus["languages"]
+        # Apertus is trained on FineWeb-2 which does not include English
+        assert "English" not in apertus["languages"]
+
+    # --- language filter: new languages ---
+
+    def test_filter_language_kannada(self):
+        results = filter_models(language="Kannada")
+        names = {m["name"] for m in results}
+        assert "Sarvam 30B" in names
+        assert "Qwen3 8B" in names
+
+    def test_filter_language_sanskrit(self):
+        results = filter_models(language="Sanskrit")
+        names = {m["name"] for m in results}
+        assert "BLOOM 176B" in names
+        assert "Sarvam 30B" in names
+
 
 # ---------------------------------------------------------------------------
 # compute_openness_score
@@ -1013,6 +1112,18 @@ class TestFilterModels:
         names = {m["name"] for m in year_2022_models}
         assert "BLOOM 176B" in names
         assert "GPT-NeoX 20B" in names
+
+    def test_filter_release_year_2021(self):
+        # GPT-J 6B is the only model released in 2021
+        results = filter_models(min_release_year=2021, max_release_year=2021)
+        names = {m["name"] for m in results}
+        assert names == {"GPT-J 6B"}
+
+    def test_filter_release_year_2026(self):
+        # Sarvam 30B is the only model released in 2026
+        results = filter_models(min_release_year=2026, max_release_year=2026)
+        names = {m["name"] for m in results}
+        assert names == {"Sarvam 30B"}
 
     def test_filter_release_year_no_match(self):
         assert filter_models(min_release_year=2020, max_release_year=2020) == []

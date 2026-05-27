@@ -4,11 +4,11 @@ A tool to help researchers pick the right open LLM for their study.
 
 Choosing the right open LLM for research is hard given the rapidly growing landscape of available models. Most comparison tools ask "which model scores highest on MMLU?" — that is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 28 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions rather than benchmark scores.
+`openllm-selector` is a curated database of 33 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions rather than benchmark scores.
 
 ## Database fields
 
-Each model record contains 23 fields:
+Each model record contains 25 fields:
 
 | Field | Type | Description |
 |---|---|---|
@@ -31,7 +31,7 @@ Each model record contains 23 fields:
 | `model_type` | str | Model release type: `"base"`, `"instruct"`, or `"reasoning"` |
 | `has_think_version` | bool | A chain-of-thought / think variant exists (or the model is itself a reasoning model) |
 | `notes` | str *(optional)* | Additional context; present only for models where extra clarification is needed (e.g. post-trained models where `training_tokens_b` is null for structural reasons) |
-| `foundational_paper` | str | arXiv URL of the foundational paper |
+| `foundational_paper` | str | URL of the foundational paper (arXiv for most models; non-arXiv for GPT-J 6B, Grok-1, Mixtral 8x22B, and Sarvam 30B) |
 | `huggingface_id` | str | HuggingFace model identifier |
 | `openness_score` | int | Computed 0–5 score: sum of `open_weights` + `open_training_data` + `intermediate_checkpoints` + `open_code` + permissive license (Apache 2.0 or MIT) |
 

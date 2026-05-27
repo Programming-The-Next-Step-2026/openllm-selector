@@ -10,7 +10,7 @@ format:
 
 Most LLM comparison tools ask "which model scores highest on MMLU?" That is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 28 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
+`openllm-selector` is a curated database of 33 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
 
 An optional `notes` field is present for models that require additional context, such as post-trained models where `training_tokens_b` is null for structural reasons rather than lack of disclosure (e.g. DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).
 
@@ -84,9 +84,9 @@ In the sidebar:
 1. Open **Openness filters** → check **Intermediate checkpoints**
 2. Under **Ranges**, drag the **Size (B parameters)** slider to a maximum of 10 B
 
-The grid immediately narrows to three models: OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.
+The grid immediately narrows to five models: Apertus 8B, GPT-J 6B, OLMo 7B, OLMo 2 7B, and Pythia 6.9B — all with an openness score of 5. Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.
 
-> *[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing three results; OLMo 2 7B profile card open with arXiv papers]*
+> *[Screenshot: sidebar with Intermediate checkpoints checked and size capped at 10 B; grid showing five results; OLMo 2 7B profile card open with arXiv papers]*
 
 ---
 
@@ -98,9 +98,9 @@ In the sidebar:
 
 1. Open **Exclusion filters** → **Exclude country of origin** → select **United States** and **China**
 
-Six models remain: BLOOM 176B and the three Mistral models (France) and the two Falcon models (United Arab Emirates). The scatter plot makes the trade-offs immediately visible: BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.
+Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three Mistral models (France), the two Falcon models (United Arab Emirates), and Sarvam 30B (India, score 2). The scatter plot makes the trade-offs immediately visible: Apertus 8B leads on openness; BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.
 
-> *[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 6 bubbles; grid listing BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B, Mixtral 8x22B]*
+> *[Screenshot: exclusion filters open with United States and China selected; scatter plot showing 8 bubbles; grid listing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B, Mistral 7B, Mixtral 8x7B, Mixtral 8x22B, Sarvam 30B]*
 
 ---
 
@@ -113,9 +113,9 @@ In the sidebar:
 1. Check the **Multilingual** checkbox
 2. Open **Openness filters** → check **Open weights** and **Open training data**
 
-Three models match: BLOOM 176B (46 languages, BigScience RAIL license), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0). Use the **Language (official support only)** dropdown to check whether a specific language you need is present. Selecting **Hindi** narrows the set to BLOOM 176B, Llama 3.1 8B, Gemma 3 27B, and Qwen3 8B. Selecting **Japanese** returns Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B. The license column in the grid makes the trade-off immediately visible.
+Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B (46 languages, BigScience RAIL license, score 4), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0, score 4). Use the **Language (official support only)** dropdown to check whether a specific language you need is present. Selecting **Hindi** narrows the set to Apertus 8B, BLOOM 176B, Gemma 3 27B, Llama 3.1 8B, Qwen3 8B, and Sarvam 30B. Selecting **Japanese** returns Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B. The license column in the grid makes the trade-off immediately visible.
 
-> *[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
+> *[Screenshot: Multilingual checked, Open weights and Open training data checked; grid showing Apertus 8B, BLOOM 176B, Falcon 7B, Falcon 40B with license column visible]*
 
 ---
 
@@ -128,9 +128,9 @@ In the sidebar:
 1. Drag the **Size (B parameters)** slider to a maximum of 8 B
 2. Move the **Context window (tokens)** slider minimum to **8,192**
 
-Five models appear. On the scatter plot with context window on the y-axis, three models stand out immediately — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B all have a 131 K token context window, an order of magnitude larger than Mistral 7B and Gemma 2B. Click each model to compare licenses and training details in the profile card before deciding.
+Six models appear. On the scatter plot with context window on the y-axis, three models stand out at 131 K context — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B — an order of magnitude larger than Mistral 7B, Gemma 2B, and the newly added Apertus 8B (65,536 tokens). Click each model to compare licenses and training details in the profile card before deciding.
 
-> *[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Mistral 7B and Gemma 2B]*
+> *[Screenshot: size capped at 8 B, context window minimum at 8,192; scatter plot with Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B clearly separated from Apertus 8B, Mistral 7B, and Gemma 2B]*
 
 ---
 
@@ -142,9 +142,9 @@ In the sidebar:
 
 1. Open **Openness filters** → check **Open weights**, **Open training data**, **Intermediate checkpoints**, **Open code**, and **Permissive license**
 
-Five models score 5: OLMo 7B, OLMo 2 7B, OLMo 2 32B, OLMo 3 32B, and Pythia 6.9B. Click **OLMo 3 32B** to open its profile card — it is the only fully open model in the database that also has a chain-of-thought (think) variant available. To narrow to that model alone, also check the **Think version available** checkbox. Expand **Recent arXiv papers** to see the latest citations — useful for a quick literature check before committing to a model.
+Seven models score 5: Apertus 8B, GPT-J 6B, OLMo 7B, OLMo 2 7B, OLMo 2 32B, OLMo 3 32B, and Pythia 6.9B. Click **OLMo 3 32B** to open its profile card — it is the only fully open model in the database that also has a chain-of-thought (think) variant available. To narrow to that model alone, also check the **Think version available** checkbox. Expand **Recent arXiv papers** to see the latest citations — useful for a quick literature check before committing to a model.
 
-> *[Screenshot: all five openness checkboxes checked; five results in the grid; OLMo 3 32B profile card open showing Recent arXiv papers expander]*
+> *[Screenshot: all five openness checkboxes checked; seven results in the grid; OLMo 3 32B profile card open showing Recent arXiv papers expander]*
 
 ---
 
@@ -166,12 +166,14 @@ ranked = o.rank_by_openness(candidates)
 
 for m in ranked:
     print(m["name"], f"({m['size_b']} B,  score {m['openness_score']},  {m['training_tokens_b']:.0f} B tokens)")
+#> Apertus 8B (8.0 B,  score 5,  15000 B tokens)
+#> GPT-J 6B (6.0 B,  score 5,  402 B tokens)
 #> OLMo 2 7B (7.0 B,  score 5,  4000 B tokens)
 #> OLMo 7B (7.0 B,  score 5,  2500 B tokens)
 #> Pythia 6.9B (6.9 B,  score 5,  300 B tokens)
 ```
 
-All three score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: OLMo 2 7B was trained on 13× more tokens than Pythia and has a 4 K context window versus Pythia's 2 K. Pythia is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.
+All five score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: Apertus 8B leads with 15,000 B tokens; OLMo 2 7B was trained on 13× more tokens than Pythia and has a 4 K context window versus Pythia's 2 K. Pythia is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.
 
 ```python
 # Look up the foundational paper and confirm checkpoint availability
@@ -195,15 +197,17 @@ ranked = o.rank_by_openness(results)
 
 for m in ranked:
     print(m["name"], f"— {m['country_of_origin']}  (score {m['openness_score']})")
+#> Apertus 8B — Switzerland  (score 5)
 #> BLOOM 176B — France  (score 4)
 #> Falcon 40B — United Arab Emirates  (score 4)
 #> Falcon 7B — United Arab Emirates  (score 4)
 #> Mistral 7B — France  (score 2)
 #> Mixtral 8x22B — France  (score 2)
 #> Mixtral 8x7B — France  (score 2)
+#> Sarvam 30B — India  (score 2)
 ```
 
-Six models remain. The three Mistral models score 2 — their training data composition and token count are not publicly disclosed. BLOOM and the two Falcons score 4 and have Apache 2.0 or equivalent-permissive licenses. For most European research use cases, Falcon 7B is the pragmatic choice: small, Apache-licensed, and trained on a documented multilingual corpus.
+Eight models remain. Apertus 8B (Switzerland) scores 5 — the only fully open model outside the US and China. BLOOM and the two Falcons score 4. The three Mistral models and Sarvam 30B score 2 — their training data composition is not publicly disclosed. For most European research use cases, Falcon 7B or Apertus 8B is the pragmatic choice: both are Apache-licensed and trained on documented multilingual corpora.
 
 ---
 
@@ -220,12 +224,13 @@ for m in ranked:
         f"  license: {m['license']}"
         f"  score: {m['openness_score']}"
     )
-#> BLOOM 176B   46 languages  license: BigScience RAIL  score: 4
-#> Falcon 7B   4 languages  license: Apache 2.0  score: 4
-#> Falcon 40B   4 languages  license: Apache 2.0  score: 4
+#> Apertus 8B  1811 languages  license: Apache 2.0  score: 5
+#> BLOOM 176B  46 languages  license: BigScience RAIL  score: 4
+#> Falcon 40B  4 languages  license: Apache 2.0  score: 4
+#> Falcon 7B  4 languages  license: Apache 2.0  score: 4
 ```
 
-The trade-off is clear: BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic, BLOOM is the strongest multilingual option. If you need to redistribute fine-tuned derivatives without restriction, Falcon 7B with Apache 2.0 is the safer choice.
+Apertus 8B leads with 1,811 languages and a score of 5 — the broadest language coverage of any Apache-licensed model in the database. BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic and you need broad language coverage, BLOOM is a strong option. If you need to redistribute fine-tuned derivatives without restriction, Apertus 8B or Falcon 7B with Apache 2.0 is the safer choice.
 
 Use `filter_models(language=...)` to check whether a specific language you need is officially supported:
 
@@ -233,10 +238,12 @@ Use `filter_models(language=...)` to check whether a specific language you need 
 hindi_models = o.filter_models(language="Hindi")
 for m in hindi_models:
     print(m["name"], "—", m["languages"])
+#> Apertus 8B — ['Albanian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']
 #> BLOOM 176B — ['Akkadian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']
 #> Gemma 3 27B — ['Afrikaans', 'Arabic', ..., 'Hindi', ..., 'Vietnamese']
 #> Llama 3.1 8B — ['English', 'German', 'French', 'Italian', 'Portuguese', 'Hindi', 'Spanish', 'Thai']
 #> Qwen3 8B — ['Afrikaans', 'Albanian', ..., 'Hindi', ..., 'Waray']
+#> Sarvam 30B — ['Assamese', 'Bengali', ..., 'Hindi', ..., 'Urdu']
 ```
 
 ```python
@@ -250,12 +257,13 @@ print(bloom["languages"][:5])   # first five of 46
 # Browse all languages present in the database
 all_langs = o.get_languages()
 print(len(all_langs), "unique languages")
-#> 102 unique languages
+#> 111 unique languages
 
-# Filter by a single language — Japanese is supported by Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B
+# Filter by a single language — Japanese is supported by Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B
 japanese_models = o.filter_models(language="Japanese")
 for m in japanese_models:
     print(m["name"])
+#> Apertus 8B
 #> Gemma 3 27B
 #> Qwen2.5 7B
 #> Qwen3 8B
@@ -276,6 +284,7 @@ for m in ranked:
         f"  context: {m['context_window']:,} tokens"
         f"  license: {m['license']}"
     )
+#> Apertus 8B   8.0 B  context: 65,536 tokens  license: Apache 2.0
 #> Mistral 7B   7.3 B  context: 8,192 tokens  license: Apache 2.0
 #> Qwen2 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0
 #> Qwen2.5 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0
@@ -283,7 +292,7 @@ for m in ranked:
 #> Llama 3.1 8B   8.0 B  context: 131,072 tokens  license: Llama 3 Community License
 ```
 
-Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B all offer 131 K context windows — suitable for full-document processing. Both Qwen models use Apache 2.0; Llama 3.1 carries Meta's community license, which restricts use beyond 700 M monthly users. For typical research use, any of the three works. Qwen2.5 7B is the strongest option on training scale and language coverage. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner alternative.
+Six models pass the filter. Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B offer 131 K context windows — suitable for full-document processing. Apertus 8B adds 65,536 tokens of context with an Apache 2.0 license and score 5. Both Qwen models use Apache 2.0; Llama 3.1 carries Meta's community license, which restricts use beyond 700 M monthly users. For typical research use, any of the three long-context Apache options works. Qwen2.5 7B is the strongest on training scale and language coverage. If your documents are consistently under 10 K tokens, Mistral 7B is a leaner alternative.
 
 ```python
 # Compare training scale and language coverage across the three long-context options
@@ -312,6 +321,8 @@ for m in ranked:
         f"  tokens={m['training_tokens_b']:.0f} B"
         f"  think={m['has_think_version']}"
     )
+#> Apertus 8B   8.0 B  tokens=15000 B  think=False
+#> GPT-J 6B   6.0 B  tokens=402 B  think=False
 #> OLMo 2 32B   32.0 B  tokens=6000 B  think=False
 #> OLMo 2 7B   7.0 B  tokens=4000 B  think=False
 #> OLMo 3 32B   32.0 B  tokens=5500 B  think=True
@@ -319,7 +330,7 @@ for m in ranked:
 #> Pythia 6.9B   6.9 B  tokens=300 B  think=False
 ```
 
-All five score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. For a methods paper, any of the five allows a reader to fully reproduce your pipeline from scratch. OLMo 3 32B is the standout choice if your study benefits from structured reasoning — it is the only fully open model in the database with a think variant.
+All seven score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. For a methods paper, any of the five allows a reader to fully reproduce your pipeline from scratch. OLMo 3 32B is the standout choice if your study benefits from structured reasoning — it is the only fully open model in the database with a think variant.
 
 ```python
 # Narrow to fully open models with a think variant
