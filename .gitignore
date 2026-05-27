@@ -7,3 +7,5 @@
 dist/
 build/
 *.deb
+docs/vignette.html
+docs/vignette_files/
