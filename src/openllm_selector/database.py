@@ -9,20 +9,68 @@ import requests
 _DATA_FILE = pathlib.Path(__file__).parent / "data" / "models.json"
 
 
+def compute_openness_score(model: dict) -> int:
+    """Compute the openness score for a model from its stored fields.
+
+    Sums five boolean criteria: ``open_weights``, ``open_training_data``,
+    ``intermediate_checkpoints``, ``open_code``, and permissive license
+    (``True`` if the license field contains ``"Apache"`` or ``"MIT"``).
+
+    Parameters
+    ----------
+    model : dict
+        A model record with at least the five boolean fields and ``license``.
+
+    Returns
+    -------
+    int
+        Integer in the range 0–5.
+
+    Examples
+    --------
+    >>> from openllm_selector import get_model
+    >>> compute_openness_score(get_model("OLMo 7B"))
+    5
+    >>> compute_openness_score(get_model("Llama 2 7B"))
+    1
+    """
+    permissive = "Apache" in model["license"] or "MIT" in model["license"]
+    return sum([
+        bool(model["open_weights"]),
+        bool(model["open_training_data"]),
+        bool(model["intermediate_checkpoints"]),
+        bool(model["open_code"]),
+        permissive,
+    ])
+
+
 def load_models() -> list[dict]:
     """Load the full model database from disk.
+
+    The ``openness_score`` field is computed dynamically by
+    :func:`compute_openness_score` and injected into each record before
+    returning, so callers can rely on it being present.
 
     Returns
     -------
     list[dict]
         All model records. Each record contains: name, family, organization,
-        country_of_origin, release_year, size_b, context_window, modality,
-        architecture, license, open_weights, open_training_data,
-        intermediate_checkpoints, open_code, foundational_paper,
-        huggingface_id, and openness_score.
+        country_of_origin, release_year, size_b, training_tokens_b,
+        context_window, modality, architecture, license, open_weights,
+        open_training_data, intermediate_checkpoints, open_code, multilingual,
+        num_languages, languages, has_instruct_version, model_type,
+        has_think_version, foundational_paper, huggingface_id, and
+        openness_score (computed). The ``notes`` field is optional and present
+        only for models where additional context is needed (e.g. post-trained
+        models where ``training_tokens_b`` is null for structural reasons).
+        ``training_tokens_b`` is ``None`` for models whose training token
+        count has not been publicly disclosed.
     """
     with _DATA_FILE.open() as fh:
-        return json.load(fh)
+        models = json.load(fh)
+    for m in models:
+        m["openness_score"] = compute_openness_score(m)
+    return models
 
 
 def get_model(name: str) -> dict | None:
@@ -36,7 +84,9 @@ def get_model(name: str) -> dict | None:
     Returns
     -------
     dict or None
-        The model record if found, ``None`` otherwise.
+        The model record if found, ``None`` otherwise. The optional ``notes``
+        field is present only on models that carry additional context; use
+        ``model.get("notes")`` to avoid a ``KeyError`` on models that omit it.
 
     Examples
     --------
@@ -78,6 +128,15 @@ def filter_models(
     exclude_license: str | None = None,
     exclude_architecture: str | None = None,
     exclude_country_of_origin: str | None = None,
+    exclude_model_type: str | None = None,
+    min_training_tokens_b: float | None = None,
+    max_training_tokens_b: float | None = None,
+    min_num_languages: int | None = None,
+    max_num_languages: int | None = None,
+    has_instruct_version: bool | None = None,
+    language: str | None = None,
+    model_type: str | None = None,
+    has_think_version: bool | None = None,
 ) -> list[dict]:
     """Filter models by one or more criteria.
 
@@ -146,6 +205,41 @@ def filter_models(
         Remove models whose architecture exactly matches this value (case-insensitive).
     exclude_country_of_origin : str, optional
         Remove models whose country exactly matches this value (case-insensitive).
+    exclude_model_type : str, optional
+        Remove models whose model_type exactly matches this value (case-insensitive).
+        One of ``"base"``, ``"instruct"``, or ``"reasoning"``.
+    min_training_tokens_b : float, optional
+        Minimum pre-training token count in billions (inclusive). Models with
+        an undisclosed token count (``None``) are excluded when this filter
+        is active.
+    max_training_tokens_b : float, optional
+        Maximum pre-training token count in billions (inclusive). Models with
+        an undisclosed token count (``None``) are excluded when this filter
+        is active.
+    min_num_languages : int, optional
+        Minimum number of officially supported languages (inclusive).
+    max_num_languages : int, optional
+        Maximum number of officially supported languages (inclusive).
+    has_instruct_version : bool, optional
+        If provided, keep only models where ``has_instruct_version`` matches.
+    language : str, optional
+        Keep only models whose ``languages`` list contains this language
+        (case-insensitive exact match against each list entry). The
+        ``languages`` field reflects officially supported languages as
+        documented by the model authors — it does not capture limited or
+        incidental capabilities in other languages.
+    model_type : str, optional
+        Exact model type to match (case-insensitive). One of ``"base"``,
+        ``"instruct"``, or ``"reasoning"``.
+    has_think_version : bool, optional
+        If provided, keep only models where ``has_think_version`` matches.
+
+    Notes
+    -----
+    The ``notes`` field is optional and not a filter criterion. It is present
+    only on models that require additional context (e.g. post-trained models
+    where ``training_tokens_b`` is null for structural reasons). Access it
+    with ``model.get("notes")`` to safely handle models that omit it.
 
     Returns
     -------
@@ -164,6 +258,13 @@ def filter_models(
     >>> recent = filter_models(min_release_year=2024)
     >>> no_llama = filter_models(exclude_family="LLaMA")
     >>> no_china = filter_models(exclude_country_of_origin="China")
+    >>> large_training = filter_models(min_training_tokens_b=5000)
+    >>> many_langs = filter_models(min_num_languages=5)
+    >>> no_instruct = filter_models(has_instruct_version=False)
+    >>> hindi_models = filter_models(language="Hindi")
+    >>> base_only = filter_models(model_type="base")
+    >>> think_models = filter_models(has_think_version=True)
+    >>> no_base = filter_models(exclude_model_type="base")
     """
     results = []
     for m in load_models():
@@ -216,6 +317,27 @@ def filter_models(
             continue
         if exclude_country_of_origin is not None and m["country_of_origin"].lower() == exclude_country_of_origin.lower():
             continue
+        if exclude_model_type is not None and m["model_type"].lower() == exclude_model_type.lower():
+            continue
+        if min_training_tokens_b is not None:
+            if m["training_tokens_b"] is None or m["training_tokens_b"] < min_training_tokens_b:
+                continue
+        if max_training_tokens_b is not None:
+            if m["training_tokens_b"] is None or m["training_tokens_b"] > max_training_tokens_b:
+                continue
+        if min_num_languages is not None and m["num_languages"] < min_num_languages:
+            continue
+        if max_num_languages is not None and m["num_languages"] > max_num_languages:
+            continue
+        if has_instruct_version is not None and m["has_instruct_version"] != has_instruct_version:
+            continue
+        if language is not None:
+            if not any(lang.lower() == language.lower() for lang in m["languages"]):
+                continue
+        if model_type is not None and m["model_type"].lower() != model_type.lower():
+            continue
+        if has_think_version is not None and m["has_think_version"] != has_think_version:
+            continue
         results.append(m)
     return results
 
@@ -252,6 +374,28 @@ def get_organizations() -> list[str]:
     True
     """
     return sorted({m["organization"] for m in load_models()})
+
+
+def get_languages() -> list[str]:
+    """Return all unique language names across all models, sorted alphabetically.
+
+    Returns
+    -------
+    list[str]
+        Sorted list of language names, e.g. ``["Akkadian", "Arabic", ...]``.
+
+    Examples
+    --------
+    >>> langs = get_languages()
+    >>> "English" in langs
+    True
+    >>> "Hindi" in langs
+    True
+    """
+    langs: set[str] = set()
+    for m in load_models():
+        langs.update(m["languages"])
+    return sorted(langs)
 
 
 def rank_by_openness(
@@ -365,14 +509,14 @@ def fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]:
     dict_keys(['title', 'authors', 'summary', 'published', 'arxiv_url'])
     """
     response = requests.get(
-        "https://export.arxiv.org/api/query",
+        "http://arxiv.org/api/query",
         params={
             "search_query": f'all:"{model_name}"',
             "sortBy": "submittedDate",
             "sortOrder": "descending",
             "max_results": max_results,
         },
-        timeout=10,
+        timeout=30,
     )
     response.raise_for_status()
 

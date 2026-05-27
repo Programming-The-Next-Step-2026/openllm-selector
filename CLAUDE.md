@@ -46,3 +46,19 @@ python -m hatchling build
 ```
 
 Uses `hatchling` as the build backend. The wheel target is configured to package `openllm_selector` from the `src/` directory.
+
+## Rules
+
+**Git:** Never merge branches or create pull requests. Commit and push only.
+
+**openness_score:** This field is computed dynamically inside `load_models()` by `compute_openness_score()` and injected into each record at load time. It must never be stored in `models.json`.
+
+**Model data:** All values in `models.json` were manually verified against primary sources (HuggingFace model pages and foundational papers). Any change to model data must be verified against the same primary sources before committing.
+
+**App data access:** Model data must never be duplicated or hardcoded in app code. All model data must be read from the database through the caching wrappers in `app/utils.py` (e.g. `cached_load_models()`, `cached_get_families()`).
+
+## AI Usage
+Claude Code was used to assist with code generation, documentation, and unit tests.
+Prompts followed a consistent pattern: specify the function name, its parameters,
+expected behaviour, and edge cases to test. All generated code was reviewed and
+tested before committing.

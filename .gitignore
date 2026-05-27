@@ -1,3 +1,4 @@
+.vscode/
 **/__pycache__/
 *.pyc
 *.pyo
@@ -5,3 +6,6 @@
 *.egg-info/
 dist/
 build/
+*.deb
+docs/vignette.html
+docs/vignette_files/
