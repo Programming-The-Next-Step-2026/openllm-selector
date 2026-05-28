@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Eva Wardenaar">
+
+<title>Selecting open LLMs for research with openllm-selector</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="vignette_files/libs/clipboard/clipboard.min.js"></script>
+<script src="vignette_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="vignette_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="vignette_files/libs/quarto-html/popper.min.js"></script>
+<script src="vignette_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="vignette_files/libs/quarto-html/anchor.min.js"></script>
+<link href="vignette_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="vignette_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="vignette_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="vignette_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="vignette_files/libs/bootstrap/bootstrap-a1fad66762ed70c0b6800e4725837343.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#using-the-app" id="toc-using-the-app" class="nav-link" data-scroll-target="#using-the-app">Using the app</a></li>
+  <li><a href="#using-the-python-api" id="toc-using-the-python-api" class="nav-link" data-scroll-target="#using-the-python-api">Using the Python API</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Selecting open LLMs for research with openllm-selector</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Eva Wardenaar </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Most LLM comparison tools ask “which model scores highest on MMLU?” That is not a useful question for research. What matters is: can I reproduce this model’s training? Is the license compatible with my institution’s data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?</p>
+<p><code>openllm-selector</code> is a curated database of 41 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions — weights availability, training data transparency, intermediate checkpoints for training-dynamics studies, license, number of supported languages, training token count, and whether an instruct variant exists — rather than benchmark leaderboard positions. Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g.&nbsp;Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).</p>
+<p>An optional <code>notes</code> field is present for models that require additional context, such as post-trained models where <code>training_tokens_b</code> is null for structural reasons rather than lack of disclosure (e.g.&nbsp;DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="flowchart.png" class="img-fluid figure-img"></p>
+<figcaption>Researcher workflow flowchart</figcaption>
+</figure>
+</div>
+<section id="installation" class="level2">
+<h2 class="anchored" data-anchor-id="installation">Installation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install git+https://github.com/Programming-The-Next-Step-2026/openllm-selector.git@week-4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To run the interactive app locally:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run app/app.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="using-the-app" class="level2">
+<h2 class="anchored" data-anchor-id="using-the-app">Using the app</h2>
+<p>The app has three panels: a <strong>filter sidebar</strong> on the left, a <strong>scatter plot</strong> and <strong>results grid</strong> in the main area, and a <strong>model profile card</strong> that opens below when you click any row or bubble.</p>
+<section id="sidebar" class="level3">
+<h3 class="anchored" data-anchor-id="sidebar">Sidebar</h3>
+<p>The sidebar is organised into five sections:</p>
+<ol type="1">
+<li><p><strong>Openness filters</strong> — checkboxes for open weights, open training data, intermediate checkpoints, open code, and permissive license (Apache 2.0 or MIT).</p></li>
+<li><p><strong>Model characteristics</strong> — categorical multiselects for family, organisation, architecture, country of origin, and license (OR logic: a model is kept if it matches any selected value). Below these: a <strong>Model type</strong> dropdown to restrict to <code>base</code>, <code>instruct</code>, or <code>reasoning</code> models, a <strong>Language (official support only)</strong> dropdown to filter by a single officially supported language, an <strong>Instruct version available</strong> checkbox, a <strong>Think version available</strong> checkbox, and a <strong>Multilingual</strong> checkbox.</p></li>
+<li><p><strong>Exclusion filters</strong> expander — multiselects to remove models by family, organisation, country of origin, or license.</p></li>
+<li><p><strong>Ranges</strong> — sliders for size (B parameters), context window (tokens), release year, and training tokens (B).</p></li>
+<li><p><strong>Reset all filters</strong> button at the bottom.</p></li>
+</ol>
+</section>
+<section id="scatter-plot" class="level3">
+<h3 class="anchored" data-anchor-id="scatter-plot">Scatter plot</h3>
+<p>The default view plots training tokens (B) on the x-axis against context window on the y-axis. You can switch either axis to: context window, release year, training tokens, or number of languages. Bubble colour encodes openness score (1–5, Viridis scale) and bubble area encodes model size in billions of parameters, capped at 100 B. Clicking a bubble opens the profile card for that model.</p>
+</section>
+<section id="results-grid" class="level3">
+<h3 class="anchored" data-anchor-id="results-grid">Results grid</h3>
+<p>The grid shows the filtered models ranked by openness score by default and displays: model name, openness score, size (B), context window, training tokens (B), release year, architecture, and license. Clicking any column header re-sorts the results by that column in ascending or descending order. Clicking a model’s checkbox opens its profile card.</p>
+</section>
+<section id="profile-card" class="level3">
+<h3 class="anchored" data-anchor-id="profile-card">Profile card</h3>
+<p>The profile card shows family, architecture, license, supported languages, and links to the foundational paper and HuggingFace page on the left, and size, context window, training tokens, and instruct version availability on the right. Below the main details: the five openness badges (open weights, open training data, intermediate checkpoints, open code, permissive license) with an overall openness score, followed by a <strong>Recent arXiv papers</strong> section that fetches the three most recent papers mentioning the model from arXiv.</p>
+<hr>
+<p>The five scenarios below walk through how a researcher would use the app.</p>
+<hr>
+</section>
+<section id="scenario-a-training-dynamics-researcher" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-a-training-dynamics-researcher">Scenario a — Training dynamics researcher</h3>
+<p><em>You are studying how in-context learning ability develops over the course of training. You need a model that released intermediate checkpoints, is small enough to run on a single GPU, and is as openly licensed as possible.</em></p>
+<p>In the sidebar:</p>
+<ol type="1">
+<li>Under <strong>Openness filters</strong> → check <strong>Intermediate checkpoints</strong></li>
+<li>Under <strong>Ranges</strong>, drag the <strong>Size (B parameters)</strong> slider to a maximum of 8.60 B</li>
+</ol>
+<p>The grid immediately narrows to twelve models, all with an openness score of 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 3 7B, OLMo 7B, and seven Pythia models (Pythia 1.4B, Pythia 160M, Pythia 1B, Pythia 2.8B, Pythia 410M, Pythia 6.9B, and Pythia 70M). Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.</p>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioafilter1.png" class="img-fluid figure-img"></p>
+<figcaption>Openness filters</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioafilter2.png" class="img-fluid figure-img"></p>
+<figcaption>Size range filter</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioaresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioamodelcard.png" class="img-fluid figure-img"></p>
+<figcaption>Model card</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="scenario-b-european-privacy-conscious-researcher" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-b-european-privacy-conscious-researcher">Scenario b — European privacy-conscious researcher</h3>
+<p><em>Your institution requires that training data not originate from US or Chinese organisations, to avoid jurisdictional complications with GDPR and data residency rules.</em></p>
+<p>In the sidebar:</p>
+<ol type="1">
+<li>Open <strong>Exclusion filters</strong> → <strong>Exclude country of origin</strong> → select or type <strong>United States</strong> and <strong>China</strong></li>
+</ol>
+<p>Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three Mistral models (France), the two Falcon models (United Arab Emirates), and Sarvam 30B (India, score 2). The scatter plot makes the trade-offs immediately visible: Apertus 8B leads on openness; BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.</p>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariobfilter.png" class="img-fluid figure-img"></p>
+<figcaption>Exclusion filters</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariobscatterplot.png" class="img-fluid figure-img"></p>
+<figcaption>Scatter plot</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariobresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="scenario-c-multilingual-nlp-researcher" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-c-multilingual-nlp-researcher">Scenario c — Multilingual NLP researcher</h3>
+<p><em>You are building a cross-lingual transfer benchmark and need a base model trained on multiple languages, with a license that allows redistributing fine-tuned derivatives.</em></p>
+<p>These are two independent filter approaches depending on how much you know about your language requirements upfront.</p>
+<p><strong>Step 1 — Filter by openness and multilingual coverage.</strong> Start here if you want models with documented multilingual training and publicly available weights and data.</p>
+<p>In the sidebar:</p>
+<ol type="1">
+<li>Under <strong>Openness filters</strong> → check <strong>Open weights</strong> and <strong>Open training data</strong></li>
+<li>Check the <strong>Multilingual</strong> checkbox</li>
+</ol>
+<p>Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B (46 languages, BigScience RAIL license, score 4), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0, score 4). The license column in the grid makes the trade-off immediately visible.</p>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocfilter1.png" class="img-fluid figure-img"></p>
+<figcaption>Openness filters</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocfilter2.png" class="img-fluid figure-img"></p>
+<figcaption>Multilingual checkbox</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p><strong>Step 2 — Filter by a specific language.</strong> Use this independently — without the openness filters active — when you need to know which models officially support a particular language, regardless of their openness profile.</p>
+<p>In the sidebar (with all other filters reset):</p>
+<ol type="1">
+<li>Under <strong>Language (official support only)</strong> → select or type the language you need</li>
+</ol>
+<p>Selecting <strong>Hindi</strong> returns six models: Apertus 8B, BLOOM 176B, Gemma 3 27B, Llama 3.1 8B, Qwen3 8B, and Sarvam 30B. Selecting <strong>Japanese</strong> returns four: Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B.</p>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocfilterhindi.png" class="img-fluid figure-img"></p>
+<figcaption>Language filter Hindi</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocfilterjapanese.png" class="img-fluid figure-img"></p>
+<figcaption>Language filter Japanese</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocresultshindi.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid Hindi</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariocresultsjapanese.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid Japanese</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="scenario-d-compute-limited-researcher" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-d-compute-limited-researcher">Scenario d — Compute-limited researcher</h3>
+<p><em>You have access to a single A100 (80 GB) but need a long context window for document-level tasks. You want the largest model that still fits comfortably, with at least 8 K tokens of context.</em></p>
+<p>In the sidebar:</p>
+<ol type="1">
+<li>Drag the <strong>Size (B parameters)</strong> slider to a maximum of 8.60 B</li>
+<li>Move the <strong>Context window (tokens)</strong> slider minimum to <strong>8,192</strong></li>
+</ol>
+<p>Eight models appear. On the scatter plot with context window on the y-axis, three models stand out at 131 K context — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B. At 65,536 tokens, Apertus 8B and OLMo 3 7B occupy the middle tier — both Apache 2.0 licensed with an openness score of 5 and OLMo 3 7B additionally carrying a think variant. Qwen3 8B sits at 32,768 tokens. Mistral 7B and Gemma 2B complete the results at 8,192 tokens. Click each model to compare licenses and training details in the profile card before deciding.</p>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariodfilter.png" class="img-fluid figure-img"></p>
+<figcaption>Range filters</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariodscatterplot.png" class="img-fluid figure-img"></p>
+<figcaption>Scatter plot</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenariodresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+<hr>
+</section>
+<section id="scenario-e-fully-open-science-researcher" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-e-fully-open-science-researcher">Scenario e — Fully open science researcher</h3>
+<p><em>You are writing a methods paper and want every step of your pipeline to be replicable: the model weights, the training data, the intermediate checkpoints, and the code all need to be publicly available under a permissive license.</em></p>
+<p>In the sidebar:</p>
+<ol type="1">
+<li>Under <strong>Openness filters</strong> → check <strong>Open weights</strong>, <strong>Open training data</strong>, <strong>Intermediate checkpoints</strong>, <strong>Open code</strong>, and <strong>Permissive license</strong></li>
+</ol>
+<p>Fifteen models score 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 2 32B, OLMo 3 7B, OLMo 3 32B, OLMo 7B, and all eight Pythia models. To narrow to fully open models with a think variant, also check the <strong>Think version available</strong> checkbox — two models remain: OLMo 3 7B and OLMo 3 32B. Click <strong>OLMo 3 7B</strong> to open its profile card — it and OLMo 3 32B are the only fully open models in the database with a chain-of-thought (think) variant. OLMo 3 7B is the recommended starting point for most research workflows — it is more accessible than the 32B variant due to its lower compute requirements. Check the recent arXiv papers fetched in the profile card to confirm that OLMo 3 7B is being actively used in the literature and that there are relevant papers building on it.</p>
+<div class="quarto-layout-panel" data-layout="[[1,4]]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 20.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioefilter1.png" class="img-fluid figure-img"></p>
+<figcaption>Openness filters</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioefilter2.png" class="img-fluid figure-img"></p>
+<figcaption>Think version filter</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 80.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioeresults.png" class="img-fluid figure-img"></p>
+<figcaption>Results grid</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scenarioemodelcard.png" class="img-fluid figure-img"></p>
+<figcaption>Model card</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="using-the-python-api" class="level2">
+<h2 class="anchored" data-anchor-id="using-the-python-api">Using the Python API</h2>
+<p>The same five questions answered in code. All functions are importable directly from <code>openllm_selector</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> openllm_selector <span class="im">as</span> o</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+<section id="scenario-a-training-dynamics-researcher-1" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-a-training-dynamics-researcher-1">Scenario a — Training dynamics researcher</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>candidates <span class="op">=</span> o.filter_models(intermediate_checkpoints<span class="op">=</span><span class="va">True</span>, max_size_b<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ranked <span class="op">=</span> o.rank_by_openness(candidates)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>], <span class="ss">f"(</span><span class="sc">{</span>m[<span class="st">'size_b'</span>]<span class="sc">}</span><span class="ss"> B,  score </span><span class="sc">{</span>m[<span class="st">'openness_score'</span>]<span class="sc">}</span><span class="ss">,  </span><span class="sc">{</span>m[<span class="st">'training_tokens_b'</span>]<span class="sc">:.0f}</span><span class="ss"> B tokens)"</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B (8.0 B,  score 5,  15000 B tokens)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; GPT-J 6B (6.0 B,  score 5,  402 B tokens)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 7B (7.0 B,  score 5,  4000 B tokens)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 7B (7.0 B,  score 5,  5930 B tokens)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 7B (7.0 B,  score 5,  2500 B tokens)</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 1.4B (1.4 B,  score 5,  300 B tokens)</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 160M (0.16 B,  score 5,  300 B tokens)</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 1B (1.0 B,  score 5,  300 B tokens)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 2.8B (2.8 B,  score 5,  300 B tokens)</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 410M (0.41 B,  score 5,  300 B tokens)</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 6.9B (6.9 B,  score 5,  300 B tokens)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 70M (0.07 B,  score 5,  300 B tokens)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All twelve score 5 — the maximum — so openness alone does not break the tie. The deciding factor here is training scale: Apertus 8B leads with 15,000 B tokens; OLMo 2 7B was trained on 13× more tokens than any Pythia model and has a 4 K context window versus Pythia’s 2 K. The Pythia suite is the go-to if your study needs a fixed community benchmark with established checkpoints at precise token intervals across multiple model sizes. Remove the size cap to also consider OLMo 2 32B and OLMo 3 32B — both score 5, and OLMo 3 32B is the only fully open model with a think variant.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Look up the foundational paper and confirm checkpoint availability</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> o.get_model(<span class="st">"OLMo 2 7B"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model[<span class="st">"foundational_paper"</span>])</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; https://arxiv.org/abs/2501.00656</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(model[<span class="st">"intermediate_checkpoints"</span>])</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; True</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="scenario-b-european-privacy-conscious-researcher-1" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-b-european-privacy-conscious-researcher-1">Scenario b — European privacy-conscious researcher</h3>
+<p>To exclude multiple countries, filter the result list directly — <code>filter_models()</code> takes one <code>exclude_country_of_origin</code> value at a time:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>excluded_countries <span class="op">=</span> {<span class="st">"United States"</span>, <span class="st">"China"</span>}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> [m <span class="cf">for</span> m <span class="kw">in</span> o.filter_models() <span class="cf">if</span> m[<span class="st">"country_of_origin"</span>] <span class="kw">not</span> <span class="kw">in</span> excluded_countries]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ranked <span class="op">=</span> o.rank_by_openness(results)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>], <span class="ss">f"— </span><span class="sc">{</span>m[<span class="st">'country_of_origin'</span>]<span class="sc">}</span><span class="ss">  (score </span><span class="sc">{</span>m[<span class="st">'openness_score'</span>]<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B — Switzerland  (score 5)</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B — France  (score 4)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 40B — United Arab Emirates  (score 4)</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 7B — United Arab Emirates  (score 4)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mistral 7B — France  (score 2)</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mixtral 8x22B — France  (score 2)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mixtral 8x7B — France  (score 2)</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Sarvam 30B — India  (score 2)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Eight models remain. Apertus 8B (Switzerland) scores 5 — the only fully open model outside the US and China. BLOOM and the two Falcons score 4. The three Mistral models and Sarvam 30B score 2 — their training data composition is not publicly disclosed. For most European research use cases, Falcon 7B or Apertus 8B is the pragmatic choice: both are Apache-licensed and trained on documented multilingual corpora.</p>
+<hr>
+</section>
+<section id="scenario-c-multilingual-nlp-researcher-1" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-c-multilingual-nlp-researcher-1">Scenario c — Multilingual NLP researcher</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> o.filter_models(multilingual<span class="op">=</span><span class="va">True</span>, min_openness<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ranked <span class="op">=</span> o.rank_by_openness(results)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        m[<span class="st">"name"</span>],</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  </span><span class="sc">{</span>m[<span class="st">'num_languages'</span>]<span class="sc">}</span><span class="ss"> languages"</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  license: </span><span class="sc">{</span>m[<span class="st">'license'</span>]<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  score: </span><span class="sc">{</span>m[<span class="st">'openness_score'</span>]<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B  1811 languages  license: Apache 2.0  score: 5</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B  46 languages  license: BigScience RAIL  score: 4</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 40B  4 languages  license: Apache 2.0  score: 4</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Falcon 7B  4 languages  license: Apache 2.0  score: 4</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Apertus 8B leads with 1,811 languages and a score of 5 — the broadest language coverage of any Apache-licensed model in the database. BLOOM covers 46 languages but its BigScience RAIL license restricts certain commercial and potentially harmful uses. If your benchmark is purely academic and you need broad language coverage, BLOOM is a strong option. If you need to redistribute fine-tuned derivatives without restriction, Apertus 8B or Falcon 7B with Apache 2.0 is the safer choice.</p>
+<p>Use <code>filter_models(language=...)</code> to check whether a specific language you need is officially supported:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hindi_models <span class="op">=</span> o.filter_models(language<span class="op">=</span><span class="st">"Hindi"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> hindi_models:</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>], <span class="st">"—"</span>, m[<span class="st">"languages"</span>])</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B — ['Albanian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; BLOOM 176B — ['Akkadian', 'Arabic', ..., 'Hindi', ..., 'Yoruba']</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 3 27B — ['Afrikaans', 'Arabic', ..., 'Hindi', ..., 'Vietnamese']</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B — ['English', 'German', 'French', 'Italian', 'Portuguese', 'Hindi', 'Spanish', 'Thai']</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B — ['Afrikaans', 'Albanian', ..., 'Hindi', ..., 'Waray']</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Sarvam 30B — ['Assamese', 'Bengali', ..., 'Hindi', ..., 'Urdu']</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect the full language list for BLOOM</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>bloom <span class="op">=</span> o.get_model(<span class="st">"BLOOM 176B"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(bloom[<span class="st">"num_languages"</span>])    <span class="co"># 46</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(bloom[<span class="st">"huggingface_id"</span>])   <span class="co"># bigscience/bloom</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(bloom[<span class="st">"languages"</span>][:<span class="dv">5</span>])   <span class="co"># first five of 46</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ['Akkadian', 'Arabic', 'Assamese', 'Bambara', 'Basque']</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Browse all languages present in the database</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>all_langs <span class="op">=</span> o.get_languages()</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(all_langs), <span class="st">"unique languages"</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 111 unique languages</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter by a single language — Japanese is supported by Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>japanese_models <span class="op">=</span> o.filter_models(language<span class="op">=</span><span class="st">"Japanese"</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> japanese_models:</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>])</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 3 27B</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="scenario-d-compute-limited-researcher-1" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-d-compute-limited-researcher-1">Scenario d — Compute-limited researcher</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> o.filter_models(max_size_b<span class="op">=</span><span class="fl">8.6</span>, min_context_window<span class="op">=</span><span class="dv">8192</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ranked <span class="op">=</span> o.rank_by_openness(results)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        m[<span class="st">"name"</span>],</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  </span><span class="sc">{</span>m[<span class="st">'size_b'</span>]<span class="sc">}</span><span class="ss"> B"</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  context: </span><span class="sc">{</span>m[<span class="st">'context_window'</span>]<span class="sc">:,}</span><span class="ss"> tokens"</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  license: </span><span class="sc">{</span>m[<span class="st">'license'</span>]<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B   8.0 B  context: 65,536 tokens  license: Apache 2.0</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 7B   7.0 B  context: 65,536 tokens  license: Apache 2.0</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mistral 7B   7.3 B  context: 8,192 tokens  license: Apache 2.0</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B   7.6 B  context: 131,072 tokens  license: Apache 2.0</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B   8.2 B  context: 32,768 tokens  license: Apache 2.0</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Gemma 2B   2.0 B  context: 8,192 tokens  license: Gemma Terms of Use</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B   8.0 B  context: 131,072 tokens  license: Llama 3 Community License</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Eight models pass the filter. Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B offer 131 K context windows — suitable for full-document processing. Apertus 8B and OLMo 3 7B both offer 65,536 tokens of context, Apache 2.0 licenses, and openness scores of 5; OLMo 3 7B additionally has a think variant. Qwen3 8B adds 32,768 tokens of context and, at 36,000 B training tokens and 80 officially supported languages, is the most extensively trained model in the group. Both Qwen models use Apache 2.0; Llama 3.1 carries Meta’s community license, which restricts use beyond 700 M monthly users. For typical research use, any of the three long-context Apache options works. Qwen2.5 7B is the strongest on training scale and language coverage among the 131 K-context options. For reproducibility-first workflows, OLMo 3 7B offers the best openness profile in the group.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare training scale and language coverage across the mid and long-context options</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name <span class="kw">in</span> [<span class="st">"Apertus 8B"</span>, <span class="st">"OLMo 3 7B"</span>, <span class="st">"Qwen2 7B"</span>, <span class="st">"Qwen2.5 7B"</span>, <span class="st">"Qwen3 8B"</span>, <span class="st">"Llama 3.1 8B"</span>]:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> o.get_model(name)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>m[<span class="st">'training_tokens_b'</span>]<span class="sc">:.0f}</span><span class="ss"> B tokens, </span><span class="sc">{</span>m[<span class="st">'num_languages'</span>]<span class="sc">}</span><span class="ss"> languages"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B: 15000 B tokens, 1811 languages</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 7B: 5930 B tokens, 1 languages</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2 7B: 7000 B tokens, 27 languages</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen2.5 7B: 18000 B tokens, 29 languages</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Qwen3 8B: 36000 B tokens, 80 languages</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Llama 3.1 8B: 15000 B tokens, 8 languages</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Qwen3 8B leads the group on raw training scale (36,000 B tokens) and language coverage (80 languages), though its openness score is 2. Among the 131 K-context options, Qwen2.5 7B is the strongest on both dimensions. For reproducibility-first workflows, OLMo 3 7B (score 5, think variant available) offers 65 K context at a fully open training stack, with intermediate checkpoints available for training-dynamics studies.</p>
+<hr>
+</section>
+<section id="scenario-e-fully-open-science-researcher-1" class="level3">
+<h3 class="anchored" data-anchor-id="scenario-e-fully-open-science-researcher-1">Scenario e — Fully open science researcher</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fully_open <span class="op">=</span> o.filter_models(min_openness<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>ranked <span class="op">=</span> o.rank_by_openness(fully_open)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> ranked:</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        m[<span class="st">"name"</span>],</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  </span><span class="sc">{</span>m[<span class="st">'size_b'</span>]<span class="sc">}</span><span class="ss"> B"</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  tokens=</span><span class="sc">{</span>m[<span class="st">'training_tokens_b'</span>]<span class="sc">:.0f}</span><span class="ss"> B"</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"  think=</span><span class="sc">{</span>m[<span class="st">'has_think_version'</span>]<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Apertus 8B   8.0 B  tokens=15000 B  think=False</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; GPT-J 6B   6.0 B  tokens=402 B  think=False</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 32B   32.0 B  tokens=6000 B  think=False</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 2 7B   7.0 B  tokens=4000 B  think=False</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 32B   32.0 B  tokens=5500 B  think=True</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 7B   7.0 B  tokens=5930 B  think=True</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 7B   7.0 B  tokens=2500 B  think=False</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 1.4B   1.4 B  tokens=300 B  think=False</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 12B   12.0 B  tokens=300 B  think=False</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 160M   0.16 B  tokens=300 B  think=False</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 1B   1.0 B  tokens=300 B  think=False</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 2.8B   2.8 B  tokens=300 B  think=False</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 410M   0.41 B  tokens=300 B  think=False</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 6.9B   6.9 B  tokens=300 B  think=False</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Pythia 70M   0.07 B  tokens=300 B  think=False</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All fifteen score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. OLMo 3 7B and OLMo 3 32B are the only fully open models with a think variant. OLMo 3 7B is the recommended starting point as it is the smaller model.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Narrow to fully open models with a think variant</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>think_open <span class="op">=</span> o.filter_models(min_openness<span class="op">=</span><span class="dv">5</span>, has_think_version<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> think_open:</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(m[<span class="st">"name"</span>])</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 32B</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; OLMo 3 7B</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Check recent literature before committing — searching for “OLMo 3 7B”:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Results are based on arXiv keyword matching — may include tangentially related</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># papers, especially for common or short model names (e.g. "Phi", "Gemma").</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>papers <span class="op">=</span> o.fetch_recent_papers(<span class="st">"OLMo 3 7B"</span>, max_results<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> papers:</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(p[<span class="st">"published"</span>][:<span class="dv">10</span>], <span class="st">"—"</span>, p[<span class="st">"title"</span>])</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"  "</span>, p[<span class="st">"arxiv_url"</span>])</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Output varies; typical result:</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2026-05-26 — Restoring the Sweet Spot: Pass-Rate Weighted Self-Distillation for LLM Reasoning</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   https://arxiv.org/abs/2605.27765v1</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2026-05-24 — Towards a Universal Causal Reasoner</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   https://arxiv.org/abs/2605.24873v1</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2026-05-20 — When Are Teacher Tokens Reliable? Position-Weighted On-Policy Self-Distillation for Reasoning</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   https://arxiv.org/abs/2605.21606v1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Within a few lines you have the full openness profile, the foundational reference, and the most recent papers building on the model — enough to make a defensible choice and start your literature review.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

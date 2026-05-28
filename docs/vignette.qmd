@@ -433,7 +433,7 @@ for m in ranked:
 #> Pythia 70M   0.07 B  tokens=300 B  think=False
 ```
 
-All fifteen score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. OLMo 3 7B and OLMo 3 32B are the only fully open models with a think variant. OLMo 3 7B is the recommended starting point — it is the smaller model and, being more widely cited in the literature, is likely to return more relevant arXiv papers.
+All fifteen score 5: weights, training data, intermediate checkpoints, training code, and a permissive Apache 2.0 license. OLMo 3 7B and OLMo 3 32B are the only fully open models with a think variant. OLMo 3 7B is the recommended starting point as it is the smaller model.
 
 ```python
 # Narrow to fully open models with a think variant
@@ -444,20 +444,22 @@ for m in think_open:
 #> OLMo 3 7B
 ```
 
-Check recent literature before committing — searching for "OLMo" covers all five OLMo variants:
+Check recent literature before committing — searching for "OLMo 3 7B":
 
 ```python
 # Results are based on arXiv keyword matching — may include tangentially related
 # papers, especially for common or short model names (e.g. "Phi", "Gemma").
-papers = o.fetch_recent_papers("OLMo", max_results=3)
+papers = o.fetch_recent_papers("OLMo 3 7B", max_results=3)
 for p in papers:
     print(p["published"][:10], "—", p["title"])
     print("  ", p["arxiv_url"])
 # Output varies; typical result:
-#> 2025-01-14 — OLMo 2: Smarter Training for Open Language Models
-#>   https://arxiv.org/abs/2501.00656
-#> 2024-09-18 — Scaling LLM Test-Time Compute with OLMo ...
-#>   https://arxiv.org/abs/...
+#> 2026-05-26 — Restoring the Sweet Spot: Pass-Rate Weighted Self-Distillation for LLM Reasoning
+#>   https://arxiv.org/abs/2605.27765v1
+#> 2026-05-24 — Towards a Universal Causal Reasoner
+#>   https://arxiv.org/abs/2605.24873v1
+#> 2026-05-20 — When Are Teacher Tokens Reliable? Position-Weighted On-Policy Self-Distillation for Reasoning
+#>   https://arxiv.org/abs/2605.21606v1
 ```
 
 Within a few lines you have the full openness profile, the foundational reference, and the most recent papers building on the model — enough to make a defensible choice and start your literature review.
