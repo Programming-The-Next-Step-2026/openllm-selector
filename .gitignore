@@ -8,4 +8,3 @@ dist/
 build/
 *.deb
 docs/vignette_files/
-docs/vignette.html
