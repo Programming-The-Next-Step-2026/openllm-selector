@@ -464,7 +464,7 @@ class TestNewFields:
             "GPT-OSS 20B", "Grok-1", "LLaVA 1.5 7B", "Mixtral 8x22B",
             "Phi-2", "Qwen3 8B", "Sarvam 30B",
             "Pythia 6.9B", "Pythia 70M", "Pythia 160M", "Pythia 410M",
-            "Pythia 1.4B", "Pythia 2.8B", "Pythia 12B",
+            "Pythia 1B", "Pythia 1.4B", "Pythia 2.8B", "Pythia 12B",
         }
         actual_with_notes = {m["name"] for m in all_models if m.get("notes")}
         assert actual_with_notes == expected_with_notes
@@ -607,9 +607,6 @@ class TestNewFields:
     def test_pythia_suite_shared_paper(self):
         for name in self._ALL_PYTHIA:
             assert get_model(name)["foundational_paper"] == "https://arxiv.org/abs/2304.01373"
-
-    def test_pythia_1b_has_no_notes(self):
-        assert get_model("Pythia 1B").get("notes") is None
 
     def test_pythia_suite_included_in_intermediate_checkpoints_filter(self):
         results = filter_models(intermediate_checkpoints=True)
