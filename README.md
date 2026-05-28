@@ -77,4 +77,4 @@ papers = o.fetch_recent_papers("OLMo", max_results=3)
 
 ## Documentation
 
-See [docs/vignette.qmd](docs/vignette.qmd) for a full walkthrough covering both the Streamlit app and the Python API, with five realistic researcher scenarios.
+See [docs/vignette.ipynb](docs/vignette.ipynb) for a full walkthrough covering both the Streamlit app and the Python API, with five realistic researcher scenarios.
