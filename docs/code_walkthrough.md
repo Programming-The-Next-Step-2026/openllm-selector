@@ -14,6 +14,34 @@ The entire app is ~20 lines. On every rerun Streamlit calls this top to bottom: 
 
 ---
 
+## Caching strategy
+
+**`app/utils.py`**
+
+Streamlit reruns the entire script from top to bottom on every user interaction — every checkbox tick, every slider move, every row click. Without caching, that would mean reading `models.json` from disk and rebuilding Python dicts on every interaction, and fetching arXiv over the network every time a profile card opens.
+
+`utils.py` is the single place where all database and network calls are wrapped with `@st.cache_data`. No component module is allowed to call `load_models()` or `fetch_recent_papers()` directly.
+
+**How `@st.cache_data` works.** Streamlit serialises the function's arguments into a cache key. On the first call with a given key it runs the function and stores the return value. On subsequent calls with the same key it returns the stored value immediately, skipping the function body. The cache lives in memory for the lifetime of the server process.
+
+**Five cached wrappers and their TTLs:**
+
+| Wrapper | TTL | Why |
+|---|---|---|
+| `cached_load_models()` | none (session lifetime) | `models.json` never changes while the app is running |
+| `cached_get_families()` | none | derived from `models.json`; same rationale |
+| `cached_get_organizations()` | none | same |
+| `cached_get_languages()` | none | same |
+| `cached_fetch_recent_papers(model_name, max_results)` | 3600 s (1 hour) | arXiv results change over time; TTL balances freshness against rate limits |
+
+**Cache key details.** `cached_load_models()` takes no arguments so there is exactly one cache entry — the full model list — shared across every component that calls it. `cached_fetch_recent_papers` is keyed on `(model_name, max_results)`, so each model gets its own cache entry. Opening OLMo 2 7B and then Llama 3.1 8B costs two network calls; opening OLMo 2 7B a second time within an hour costs zero.
+
+**`get_filtered_models()` is not cached.** Filtering is pure Python list comprehension over the already-cached model list — it completes in under a millisecond and its output depends on the current widget state, which changes on every rerun. Caching it would require a complex hashable key covering all active filters and would save no meaningful time.
+
+**To extend:** if you add a new database call (e.g. fetching model cards from HuggingFace), add a new `@st.cache_data(ttl=…)` wrapper in `utils.py` and call only that wrapper from components. Never call the underlying function directly from a component.
+
+---
+
 ## 1. Loading models
 
 **`src/openllm_selector/database.py` → `load_models()`**
@@ -24,7 +52,7 @@ Opens `data/models.json` (41 records), iterates the list, and calls `compute_ope
 
 **To extend:** add a new scoring criterion by adding another `bool(model["some_field"])` term to the sum in `compute_openness_score()`, and add that field to every record in `models.json`.
 
-The app never calls `load_models()` directly — it goes through `app/utils.py → cached_load_models()`, which wraps it in `@st.cache_data` so the JSON is only read once per session.
+In the app, `load_models()` is always called through `cached_load_models()` — see the caching strategy section above.
 
 ---
 
