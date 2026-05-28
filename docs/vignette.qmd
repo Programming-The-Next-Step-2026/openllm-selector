@@ -109,7 +109,7 @@ Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three
 </div>
 </div>
 
-![Results grid](scenariobresults.png)
+<img src="scenariobresults.png" alt="Results grid" style="width: 100%; margin-top: 0.5em;">
 
 ---
 
@@ -179,7 +179,7 @@ Eight models appear. On the scatter plot with context window on the y-axis, thre
 </div>
 </div>
 
-![Results grid](scenariodresults.png)
+<img src="scenariodresults.png" alt="Results grid" style="width: 100%; margin-top: 0.5em;">
 
 ---
 
