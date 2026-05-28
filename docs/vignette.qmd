@@ -14,7 +14,7 @@ Most LLM comparison tools ask "which model scores highest on MMLU?" That is not 
 
 An optional `notes` field is present for models that require additional context, such as post-trained models where `training_tokens_b` is null for structural reasons rather than lack of disclosure (e.g. DeepSeek-R1 is post-trained on DeepSeek-V3-Base, so a pre-training token count is not applicable).
 
-![Researcher workflow flowchart](flowchart.png)
+![Researcher workflow flowchart](images/flowchart.png)
 
 ## Installation
 
@@ -79,12 +79,12 @@ The grid immediately narrows to twelve models, all with an openness score of 5: 
 
 <div style="display: flex; gap: 1.5em; align-items: flex-start;">
 <div style="flex: 1; min-width: 0;">
-<img src="scenarioafilter1.png" alt="Openness filters" style="width: 100%;">
-<img src="scenarioafilter2.png" alt="Size range filter" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenarioafilter1.png" alt="Openness filters" style="width: 100%;">
+<img src="images/scenarioafilter2.png" alt="Size range filter" style="width: 100%; margin-top: 0.5em;">
 </div>
 <div style="flex: 4; min-width: 0;">
-<img src="scenarioaresults.png" alt="Results grid" style="width: 100%;">
-<img src="scenarioamodelcard.png" alt="Model card" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenarioaresults.png" alt="Results grid" style="width: 100%;">
+<img src="images/scenarioamodelcard.png" alt="Model card" style="width: 100%; margin-top: 0.5em;">
 </div>
 </div>
 
@@ -102,14 +102,14 @@ Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three
 
 <div style="display: flex; gap: 1.5em; align-items: flex-start;">
 <div style="flex: 1; min-width: 0;">
-<img src="scenariobfilter.png" alt="Exclusion filters" style="width: 100%;">
+<img src="images/scenariobfilter.png" alt="Exclusion filters" style="width: 100%;">
 </div>
 <div style="flex: 4; min-width: 0;">
-<img src="scenariobscatterplot.png" alt="Scatter plot" style="width: 100%;">
+<img src="images/scenariobscatterplot.png" alt="Scatter plot" style="width: 100%;">
 </div>
 </div>
 
-<img src="scenariobresults.png" alt="Results grid" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenariobresults.png" alt="Results grid" style="width: 100%; margin-top: 0.5em;">
 
 ---
 
@@ -130,11 +130,11 @@ Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B
 
 <div style="display: flex; gap: 1.5em; align-items: flex-start;">
 <div style="flex: 1; min-width: 0;">
-<img src="scenariocfilter1.png" alt="Openness filters" style="width: 100%;">
-<img src="scenariocfilter2.png" alt="Multilingual checkbox" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenariocfilter1.png" alt="Openness filters" style="width: 100%;">
+<img src="images/scenariocfilter2.png" alt="Multilingual checkbox" style="width: 100%; margin-top: 0.5em;">
 </div>
 <div style="flex: 4; min-width: 0;">
-<img src="scenariocresults.png" alt="Results grid" style="width: 100%;">
+<img src="images/scenariocresults.png" alt="Results grid" style="width: 100%;">
 </div>
 </div>
 
@@ -148,12 +148,12 @@ Selecting **Hindi** returns six models: Apertus 8B, BLOOM 176B, Gemma 3 27B, Lla
 
 <div style="display: flex; gap: 1.5em; align-items: flex-start;">
 <div style="flex: 1; min-width: 0;">
-<img src="scenariocfilterhindi.png" alt="Language filter Hindi" style="width: 100%;">
-<img src="scenariocfilterjapanese.png" alt="Language filter Japanese" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenariocfilterhindi.png" alt="Language filter Hindi" style="width: 100%;">
+<img src="images/scenariocfilterjapanese.png" alt="Language filter Japanese" style="width: 100%; margin-top: 0.5em;">
 </div>
 <div style="flex: 4; min-width: 0;">
-<img src="scenariocresultshindi.png" alt="Results grid Hindi" style="width: 100%;">
-<img src="scenariocresultsjapanese.png" alt="Results grid Japanese" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenariocresultshindi.png" alt="Results grid Hindi" style="width: 100%;">
+<img src="images/scenariocresultsjapanese.png" alt="Results grid Japanese" style="width: 100%; margin-top: 0.5em;">
 </div>
 </div>
 
@@ -172,14 +172,14 @@ Eight models appear. On the scatter plot with context window on the y-axis, thre
 
 <div style="display: flex; gap: 1.5em; align-items: flex-start;">
 <div style="flex: 1; min-width: 0;">
-<img src="scenariodfilter.png" alt="Range filters" style="width: 100%;">
+<img src="images/scenariodfilter.png" alt="Range filters" style="width: 100%;">
 </div>
 <div style="flex: 4; min-width: 0;">
-<img src="scenariodscatterplot.png" alt="Scatter plot" style="width: 100%;">
+<img src="images/scenariodscatterplot.png" alt="Scatter plot" style="width: 100%;">
 </div>
 </div>
 
-<img src="scenariodresults.png" alt="Results grid" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenariodresults.png" alt="Results grid" style="width: 100%; margin-top: 0.5em;">
 
 ---
 
@@ -195,12 +195,12 @@ Fifteen models score 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 2 32B, OLMo 3 7B, 
 
 <div style="display: flex; gap: 1.5em; align-items: flex-start;">
 <div style="flex: 1; min-width: 0;">
-<img src="scenarioefilter1.png" alt="Openness filters" style="width: 100%;">
-<img src="scenarioefilter2.png" alt="Think version filter" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenarioefilter1.png" alt="Openness filters" style="width: 100%;">
+<img src="images/scenarioefilter2.png" alt="Think version filter" style="width: 100%; margin-top: 0.5em;">
 </div>
 <div style="flex: 4; min-width: 0;">
-<img src="scenarioeresults.png" alt="Results grid" style="width: 100%;">
-<img src="scenarioemodelcard.png" alt="Model card" style="width: 100%; margin-top: 0.5em;">
+<img src="images/scenarioeresults.png" alt="Results grid" style="width: 100%;">
+<img src="images/scenarioemodelcard.png" alt="Model card" style="width: 100%; margin-top: 0.5em;">
 </div>
 </div>
 
