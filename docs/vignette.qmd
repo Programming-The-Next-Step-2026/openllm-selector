@@ -77,21 +77,16 @@ In the sidebar:
 
 The grid immediately narrows to twelve models, all with an openness score of 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 3 7B, OLMo 7B, and seven Pythia models (Pythia 1.4B, Pythia 160M, Pythia 1B, Pythia 2.8B, Pythia 410M, Pythia 6.9B, and Pythia 70M). Click OLMo 2 7B to open its profile card, which shows the foundational paper link and fetches the three most recent arXiv papers mentioning the model. If your GPU budget extends to 32 B, also remove the size cap — OLMo 2 32B and OLMo 3 32B pass every other criterion, and OLMo 3 32B also has a think variant available.
 
-::: {layout='[[1,4]]'}
-
-::: {}
-![Openness filters](scenarioafilter1.png)
-
-![Size range filter](scenarioafilter2.png)
-:::
-
-::: {}
-![Results grid](scenarioaresults.png)
-
-![Model card](scenarioamodelcard.png)
-:::
-
-:::
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1; min-width: 0;">
+<img src="scenarioafilter1.png" alt="Openness filters" style="width: 100%;">
+<img src="scenarioafilter2.png" alt="Size range filter" style="width: 100%; margin-top: 0.5em;">
+</div>
+<div style="flex: 4; min-width: 0;">
+<img src="scenarioaresults.png" alt="Results grid" style="width: 100%;">
+<img src="scenarioamodelcard.png" alt="Model card" style="width: 100%; margin-top: 0.5em;">
+</div>
+</div>
 
 ---
 
@@ -105,17 +100,14 @@ In the sidebar:
 
 Eight models remain: Apertus 8B (Switzerland, score 5), BLOOM 176B and the three Mistral models (France), the two Falcon models (United Arab Emirates), and Sarvam 30B (India, score 2). The scatter plot makes the trade-offs immediately visible: Apertus 8B leads on openness; BLOOM covers 46 languages but carries a BigScience RAIL license with restrictions on certain uses; the two Falcon models cover 4 languages each but are Apache 2.0 licensed.
 
-::: {layout='[[1,4]]'}
-
-::: {}
-![Exclusion filters](scenariobfilter.png)
-:::
-
-::: {}
-![Scatter plot](scenariobscatterplot.png)
-:::
-
-:::
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1; min-width: 0;">
+<img src="scenariobfilter.png" alt="Exclusion filters" style="width: 100%;">
+</div>
+<div style="flex: 4; min-width: 0;">
+<img src="scenariobscatterplot.png" alt="Scatter plot" style="width: 100%;">
+</div>
+</div>
 
 ![Results grid](scenariobresults.png)
 
@@ -136,19 +128,15 @@ In the sidebar:
 
 Four models match: Apertus 8B (1,811 languages, Apache 2.0, score 5), BLOOM 176B (46 languages, BigScience RAIL license, score 4), Falcon 7B, and Falcon 40B (4 languages each, Apache 2.0, score 4). The license column in the grid makes the trade-off immediately visible.
 
-::: {layout='[[1,4]]'}
-
-::: {}
-![Openness filters](scenariocfilter1.png)
-
-![Multilingual checkbox](scenariocfilter2.png)
-:::
-
-::: {}
-![Results grid](scenariocresults.png)
-:::
-
-:::
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1; min-width: 0;">
+<img src="scenariocfilter1.png" alt="Openness filters" style="width: 100%;">
+<img src="scenariocfilter2.png" alt="Multilingual checkbox" style="width: 100%; margin-top: 0.5em;">
+</div>
+<div style="flex: 4; min-width: 0;">
+<img src="scenariocresults.png" alt="Results grid" style="width: 100%;">
+</div>
+</div>
 
 **Step 2 — Filter by a specific language.** Use this independently — without the openness filters active — when you need to know which models officially support a particular language, regardless of their openness profile.
 
@@ -158,21 +146,16 @@ In the sidebar (with all other filters reset):
 
 Selecting **Hindi** returns six models: Apertus 8B, BLOOM 176B, Gemma 3 27B, Llama 3.1 8B, Qwen3 8B, and Sarvam 30B. Selecting **Japanese** returns four: Apertus 8B, Gemma 3 27B, Qwen2.5 7B, and Qwen3 8B.
 
-::: {layout='[[1,4]]'}
-
-::: {}
-![Language filter Hindi](scenariocfilterhindi.png)
-
-![Language filter Japanese](scenariocfilterjapanese.png)
-:::
-
-::: {}
-![Results grid Hindi](scenariocresultshindi.png)
-
-![Results grid Japanese](scenariocresultsjapanese.png)
-:::
-
-:::
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1; min-width: 0;">
+<img src="scenariocfilterhindi.png" alt="Language filter Hindi" style="width: 100%;">
+<img src="scenariocfilterjapanese.png" alt="Language filter Japanese" style="width: 100%; margin-top: 0.5em;">
+</div>
+<div style="flex: 4; min-width: 0;">
+<img src="scenariocresultshindi.png" alt="Results grid Hindi" style="width: 100%;">
+<img src="scenariocresultsjapanese.png" alt="Results grid Japanese" style="width: 100%; margin-top: 0.5em;">
+</div>
+</div>
 
 ---
 
@@ -187,17 +170,14 @@ In the sidebar:
 
 Eight models appear. On the scatter plot with context window on the y-axis, three models stand out at 131 K context — Qwen2 7B, Qwen2.5 7B, and Llama 3.1 8B. At 65,536 tokens, Apertus 8B and OLMo 3 7B occupy the middle tier — both Apache 2.0 licensed with an openness score of 5 and OLMo 3 7B additionally carrying a think variant. Qwen3 8B sits at 32,768 tokens. Mistral 7B and Gemma 2B complete the results at 8,192 tokens. Click each model to compare licenses and training details in the profile card before deciding.
 
-::: {layout='[[1,4]]'}
-
-::: {}
-![Range filters](scenariodfilter.png)
-:::
-
-::: {}
-![Scatter plot](scenariodscatterplot.png)
-:::
-
-:::
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1; min-width: 0;">
+<img src="scenariodfilter.png" alt="Range filters" style="width: 100%;">
+</div>
+<div style="flex: 4; min-width: 0;">
+<img src="scenariodscatterplot.png" alt="Scatter plot" style="width: 100%;">
+</div>
+</div>
 
 ![Results grid](scenariodresults.png)
 
@@ -213,21 +193,16 @@ In the sidebar:
 
 Fifteen models score 5: Apertus 8B, GPT-J 6B, OLMo 2 7B, OLMo 2 32B, OLMo 3 7B, OLMo 3 32B, OLMo 7B, and all eight Pythia models. To narrow to fully open models with a think variant, also check the **Think version available** checkbox — two models remain: OLMo 3 7B and OLMo 3 32B. Click **OLMo 3 7B** to open its profile card — it and OLMo 3 32B are the only fully open models in the database with a chain-of-thought (think) variant. OLMo 3 7B is the recommended starting point for most research workflows — it is more accessible than the 32B variant due to its lower compute requirements. Check the recent arXiv papers fetched in the profile card to confirm that OLMo 3 7B is being actively used in the literature and that there are relevant papers building on it.
 
-::: {layout='[[1,4]]'}
-
-::: {}
-![Openness filters](scenarioefilter1.png)
-
-![Think version filter](scenarioefilter2.png)
-:::
-
-::: {}
-![Results grid](scenarioeresults.png)
-
-![Model card](scenarioemodelcard.png)
-:::
-
-:::
+<div style="display: flex; gap: 1.5em; align-items: flex-start;">
+<div style="flex: 1; min-width: 0;">
+<img src="scenarioefilter1.png" alt="Openness filters" style="width: 100%;">
+<img src="scenarioefilter2.png" alt="Think version filter" style="width: 100%; margin-top: 0.5em;">
+</div>
+<div style="flex: 4; min-width: 0;">
+<img src="scenarioeresults.png" alt="Results grid" style="width: 100%;">
+<img src="scenarioemodelcard.png" alt="Model card" style="width: 100%; margin-top: 0.5em;">
+</div>
+</div>
 
 ---
 
