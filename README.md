@@ -40,7 +40,7 @@ Languages reflect officially supported languages as documented by the model crea
 ## Installation
 
 ```bash
-pip install git+https://github.com/Programming-The-Next-Step-2026/openllm-selector.git@week-3
+pip install git+https://github.com/Programming-The-Next-Step-2026/openllm-selector.git@week-4
 ```
 
 To run the interactive Streamlit app locally:
