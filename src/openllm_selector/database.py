@@ -521,6 +521,7 @@ def fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]:
             "sortOrder": "descending",
             "max_results": max_results,
         },
+        headers={"User-Agent": "openllm-selector/0.0.1 (https://github.com/evawardenaar/openllm-selector)"},
         timeout=(5, 15),
     )
     response.raise_for_status()
