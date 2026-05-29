@@ -122,6 +122,8 @@ def render_profile(model_name: str) -> None:
                     import requests as _req
                     if isinstance(exc, _req.exceptions.HTTPError) and exc.response is not None and exc.response.status_code == 429:
                         st.warning("429 Too Many Requests — arXiv rate limit reached, please wait a few minutes and try again.")
+                    elif isinstance(exc, _req.exceptions.Timeout):
+                        st.warning("arXiv request timed out. The service may be temporarily unavailable.")
                     else:
                         st.warning("Could not reach arXiv. Check your network connection.")
                     papers = []

@@ -516,7 +516,7 @@ def fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]:
             "sortOrder": "descending",
             "max_results": max_results,
         },
-        timeout=30,
+        timeout=8,
     )
     response.raise_for_status()
 
