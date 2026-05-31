@@ -22,7 +22,7 @@ An optional `notes` field is present for models that require additional context,
 pip install git+https://github.com/Programming-The-Next-Step-2026/openllm-selector.git@week-4
 ```
 
-To run the interactive app locally:
+This gives access to the Python API (`load_models`, `filter_models`, and related functions) without any further steps. To run the interactive Streamlit app, clone the repository and launch it from the project root:
 
 ```bash
 streamlit run app/app.py
