@@ -6,6 +6,7 @@ format:
     toc: true
     toc-depth: 2
     code-copy: true
+    embed-resources: true
 ---
 
 Most LLM comparison tools ask "which model scores highest on MMLU?" That is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
