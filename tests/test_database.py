@@ -1617,9 +1617,7 @@ class TestFetchRecentPapers:
             mock_get.return_value = _mock_response(_SAMPLE_ATOM)
             fetch_recent_papers("Pythia 6.9B")
         _, kwargs = mock_get.call_args
-        # Size suffix is stripped before searching; "Pythia 6.9B" -> "Pythia"
-        assert "Pythia" in kwargs["params"]["search_query"]
-        assert "6.9B" not in kwargs["params"]["search_query"]
+        assert "Pythia 6.9B" in kwargs["params"]["search_query"]
 
     def test_empty_feed_returns_empty_list(self):
         with patch("openllm_selector.database.requests.get") as mock_get:

@@ -2,7 +2,6 @@
 
 import json
 import pathlib
-import re
 import xml.etree.ElementTree as ET
 
 import requests
@@ -509,14 +508,10 @@ def fetch_recent_papers(model_name: str, max_results: int = 3) -> list[dict]:
     >>> papers[0].keys()
     dict_keys(['title', 'authors', 'summary', 'published', 'arxiv_url'])
     """
-    # Strip trailing size/context suffixes (e.g. "7B", "32B", "1.4B", "4K") so
-    # "OLMo 2 32B" searches as "OLMo 2". Mixture-of-experts names like "8x7B"
-    # are kept because they are part of the canonical model identity.
-    search_name = re.sub(r"\s+\d+(\.\d+)?[BbMmKk]$", "", model_name)
     response = requests.get(
         "https://export.arxiv.org/api/query",
         params={
-            "search_query": f'all:"{search_name}"',
+            "search_query": f'all:"{model_name}"',
             "sortBy": "submittedDate",
             "sortOrder": "descending",
             "max_results": max_results,
