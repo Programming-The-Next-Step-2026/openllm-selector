@@ -65,6 +65,12 @@ def load_models() -> list[dict]:
         models where ``training_tokens_b`` is null for structural reasons).
         ``training_tokens_b`` is ``None`` for models whose training token
         count has not been publicly disclosed.
+
+    Examples
+    --------
+    >>> models = load_models()
+    >>> len(models)
+    41
     """
     with _DATA_FILE.open() as fh:
         models = json.load(fh)
