@@ -4,11 +4,9 @@ A tool to help researchers pick the right open LLM for their study.
 
 Choosing the right open LLM for research is hard given the rapidly growing landscape of available models. Most comparison tools ask "which model scores highest on MMLU?" — that is not a useful question for research. What matters is: can I reproduce this model's training? Is the license compatible with my institution's data sharing agreement? Does it support the languages in my corpus? Will it fit on the GPUs I have access to?
 
-`openllm-selector` is a curated database of 41 open LLMs with a queryable Python API and an interactive Streamlit app. Every record tracks the characteristics that actually drive research decisions rather than benchmark scores.
+`openllm-selector` is a curated database of 41 open LLMs with an interactive Streamlit app and a queryable Python API. Every record tracks the characteristics that actually drive research decisions rather than benchmark scores.
 
-## Database fields
-
-Each model record contains 25 fields covering identity, size, training scale, context window, modality, architecture, license, openness flags, language support, and links to the foundational paper and HuggingFace page. Most records are base models; a small number are instruct or reasoning variants. See the [rendered vignette](https://htmlpreview.github.io/?https://github.com/Programming-The-Next-Step-2026/openllm-selector/blob/week-4/docs/vignette.html) for the full field reference.
+Each model record contains 25 fields covering identity, size, training scale, context window, modality, architecture, license, openness flags, language support, and links to the foundational paper and HuggingFace page. Most records are base models; a small number are instruct or reasoning variants.
 
 ## Installation
 
@@ -19,8 +17,15 @@ pip install git+https://github.com/Programming-The-Next-Step-2026/openllm-select
 To run the interactive Streamlit app locally:
 
 ```bash
+git clone https://github.com/Programming-The-Next-Step-2026/openllm-selector.git
+cd openllm-selector
+git checkout week-4
 streamlit run app/app.py
 ```
+
+## Streamlit app
+
+The interactive app has a filter sidebar, an interactive scatter plot where bubble size encodes model size and colour encodes openness score, a sortable results grid, and a profile card with links to the foundational paper and recent arXiv papers.
 
 ![openllm-selector Streamlit app](streamlitapp.png)
 
