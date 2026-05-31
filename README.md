@@ -8,34 +8,7 @@ Choosing the right open LLM for research is hard given the rapidly growing lands
 
 ## Database fields
 
-Each model record contains 25 fields:
-
-| Field | Type | Description |
-|---|---|---|
-| `name`, `family`, `organization`, `country_of_origin` | str | Model identity |
-| `release_year` | int | Year of public release |
-| `size_b` | float | Model size in billions of parameters |
-| `training_tokens_b` | float \| None | Pre-training token count in billions; `None` when undisclosed |
-| `context_window` | int | Maximum context length in tokens |
-| `modality` | list[str] | Supported modalities (`"text"` and/or `"image"`) |
-| `architecture` | str | `decoder-only`, `encoder-decoder`, or `mixture-of-experts` |
-| `license` | str | License name |
-| `open_weights` | bool | Model weights are publicly available |
-| `open_training_data` | bool | Training data is publicly available |
-| `intermediate_checkpoints` | bool | Intermediate training checkpoints have been released |
-| `open_code` | bool | Training code is publicly available |
-| `multilingual` | bool | Officially supports more than one language |
-| `num_languages` | int | Number of officially supported languages |
-| `languages` | list[str] | Names of officially supported languages |
-| `has_instruct_version` | bool | An instruction-tuned variant exists (or the model is itself instruction-tuned) |
-| `model_type` | str | Model release type: `"base"`, `"instruct"`, or `"reasoning"` |
-| `has_think_version` | bool | A chain-of-thought / think variant exists (or the model is itself a reasoning model) |
-| `notes` | str *(optional)* | Additional context; present only for models where extra clarification is needed (e.g. post-trained models where `training_tokens_b` is null for structural reasons) |
-| `foundational_paper` | str | URL of the foundational paper (arXiv for most models; non-arXiv for GPT-J 6B, Grok-1, Mixtral 8x22B, and Sarvam 30B) |
-| `huggingface_id` | str | HuggingFace model identifier |
-| `openness_score` | int | Computed 0–5 score: sum of `open_weights` + `open_training_data` + `intermediate_checkpoints` + `open_code` + permissive license (Apache 2.0 or MIT) |
-
-Languages reflect officially supported languages as documented by the model creators, not partial or limited capabilities (e.g. Falcon supports German, Spanish and French officially, but has only limited capabilities in several other languages which are not included).
+Each model record contains 25 fields covering identity, size, training scale, context window, modality, architecture, license, openness flags, language support, and links to the foundational paper and HuggingFace page. Most records are base models; a small number are instruct or reasoning variants. See the [rendered vignette](https://htmlpreview.github.io/?https://github.com/Programming-The-Next-Step-2026/openllm-selector/blob/week-4/docs/vignette.html) for the full field reference.
 
 ## Installation
 
@@ -48,6 +21,8 @@ To run the interactive Streamlit app locally:
 ```bash
 streamlit run app/app.py
 ```
+
+![openllm-selector Streamlit app](streamlitapp.png)
 
 ## Python API
 

@@ -11,3 +11,6 @@ docs/vignette_files/
 docs/code_walkthrough.md
 docs/code_walkthrough.html
 docs/code_walkthrough_files/
+README.html
+README_files/
+*.xlsx

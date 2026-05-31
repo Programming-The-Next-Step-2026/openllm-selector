@@ -22,9 +22,14 @@ An optional `notes` field is present for models that require additional context,
 pip install git+https://github.com/Programming-The-Next-Step-2026/openllm-selector.git@week-4
 ```
 
-This gives access to the Python API (`load_models`, `filter_models`, and related functions) without any further steps. To run the interactive Streamlit app, clone the repository and launch it from the project root:
+This gives access to the Python API (`load_models`, `filter_models`, and related functions) without any further steps. 
+
+To run the interactive Streamlit app, clone the repository and launch it from the project root:
 
 ```bash
+git clone https://github.com/Programming-The-Next-Step-2026/openllm-selector.git
+cd openllm-selector
+git checkout week-4
 streamlit run app/app.py
 ```
 
@@ -213,6 +218,33 @@ The same five questions answered in code. All functions are importable directly 
 ```python
 import openllm_selector as o
 ```
+
+Each model dict contains the following fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `name`, `family`, `organization`, `country_of_origin` | str | Model identity |
+| `release_year` | int | Year of public release |
+| `size_b` | float | Model size in billions of parameters |
+| `training_tokens_b` | float \| None | Pre-training token count in billions; `None` when undisclosed |
+| `context_window` | int | Maximum context length in tokens |
+| `modality` | list[str] | Supported modalities (`"text"` and/or `"image"`) |
+| `architecture` | str | `decoder-only`, `encoder-decoder`, or `mixture-of-experts` |
+| `license` | str | License name |
+| `open_weights` | bool | Model weights are publicly available |
+| `open_training_data` | bool | Training data is publicly available |
+| `intermediate_checkpoints` | bool | Intermediate training checkpoints have been released |
+| `open_code` | bool | Training code is publicly available |
+| `multilingual` | bool | Officially supports more than one language |
+| `num_languages` | int | Number of officially supported languages |
+| `languages` | list[str] | Names of officially supported languages |
+| `has_instruct_version` | bool | An instruction-tuned variant exists (or the model is itself instruction-tuned) |
+| `model_type` | str | Model release type: `"base"`, `"instruct"`, or `"reasoning"` |
+| `has_think_version` | bool | A chain-of-thought / think variant exists (or the model is itself a reasoning model) |
+| `notes` | str *(optional)* | Additional context; present only for models where extra clarification is needed (e.g. post-trained models where `training_tokens_b` is null for structural reasons) |
+| `foundational_paper` | str | URL of the foundational paper (arXiv for most models; non-arXiv for GPT-J 6B, Grok-1, Mixtral 8x22B, and Sarvam 30B) |
+| `huggingface_id` | str | HuggingFace model identifier |
+| `openness_score` | int | Computed 0–5 score: sum of `open_weights` + `open_training_data` + `intermediate_checkpoints` + `open_code` + permissive license (Apache 2.0 or MIT) |
 
 ---
 
